@@ -152,33 +152,10 @@ def byright_envelope():
 
 
 # ----------------------------------------------------------------------------
-# Proposed concept, Rev D: two-family dwelling (two 3-bed / 3-bath flats) over a 3-car garage
+# Street data. The proposed building (Rev E) lives in model.py.
 # ----------------------------------------------------------------------------
-BX0, BX1, BY0, BY1 = 9.5, 45.0, 8.0, 30.0       # main block, 35'-6" x 22'-0"
-WX1, WY1 = 28.5, 35.0                           # rear wing (west 19'-0"), 5'-0" deeper
-OUT = [(BX0, BY0), (BX1, BY0), (BX1, BY1), (WX1, BY1), (WX1, WY1), (BX0, WY1)]
-IN_L = [(10.5, 8.67), (44.0, 8.67), (44.0, 29.0), (27.5, 29.0), (27.5, 34.0), (10.5, 34.0)]   # inside of concrete
-IN_U = [(10.0, 8.5), (44.5, 8.5), (44.5, 29.5), (28.0, 29.5), (28.0, 34.5), (10.0, 34.5)]     # inside of 2x6 walls
-FOOTPRINT = (BX1 - BX0) * (BY1 - BY0) + (WX1 - BX0) * (WY1 - BY1)
-EL_GAR, EL_MAIN, EL_UP = 914.5, 925.5, 935.5    # finished floors (11'-0" and 10'-0" floor to floor)
-EL_PLATE = EL_UP + 8.1
-EL_RIDGE = EL_PLATE + (BY1 - BY0) / 2 * 0.5      # 6:12 gable, ridge parallel to street
-EL_MEAN_ROOF = (EL_PLATE + EL_RIDGE) / 2
-EL_REF = (914.5 + 927.0) / 2                     # mid-point of lowest/highest grade at footprint
 PAVE_N, PAVE_S = -7.0, -21.0                     # approx. pavement edges (LiDAR profile)
-# garage level: plain rectangle, open front, no storage room (rear wing is not excavated at this level)
-OUT_L = [(BX0, BY0), (BX1, BY0), (BX1, BY1), (BX0, BY1)]
-IN_L = [(10.5, 8.67), (44.0, 8.67), (44.0, 29.0), (10.5, 29.0)]
-STALLS = [(10.5, 20.17), (20.17, 28.67), (28.67, 37.17)]      # 9'-8", 8'-6", 8'-6"
-CARS = [12.9, 21.32, 29.82]                                   # west edge of a 6'-2" wide car in each stall
-DOOR_A = (11.15, 28.42)                          # open bay, stalls 1-2 (no door)
-DOOR_B = (28.92, 37.17)                          # open bay, stall 3 (no door)
-ENTRY = (40.9, 43.9)                             # 3'-0" common entry door
-SHAFT_L = (37.5, 44.0, 8.67, 21.87)              # stair shaft, garage level (x0, x1, y0, y1)
-SHAFT_U = (37.5, 44.5, 8.5, 21.7)                # stair shaft, unit levels
-APRON = [(DOOR_A[0], BY0), (DOOR_B[1], BY0), (37.9, PAVE_N), (10.4, PAVE_N)]
-TRASH = (38.2, 0.6, 45.0, 2.8)                   # screened cart bay, on the lot
-REV = "D"
+REV = "E"
 
 
 def street_el(x):
@@ -201,7 +178,7 @@ SHEET_W, SHEET_H = 17.0, 11.0
 TB_W = 2.9
 MARGIN = 0.35
 PROJECT = "387 BAIRD STREET"
-ISSUE = "REV D · HEAD-START SET · 22 NOV 2026"
+ISSUE = "REV E · HEAD-START SET · 22 NOV 2026"
 
 
 def ftin(v, zero_in=True):
@@ -380,3 +357,39 @@ def save(fig, number, pdf):
     fig.savefig(png, dpi=200, facecolor=PAPER)
     pdf.savefig(fig, facecolor=PAPER)
     plt.close(fig)
+
+
+def text_columns(bg, cols, top=None, fs=6.5, lh=0.165, width=None):
+    """Lay out [(heading, [lines...]), ...] blocks in equal columns across the drawing area of a sheet."""
+    x0 = MARGIN + 0.3
+    w = (SHEET_W - 2 * MARGIN - TB_W - 0.6) / len(cols) if width is None else width
+    top = SHEET_H - MARGIN - 0.9 if top is None else top
+    for i, blocks in enumerate(cols):
+        x, y = x0 + i * w, top
+        for head, lines in blocks:
+            bg.text(x, y, head.upper(), fontsize=fs + 1.0, fontweight="bold", color=INK, va="top")
+            y -= lh * 1.5
+            for ln in lines:
+                bg.text(x, y, ln, fontsize=fs, color=INK, va="top", linespacing=1.25)
+                y -= lh * (ln.count("\n") + 1) + 0.04
+            y -= lh * 0.9
+    return w
+
+
+def table(bg, x, y, widths, rows, fs=6.2, rh=0.2, head=True, zebra=True):
+    """Simple ruled table on the sheet background axes (inches). rows[0] is the header when head=True."""
+    W = sum(widths)
+    for r, row in enumerate(rows):
+        yy = y - r * rh
+        if head and r == 0:
+            bg.add_patch(Rectangle((x, yy - rh), W, rh, fc="#e3e6ea", ec="none"))
+        elif zebra and r % 2 == 0:
+            bg.add_patch(Rectangle((x, yy - rh), W, rh, fc="#f6f7f8", ec="none"))
+        cx = x
+        for wd, cell in zip(widths, row):
+            bg.text(cx + 0.05, yy - rh / 2, str(cell), fontsize=fs, va="center", color=INK,
+                    fontweight="bold" if (head and r == 0) else "normal")
+            cx += wd
+        bg.plot([x, x + W], [yy - rh, yy - rh], color=LIGHT, lw=0.4)
+    bg.add_patch(Rectangle((x, y - len(rows) * rh), W, len(rows) * rh, fill=False, ec=INK, lw=0.6))
+    return y - len(rows) * rh
