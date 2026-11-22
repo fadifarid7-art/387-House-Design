@@ -1481,15 +1481,15 @@ def stair_plan(ax, level):
         up_dn((xe0 + sx1) / 2, run_lo, f"UP\n{lo_n + 1} R")
         treads(sx0, xw1, run_lo, lo_n, ls=DASH, color=GREY)
         txt(ax, (sx0 + xw1) / 2, ST_Y0 + run_lo / 2, "FLIGHT 2\nOVER.\nSpace\nbelow\nclosed off\n(R302.7)", size=3.8, color=GREY, box=True, z=9)
-        txt(ax, (sx0 + sx1) / 2, (ST_Y0 + run_lo + sy1) / 2, f"MID LANDING EL {ST_LO_MID:.1f} (over)", size=3.9, z=9)
-        txt(ax, sx0 + 1.2, sy0 + 1.6, f"ENTRY\nLANDING\nEL {m.EL_GAR:.1f}", size=3.9, z=9)
+        txt(ax, (sx0 + sx1) / 2, sy1 - 1.6, f"MID LANDING EL {ST_LO_MID:.1f} (over)", size=3.9, z=9)
+        txt(ax, sx0 + 1.2, sy0 + 1.9, f"ENTRY\nLANDING\nEL {m.EL_GAR:.1f}", size=3.9, z=9)
     elif level == "A":
         treads(xe0, sx1, run_up, up_n)
         up_dn((xe0 + sx1) / 2, run_up, f"UP\n{up_n + 1} R")
         treads(sx0, xw1, run_lo, lo_n)
         up_dn((sx0 + xw1) / 2, run_lo, f"DN\n{lo_n + 1} R")
-        txt(ax, (sx0 + sx1) / 2, sy1 - 1.0, f"MID LANDINGS\nEL {ST_LO_MID:.1f} (down) · EL {ST_UP_MID:.1f} (up)", size=3.7, z=9)
-        txt(ax, (sx0 + sx1) / 2 + 0.4, sy0 + 1.6, f"UNIT A LANDING\nEL {m.EL_A:.1f}", size=3.9, z=9)
+        txt(ax, (sx0 + sx1) / 2 - 0.3, sy1 - 1.6, f"MID LANDINGS\nEL {ST_LO_MID:.1f} (down) · EL {ST_UP_MID:.1f} (up)", size=3.7, z=9)
+        txt(ax, (sx0 + sx1) / 2 + 0.4, sy0 + 1.9, f"UNIT A LANDING\nEL {m.EL_A:.1f}", size=3.9, z=9)
     else:
         treads(sx0, xw1, run_up, up_n)
         up_dn((sx0 + xw1) / 2, run_up, f"DN\n{up_n + 1} R")
@@ -1497,8 +1497,8 @@ def stair_plan(ax, level):
         txt(ax, (xe0 + sx1) / 2, ST_Y0 + run_up / 2, "OPEN\nTO\nFLIGHT 3\nBELOW", size=3.8, color=GREY, box=True, z=9)
         line(ax, [(xw1, ST_Y0), (sx1, ST_Y0)], lw=1.6, color=BLUE, z=7)
         line(ax, [(xw1, ST_Y0), (xw1, ST_Y0 + run_up)], lw=1.6, color=BLUE, z=7)
-        txt(ax, (sx0 + sx1) / 2, sy1 - 1.2, f"MID LANDING EL {ST_UP_MID:.1f} (below)", size=3.7, z=9)
-        txt(ax, (sx0 + sx1) / 2 + 0.4, sy0 + 1.6, f"UNIT B LANDING\nEL {m.EL_B:.1f}", size=3.9, z=9)
+        txt(ax, (sx0 + sx1) / 2, sy1 - 1.6, f"MID LANDING EL {ST_UP_MID:.1f} (below)", size=3.7, z=9)
+        txt(ax, (sx0 + sx1) / 2 + 0.4, sy0 + 1.9, f"UNIT B LANDING\nEL {m.EL_B:.1f}", size=3.9, z=9)
     rect(ax, xw1, ST_Y0, xe0, ST_Y0 + (run_lo if level != "B" else run_up), fc=PAPER, ec=INK, lw=0.5, z=5.5)
     for x in (sx0 + 0.12, sx1 - 0.12):                         # handrails on the wall side of each flight
         line(ax, [(x, ST_Y0 - 0.6), (x, ST_Y0 + (run_lo if level != "B" else run_up) + 0.6)], lw=0.9, color=BLUE, z=6)
@@ -1508,15 +1508,14 @@ def stair_plan(ax, level):
     dim(ax, (xw1, yb), (xe0, yb), 0, "4\"", ext=False, size=3.8)
     dim(ax, (xe0, yb), (sx1, yb), 0, fi(w), ext=False, size=4.2)
     dim(ax, (sx0, yb - 1.1), (sx1, yb - 1.1), 0, f"{fi(sx1 - sx0)} CLEAR", ext=False, size=4.4)
-    xd = sx0 - (1.75 if G else 1.55)
     run = run_lo if level != "B" else run_up
-    dim(ax, (xd, sy0), (xd, ST_Y0), 0, fi(ST_Y0 - sy0), ext=False, size=4.0)
-    dim(ax, (xd, ST_Y0), (xd, ST_Y0 + run), 0, f"{fi(run)}", ext=False, size=4.0)
-    dim(ax, (xd, ST_Y0 + run), (xd, sy1), 0, fi(sy1 - ST_Y0 - run), ext=False, size=4.0)
+    xr = m.XE + 0.7
+    dim(ax, (xr, sy0), (xr, ST_Y0), 0, fi(ST_Y0 - sy0), ext=False, size=4.0, side=-1)
+    dim(ax, (xr, ST_Y0), (xr, ST_Y0 + run), 0, f"{fi(run)}", ext=False, size=4.0, side=-1)
+    dim(ax, (xr, ST_Y0 + run), (xr, sy1), 0, fi(sy1 - ST_Y0 - run), ext=False, size=4.0, side=-1)
     for y in (sy0, ST_Y0, ST_Y0 + run, sy1):
-        line(ax, [(xd - 0.15, y), (sx0 - (0.75 if G else 0.5), y)], lw=0.25, color=GREY, z=8)
-    xr = m.XE + 0.75
-    dim(ax, (xr, sy0), (xr, sy1), 0, f"{fi(sy1 - sy0)} CLEAR", ext=False, size=4.4, side=-1)
+        line(ax, [(m.XE + 0.15, y), (xr + 0.15, y)], lw=0.25, color=GREY, z=8)
+    txt(ax, (sx0 + sx1) / 2, sy1 - 0.45, f"SHAFT {fi(sx1 - sx0)} x {fi(sy1 - sy0)} CLEAR", size=3.9, weight="bold", z=9)
     if level == "A":
         dim(ax, (sx1 - 0.55, ST_Y0 + run_up), (sx1 - 0.55, sy1), 0, fi(sy1 - ST_Y0 - run_up), ext=False, size=3.8)
 
@@ -1573,10 +1572,10 @@ def stair_section_labels(ax, xl, yl, fl):
     g, yf, yfi, y1 = m.EL_GAR, m.YF, m.YFI, m.SHAFT_U[3]
     (a1, b1, zm1, run1), (a2, b2, zm2, run2) = fl
     for el, nm in ((g, "GARAGE / ENTRY"), (m.EL_A, "UNIT A"), (m.EL_B, "UNIT B")):
-        txt(ax, xl[0] + 0.15, el + 0.4, f"{nm}\nEL {el:.1f}", size=4.4, weight="bold", ha="left", va="bottom", z=12)
+        txt(ax, yfi + 0.2, el + 0.3, f"{nm} EL {el:.1f}", size=4.2, weight="bold", ha="left", va="bottom", z=12)
     for zm in (zm1, zm2):
         txt(ax, (ST_Y0 + (run1 if zm == zm1 else run2) + y1) / 2, zm + 0.45, f"LANDING\nEL {zm:.1f}", size=4.2, weight="bold", va="bottom", z=12)
-    xd = y1 + 1.35
+    xd = y1 + 1.45
     dim(ax, (xd, g), (xd, zm1), 0, fi(zm1 - g), ext=False, size=4.2, side=-1)
     dim(ax, (xd, zm1), (xd, m.EL_A), 0, fi(m.EL_A - zm1), ext=False, size=4.2, side=-1)
     dim(ax, (xd, m.EL_A), (xd, zm2), 0, fi(zm2 - m.EL_A), ext=False, size=4.2, side=-1)
@@ -1599,12 +1598,12 @@ def stair_section_labels(ax, xl, yl, fl):
     dim(ax, (yh, zm1), (yh, zm2 - 0.75), 0, f"HEADROOM {fi(zm2 - 0.75 - zm1)} (6'-8\" min.)", ext=False, size=4.0, side=-1)
     note(ax, (ST_Y0, m.EL_B + 2.2), (ST_Y0 + 1.8, m.EL_B + 4.6), "GUARD 36 in. min. at the open\nside of the landing and well;\nno opening passes a 4 in. sphere", size=4.0, ha="left", color=BLUE)
     note(ax, (ST_Y0 + 2.6, g + 1.0), (ST_Y0 + 3.4, g + 0.75), "space under the stair closed off,\nnot a storage room", size=3.9, ha="left", color=GREY)
-    note(ax, (yf + m.CMU, g + 4.5), (xl[0] + 0.2, g + 5.2), "STREET DOOR\n3'-0\" x 6'-8\"", size=4.0, ha="left")
-    txt(ax, y1 + (m.Y_ST - y1) / 2, m.EL_B + 4.3, "1-HOUR WALL: 2x4 + 5/8 in. TYPE X EACH SIDE, TO THE ROOF DECK", size=3.6, rot=90, color=ACCENT, z=12, ha="center")
-    txt(ax, (m.UTIL[2] + xl[1]) / 2 + 0.2, g + 4.5, "UTILITY\n(heated)", size=4.0, z=9)
+    txt(ax, yf + m.CMU + 0.25, g + 4.4, "STREET DOOR 3'-0\" x 6'-8\"", size=3.8, rot=90, z=9)
+    note(ax, (y1 + 0.1, m.EL_B + 6.6), (y1 - 0.7, m.EL_B + 7.1), "1-HOUR STAIR WALLS:\n2x4 + 5/8 in. Type X each\nside, to the roof deck", size=4.0, ha="right", color=ACCENT)
+    txt(ax, m.UTIL[2] + 0.35, g + 6.6, "UTILITY (heated)", size=3.8, rot=90, z=9)
     for fl_ in (m.EL_A, m.EL_B):
-        txt(ax, (m.Y_ST + xl[1]) / 2 + 0.2, fl_ + 3.6, "BATH\n3", size=4.0, z=9)
-        txt(ax, xl[0] + 0.15, fl_ - 1.0, "PORCH", size=3.8, ha="left", z=9)
+        txt(ax, m.Y_ST + 0.4, fl_ + 6.4, "BATH 3", size=3.8, rot=90, z=9)
+        txt(ax, xl[0] + 0.1, fl_ - 1.0, "PORCH", size=3.6, ha="left", z=9)
         note(ax, (yf + 0.25, fl_ + 5.5), (yfi + 0.5, fl_ + 6.2), "W3 fixed,\ntempered", size=3.8, ha="left")
     txt(ax, (yfi + y1) / 2, Z_CLG_B + 0.4, "5/8 in. TYPE X LID UNDER THE ROOF TRUSSES", size=3.8, color=ACCENT, z=12)
 
@@ -1668,9 +1667,9 @@ def porch_labels(ax, unit, xl, yl):
     fl = m.EL_A if unit == "A" else m.EL_B
     bot = A_T0 if unit == "A" else B_T0
     yg = y0 + 0.29
-    dim(ax, (y0, bot - 0.75), (yf, bot - 0.75), 0, f"{ftin(yf - y0)} CANTILEVER", ext=False, size=4.6)
+    dim(ax, (y0, bot - 0.7), (yf, bot - 0.7), 0, f"{ftin(yf - y0)} CANTILEVER", ext=False, size=4.6)
     for y in (y0, yf):
-        line(ax, [(y, bot - 1.0), (y, bot - 0.15)], lw=0.25, color=GREY, z=8)
+        line(ax, [(y, bot - 0.9), (y, bot - 0.15)], lw=0.25, color=GREY, z=8)
     dim(ax, (yg + 1.3, fl), (yg + 1.3, fl + GUARD + 0.125), 0, "36\" MIN.", ext=False, size=4.4, side=-1)
     dim(ax, (yg + 0.75, fl), (yg + 0.75, fl + 0.29), 0, "3 1/2\"", ext=False, size=3.8, side=-1)
     txt(ax, xl[1] - 0.1, fl + 0.5, f"UNIT {unit}\nEL {fl:.1f}", size=4.6, weight="bold", ha="right", va="bottom", z=12)
@@ -1683,22 +1682,22 @@ def porch_labels(ax, unit, xl, yl):
         note(ax, (y0 + 2.0, bot - 0.04), (xl[0] + 0.1, bot - 2.0), "porch soffit (exterior\nboard) to the beam", size=4.0, ha="left")
         note(ax, (xl[1] - 0.6, A_T0 + 0.4), (xl[1] - 0.2, bot - 2.1), "R-30 + 5/8 in. Type X\nover the garage", size=4.0, ha="right")
         dim(ax, (xl[1] - 0.45, bot), (xl[1] - 0.45, fl), 0, "20\" TRUSS + 3/4\"", ext=False, size=3.9)
-        txt(ax, yfi + 0.9, fl + 3.0, "D14", size=4.4, weight="bold", z=9)
+        note(ax, (yfi, fl + 3.0), (yfi + 0.5, fl + 3.3), "D14 porch\ndoor", size=4.0, ha="left")
     else:
         ya = yf - OH_F
-        dim(ax, (ya, EAVE + 0.75), (yf, EAVE + 0.75), 0, f"{ftin(OH_F)} ROOF OVERHANG", ext=False, size=4.6)
+        dim(ax, (ya, EAVE + 0.45), (yf, EAVE + 0.45), 0, f"{ftin(OH_F)} ROOF OVERHANG", ext=False, size=4.6)
         for y in (ya, yf):
-            line(ax, [(y, EAVE + 1.0), (y, EAVE + 0.1 if y == yf else Z_EAVE_F + 0.2)], lw=0.25, color=GREY, z=8)
+            line(ax, [(y, EAVE + 0.65), (y, EAVE + 0.1 if y == yf else Z_EAVE_F + 0.2)], lw=0.25, color=GREY, z=8)
         dim(ax, (yf - 1.2, fl), (yf - 1.2, Z_SOFFIT_F), 0, f"{ftin(Z_SOFFIT_F - fl)} TO THE SOFFIT", ext=False, size=4.2)
         dim(ax, (xl[1] - 0.45, m.EL_PLATE), (xl[1] - 0.45, EAVE), 0, "12\" HEEL", ext=False, size=3.9)
         line(ax, [(yf, EAVE), (xl[1] - 0.2, EAVE)], lw=0.25, color=GREY, z=8)
         note(ax, (ya + 1.6, Z_SOFFIT_F), (xl[0] + 0.1, Z_SOFFIT_F - 1.1), "vented soffit\n(attic intake)", size=4.0, ha="left")
         note(ax, (ya - 0.3, Z_EAVE_F - 0.3), (xl[0] + 0.1, Z_EAVE_F + 1.3), "fascia and gutter", size=4.0, ha="left")
         note(ax, (yfi + 1.0, m.EL_PLATE + 1.0), (yfi + 0.5, m.EL_PLATE - 1.0), f"R-49; top plate\nEL {m.EL_PLATE:.2f}", size=4.0, ha="left")
-        note(ax, (y0 + 2.4, bot - 0.04), (xl[0] + 0.1, bot - 1.9), "soffit = ceiling of\nthe Unit A porch", size=4.0, ha="left")
+        txt(ax, y0 + 2.1, bot + 0.85, "soffit below = Unit A porch ceiling", size=3.8, z=9, box=True)
         dim(ax, (xl[1] - 0.45, bot), (xl[1] - 0.45, fl), 0, "24\" TRUSS + 3/4\"", ext=False, size=3.9)
-        note(ax, (yfi + 0.8, Z_CLG_A - 0.03), (xl[1] - 0.1, bot - 1.9), "2 layers 5/8 in. Type X:\n1-hour floor/ceiling", size=4.0, ha="right", color=ACCENT)
-        txt(ax, yfi + 0.9, fl + 3.0, "D14", size=4.4, weight="bold", z=9)
+        note(ax, (yfi + 0.8, Z_CLG_A - 0.03), (xl[1] - 0.1, bot - 0.85), "2 layers 5/8 in. Type X:\n1-hour floor/ceiling", size=3.8, ha="right", color=ACCENT)
+        note(ax, (yfi, fl + 3.0), (yfi + 0.5, fl + 3.3), "D14 porch\ndoor", size=4.0, ha="left")
 
 
 def sheet_a402(pdf):
@@ -1739,19 +1738,21 @@ def sheet_a402(pdf):
     fig, bg = new_sheet("A-402", TITLE["A-402"], "As noted", notes)
     # --- stair plans at 1/4 in.
     f4 = 4.0
-    xlp, ylp = (m.GAR_X1 - 2.25, m.XE + 1.65), (m.YF - 2.6, m.SHAFT_U[3] + 1.1)
-    wp, hp = (xlp[1] - xlp[0]) / f4, (ylp[1] - ylp[0]) / f4
+    ylp = (m.YF - 2.35, m.SHAFT_U[3] + 0.95)
+    hp = (ylp[1] - ylp[0]) / f4
     bp = SHEET_H - MARGIN - 0.1 - hp
-    lp = MARGIN + 0.2
+    lp = MARGIN + 0.12
+    l_ = lp
     for i, (lev, nm) in enumerate((("G", "Garage level"), ("A", "Unit A level"), ("B", "Unit B level"))):
-        l_ = lp + i * (wp + 0.08)
+        xlp = (m.GAR_X1 - 0.35 if lev == "G" else m.X_ST - 3.25, m.XE + 1.55)
         ax = plan_axes(fig, l_, bp, xlp, ylp, f4)
         stair_plan(ax, lev)
         title_under(bg, (l_, bp), i + 1, f"Stair plan, {nm}", "1/4\" = 1'-0\" · north up")
+        l_ += (xlp[1] - xlp[0]) / f4 + 0.08
     # --- stair section at 1/4 in.
-    xls, yls = (m.YF - 2.3, m.SHAFT_U[3] + 2.6), (m.EL_GAR - 2.2, Z_CLG_B + 1.0)
+    xls, yls = (m.YF - 1.2, m.SHAFT_U[3] + 2.25), (m.EL_GAR - 2.2, Z_CLG_B + 1.0)
     ws, hs = (xls[1] - xls[0]) / f4, (yls[1] - yls[0]) / f4
-    ls_ = SHEET_W - MARGIN - TB_W - 0.15 - ws
+    ls_ = SHEET_W - MARGIN - TB_W - 0.1 - ws
     bs = SHEET_H - MARGIN - 0.1 - hs
     axs = plan_axes(fig, ls_, bs, xls, yls, f4)
     fl = stair_section(axs, xls, yls)
@@ -1767,9 +1768,9 @@ def sheet_a402(pdf):
     f8 = 8 / 3
     xlq = (m.PORCH[1] - 1.75, m.YFI + 2.5)
     wq = (xlq[1] - xlq[0]) / f8
-    ylb = (B_T0 - 2.6, EAVE + 1.5)
+    ylb = (B_T0 - 1.2, EAVE + 1.0)
     yla = (Z_B1_BOT - 1.5, m.EL_A + GUARD + 1.0)
-    bq = 0.8
+    bq = 0.72
     axb = plan_axes(fig, lp, bq, xlq, ylb, f8)
     porch_detail(axb, "B", xlq, ylb)
     porch_labels(axb, "B", xlq, ylb)

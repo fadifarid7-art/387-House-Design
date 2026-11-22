@@ -1416,7 +1416,7 @@ def sheet_c105(pdf):
     dimb(sx, (0, sv[1] + 0.75), (SWALE_OFF, sv[1] + 0.75), 0, ftin(SWALE_OFF), ext=False, size=4.4)
     dimb(sx, (SWALE_OFF, sv[1] + 0.75), (YARD, sv[1] + 0.75), 0, ftin(YARD - SWALE_OFF), ext=False, size=4.4)
     dimb(sx, (-1.6, fg0), (-1.6, fg0 + STEM_UP), 0, "8\"", ext=False, size=4.4)
-    txt(sx, sv[0] + 0.2, m.EL_A + 0.5, f"UNIT A SLAB EL {m.EL_A:.1f}", size=4.6, weight="bold", ha="left")
+    txt(sx, sv[0] + 0.2, m.EL_A + 0.5, f"UNIT A SLAB EL {m.EL_A:.1f}", size=4.6, weight="bold", ha="left", box=True)
     lead(sx, (-m.CMU / 2, fg0 + STEM_UP), (-4.6, fg0 + STEM_UP + 2.4), f"TOP OF CONCRETE EL {fg0 + STEM_UP:.1f}\n8 in. above finish grade", size=4.5, ha="center")
     lead(sx, (SWALE_OFF, inv0), (3.4, inv0 + 3.4), f"SWALE INV EL {inv0:.1f}", size=4.5, color=BLUE, ha="center", weight="bold")
     lead(sx, (0.9, fg0 - 0.1), (4.1, fg0 - 1.5), "5 % to the swale", size=4.4, color=BLUE, ha="center")
