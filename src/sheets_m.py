@@ -664,7 +664,7 @@ def pads_view(fig, bg):
     vt(bg, L + 0.02, 10.2, "Heat-pump pads, west side yard", "3/8\" = 1'-0\" · side-discharge units 38 x 15 in. · pads 44 x 21 in.")
     unit_plan(ax, "bg", "A", furniture=False, labels=False, with_porch=False)
     line(ax, [(west_x(15.0), 15.0), (west_x(29.0), 29.0)], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=5.25)
-    txt(ax, west_x(26.6) - 0.35, 26.6, "WEST LOT LINE", size=4.6, color=ACCENT, rot=90 - math.degrees(WEST_LEAN))
+    txt(ax, west_x(23.6) - 0.35, 23.6, "WEST LOT LINE", size=4.6, color=ACCENT, rot=90 - math.degrees(WEST_LEAN))
     draw_hp(ax, both_bold=True)
     for u in "AB":
         draw_lineset(ax, u, path=False)
@@ -692,10 +692,7 @@ def pads_view(fig, bg):
     for a, b_, lab in ((stations[0], stations[1], ftin(_hw)), (stations[1], stations[2], inch(HP_GAP)), (stations[2], stations[3], ftin(_hw))):
         dim(ax, base(a), base(b_), 0.0, lab, size=5.0, ext=False)
     # bedroom window to unit A along the wall face
-    wj = (m.xw_o(W4[3]), W4[3])
-    pa = (wj[0] + HP_U[0] * HP_WIN, wj[1] + HP_U[1] * HP_WIN)
-    dim(ax, wj, pa, 1.0, ftin(HP_WIN), size=4.8)
-    lead(ax, (m.xw_i(16.5) + 0.1, 16.5), (9.0, 16.9), "BEDROOM 1 WINDOW W4\n(Unit A sill at EL %.1f)" % (m.EL_A + 3.5), GREY, size=4.4, ha="center")
+    lead(ax, (m.xw_i(16.6) + 0.1, 16.6), (9.2, 17.0), "BEDROOM 1 WINDOW W4: jamb is %s\nsouth of HP-A (Unit A sill EL %.1f)" % (ftin(HP_WIN), m.EL_A + 3.5), GREY, size=4.4, ha="center")
     lead(ax, (m.xw_o(DS_Y["A"]) - 0.3, DS_Y["A"] - 0.2), (5.6, 16.45), "DS-A", INK, size=4.8, weight="bold", ha="right")
     lead(ax, (m.xw_o(LS_Y["A"] - 0.95) - HP_BACK / 2, LS_Y["A"] - 1.05), (8.9, 18.25), f"{inch(HP_BACK)} UNIT TO WALL", INK, size=4.4, ha="left")
     tag(ax, 4.0, 27.05, f"UNIT TO THE WEST LOT LINE: {ftin(HP_FRONT)}\n(ZONING MINIMUM 2'-0\") · SAME AT HP-B", ACCENT, size=4.4)
@@ -720,8 +717,9 @@ def elevation_view(fig, bg):
     for u in "AB":
         rect(ax, y0, EL[u] - 0.0625 - TRUSS[u], y1, EL[u], fc=TIMBER, ec=BG_EDGE, lw=0.4, z=3)
         line(ax, [(y0, EL[u]), (y1, EL[u])], color=INK, lw=0.7, z=4)
-        txt(ax, y1 - 0.25, EL[u] + 0.42, f"UNIT {u} FLOOR  EL {EL[u]:.1f}", size=4.6, weight="bold", ha="left", z=9)
-        txt(ax, y1 - 0.25, EL[u] - 0.95, f"{inch(TRUSS[u])} floor trusses", size=4.2, color=GREY, ha="left", z=9)
+        xt, hh = (y1 - 0.25, "left") if u == "B" else (y0 + 0.25, "right")
+        txt(ax, xt, EL[u] + 0.42, f"UNIT {u} FLOOR  EL {EL[u]:.1f}", size=4.6, weight="bold", ha=hh, z=9)
+        txt(ax, xt, EL[u] - 0.95, f"{inch(TRUSS[u])} floor trusses", size=4.2, color=GREY, ha=hh, z=9)
         rect(ax, W4[2], EL[u] + 3.5, W4[3], EL[u] + 7.5, fc=PAPER, ec=BG_EDGE, lw=0.6, z=4)
         txt(ax, (W4[2] + W4[3]) / 2, EL[u] + 5.5, "W4", size=4.2, color=GREY, z=5)
     poly(ax, [(y0, 921.0)] + list(zip(ys, g)) + [(y1, 921.0)], fc="#e6dccb", ec=EARTH, lw=0.8, z=6)
@@ -772,7 +770,9 @@ def key_view(fig, bg):
     tag(ax, TERMS[1][2][0] - 1.5, TERMS[1][2][1] + 0.9, "EF-1", EXH, size=4.6)
     for k, dx in ((2, -0.2), (3, 0.3), (4, 0.2)):
         p = TERMS[k][2]
-        tag(ax, p[0] + dx + 1.25, p[1] + 1.1, TERMS[k][0], EXH, size=4.6)
+        q = (p[0] + 1.55 + dx, p[1] + 5.0)
+        line(ax, [(p[0] + 0.3, p[1] + 0.9), q], color=EXH, lw=0.35, z=13)
+        tag(ax, q[0], q[1] + 0.35, TERMS[k][0], EXH, size=4.6)
     mid = (W2[2] + W2[3]) / 2
     dim(ax, (RH_X, m.YF), (mid, m.YF), -0.9, ftin(RH_CLEAR), size=4.6, color=EXH)
     lead(ax, ((W2[2] + mid) / 2, m.YF - 0.1), (30.5, 7.6), "W2: WEST SASH FIXED,\nEAST SASH SLIDES", EXH, size=4.4, weight="bold")
