@@ -1,5 +1,16 @@
-"""Sheet G-001: cover, property data, findings and drawing index."""
+"""Sheets G-001 (cover and summary) and G-002 (code analysis and general notes)."""
 from common import *  # noqa: F401,F403
+from struct_sheets import text_columns
+
+INDEX = [("G-001", "Cover and summary"), ("G-002", "Code analysis and general notes"),
+         ("C-101", "Existing site conditions"), ("C-102", "Site plan and zoning"), ("C-103", "Vehicle access and towing"),
+         ("A-101", "Garage level plan"), ("A-102", "Unit A plan"), ("A-103", "Unit B plan"),
+         ("A-201", "Street elevation"), ("A-301", "Building section"),
+         ("S-001", "Structural notes and criteria"), ("S-101", "Foundation plan"), ("S-102", "Unit A floor framing"),
+         ("S-103", "Roof framing and shear walls"), ("S-301", "Structural sections"),
+         ("P-101", "Plumbing: garage level"), ("P-102", "Plumbing: typical unit"), ("P-201", "Plumbing riser and schedules"),
+         ("M-101", "Mechanical: typical unit"),
+         ("E-101", "Electrical: garage level"), ("E-102", "Electrical: typical unit"), ("E-201", "One-line diagram and loads")]
 
 
 def sheet_g001(pdf, m):
@@ -7,114 +18,179 @@ def sheet_g001(pdf, m):
     x0 = SHEET_W - MARGIN - TB_W
     tx = x0 + 0.16
     top = SHEET_H - MARGIN
-    idx = [("G-001", "Cover and summary"), ("C-101", "Existing site conditions"), ("C-102", "Zoning envelope and site plan"),
-           ("A-101", "Lower level: garage + storage"), ("A-102", "Main level: living"), ("A-103", "Upper level: bedrooms"),
-           ("A-201", "Street elevation"), ("A-301", "Building section"), ("A-401", "Parking and storage options")]
     bg.text(tx, top - 1.95, "DRAWING INDEX", fontsize=7.2, fontweight="bold", va="top")
-    for i, (n, t) in enumerate(idx):
-        bg.text(tx, top - 2.2 - i * 0.2, n, fontsize=6.8, fontweight="bold", va="top")
-        bg.text(tx + 0.62, top - 2.2 - i * 0.2, t, fontsize=6.8, va="top")
-    bg.text(tx, top - 4.25, "SOURCES", fontsize=7.2, fontweight="bold", va="top")
-    src = ["WV Real Estate Assessment record,", "parcel 31-13-0029-0084-0000 (mapwv.gov)", "WV statewide parcel GIS (WVGISTC)",
-           "Monongalia Co. tax map 09-0029", "City of Morgantown zoning GIS layer", "Morgantown Planning & Zoning Code,",
-           "Arts. 1329, 1331, 1337, 1363, 1365, 1373", "WV 1 m LiDAR DEM (elevations, NAVD88)", "2026 county orthophoto (viewed only)",
-           "Retrieved 21 Nov 2026."]
+    for i, (n, t) in enumerate(INDEX):
+        bg.text(tx, top - 2.2 - i * 0.176, n, fontsize=6.3, fontweight="bold", va="top")
+        bg.text(tx + 0.6, top - 2.2 - i * 0.176, t, fontsize=6.3, va="top")
+    bg.text(tx, top - 6.3, "SOURCES", fontsize=7.2, fontweight="bold", va="top")
+    src = ["County assessment record, parcel", "31-13-0029-0084-0000 · tax map 09-0029", "City of Morgantown zoning layer + code",
+           "WV State Building Code, 87 CSR 4", "WV 1 m LiDAR · public GIS, 21 Nov 2026"]
     for i, s in enumerate(src):
-        bg.text(tx, top - 4.5 - i * 0.165, s, fontsize=6.0, va="top", color=INK)
-
+        bg.text(tx, top - 6.55 - i * 0.16, s, fontsize=5.8, va="top", color=INK)
     L = MARGIN + 0.45
     bg.text(L, top - 0.62, "387 BAIRD STREET", fontsize=30, fontweight="bold", va="center")
-    bg.text(L, top - 1.08, "Replacement dwelling with drive-under garage and storage · feasibility concept",
+    bg.text(L, top - 1.08, "Two-family dwelling over a 3-car garage with owner storage · head-start permit set, Rev B",
             fontsize=12, va="center", color=INK)
     bg.text(L, top - 1.40, "Morgantown, Monongalia County, West Virginia 26505 · Tax District 13 (5th Ward), Map 29, Parcel 84 · Zoned R-2",
             fontsize=8, va="center", color=GREY)
     bg.plot([L, x0 - 0.45], [top - 1.62, top - 1.62], color=INK, lw=1.0)
-
-    def block(x, y, head, rows, w=4.0, lh=0.178, fs=7.0, kw=1.42):
-        bg.text(x, y, head.upper(), fontsize=8.2, fontweight="bold", va="top", color=INK)
-        bg.plot([x, x + w], [y - 0.2, y - 0.2], color=INK, lw=0.6)
-        yy = y - 0.32
-        for r in rows:
-            if isinstance(r, tuple):
-                bg.text(x, yy, r[0], fontsize=fs, va="top", color=GREY)
-                bg.text(x + kw, yy, r[1], fontsize=fs, va="top", color=INK, linespacing=1.25)
-                yy -= lh * (r[1].count("\n") + 1) + 0.035
-            else:
-                bg.text(x, yy, r, fontsize=fs, va="top", color=INK, linespacing=1.25)
-                yy -= lh * (r.count("\n") + 1) + 0.045
-        return yy
-
     c1, c2, c3 = L, L + 4.42, L + 8.84
-    ytop = top - 1.92
-    y = block(c1, ytop, "Ownership and sale history", [
-        ("Owner of record", "R & L RENTALS LLC"),
-        ("Mailing address", "3025 Greystone Dr,\nMorgantown, WV 26508"),
-        ("Deed reference", "Book 1246, Page 78"),
-        ("Last recorded sales", "1 Jun 2001 · \\$160,000 · code 4\n(related parties / corporations)\n1 Oct 2000 · \\$160,000 · code 1\n(sale of more than one parcel)"),
-        ("Held since", "Same owner on every tax roll\nfrom 2005 to 2026"),
-        ("2026 appraisal", "\\$28,000 (land \\$15,400,\nbuilding \\$12,600)"),
-        ("Note", "\\$160,000 bought several parcels\ntogether; it is not this lot's price.\nConfirm with a title search."),
-    ])
-    y = block(c1, y - 0.22, "The parcel", [
-        ("Frontage", "50.0 ft on Baird St (tax map)"),
-        ("Depth", "34.0 ft east side, 48.0 ft west side"),
-        ("Area", f"0.0471 ac deeded = {LOT_AREA_DEED:,.0f} sf\n(dimensions compute to ±{LOT_AREA_CALC:,.0f} sf)"),
-        ("Legal", "Block I, part of Lot 2"),
-        ("Existing house", "1929, 2-storey stucco, 768 sf,\n24' x 16', no basement"),
-        ("Slope", "Up ±8 to 12 ft from street to rear;\nstreet itself climbs ±11 %"),
-        ("Flood", "Low risk, no mapped flood zone"),
-    ])
-    y2 = block(c2, ytop, "Zoning: R-2 single and two-family", [
-        ("Minimum lot", "5,000 sf and 40 ft frontage.\nThis lot: ±2,050 sf, so it is a legal\nnonconforming lot (1373.04)"),
-        ("Setbacks", "Front 10 ft min / 20 ft max,\nside 5 ft, rear 20 ft"),
-        ("Coverage", "50 % maximum"),
-        ("Height", "2.5 storeys or 35 ft"),
-        ("Parking", "2 spaces per single-family dwelling"),
-        ("Overlay", "None mapped at this parcel"),
-    ])
-    y2 = block(c2, y2 - 0.22, "What is possible", [
-        f"1.  By right, almost nothing. The setbacks leave a wedge\n     of ±{m['env_area']:,.0f} sf, 4.6 to 16 ft deep.",
-        "2.  With a rear-setback variance, a 36' x 22' house fits:\n     792 sf per floor, 39 % coverage, 5 ft side yards.",
-        "3.  The slope suits a drive-under garage. Cutting in at\n     street level puts the main floor at rear-yard grade.",
-        "4.  Tearing the house down ends its grandfathered\n     setbacks (1373.06). Get the variance first.",
-        "5.  Every car must be inside the building. There is no\n     room for surface parking and none on the street.",
-    ], fs=6.9)
-    y3 = block(c3, ytop, "The concept in this set", [
-        ("Lower level", "2-car garage (427 sf) + storage room\n(177 sf) with a truck-height loading door"),
-        ("Main level", "Living, dining, kitchen, powder,\nlaundry; walk-out to rear patio"),
-        ("Upper level", "2 bedrooms + study, 2 baths"),
-        ("Living area", "1,584 sf gross on two floors"),
-        ("Height", f"{EL_MEAN_ROOF - EL_REF:.1f} ft to mean roof level"),
-        ("Cars", "2 as drawn · 1 to 3 by option (A-401)"),
-    ], kw=1.0)
-    y3 = block(c3, y3 - 0.22, "Relief likely needed", [
-        f"·  Rear setback: {m['r_ne']:.1f} to {m['r_nw']:.1f} ft proposed, 20 ft required",
-        "·  Front setback: 8 ft proposed, 10 ft required unless the\n    developed-block averaging rule applies (1363.02(C))",
-        "·  Storey count: ruling that the garage level is a basement",
-        "·  Use: written confirmation that indoor storage of\n    materials for other properties is an accessory use",
-    ], fs=6.9)
-    y3 = block(c3, y3 - 0.22, "Before you buy", [
-        "·  Boundary and topographic survey (GIS is ±3 to 5 ft)",
-        "·  Title search of Deed Book 1246 / 78 and easements",
-        "·  Pre-application meeting, Morgantown Planning Division,\n    389 Spruce St, 304-284-7431",
-        "·  Geotechnical borings; retaining-wall and shoring budget",
-        "·  City Engineer: driveway on an ±11 % one-lane street",
-        "·  Make the offer contingent on Board of Zoning Appeals\n    approval",
-    ], fs=6.9)
-    # key plan
-    kx = plan_axes(fig, c2 + 0.35, MARGIN + 0.42, (-22, 74), (-25, 52), 30)
+    cols = [
+        (c1, 4.0, [
+            ("What this set is", [
+                "A coordinated first draft of every discipline, so the\nlicensed architect and engineers start from a\nworked-out scheme instead of a blank page.",
+                "It is not engineered and cannot be stamped as-is.\nEach professional must review, recalculate and take\nresponsibility for their own sheets.",
+            ]),
+            ("The building", [
+                ("Garage level", "3 cars side by side + 96 sf\nconditioned owner storage,\nlobby, mech room"),
+                ("Unit A", "Main level, 2 bed / 1 bath,\n±780 sf"),
+                ("Unit B", "Upper level, same plan"),
+                ("Footprint", f"{FOOTPRINT:,.0f} sf, {m['cov']:.0f} % of the lot"),
+                ("Height", f"{EL_MEAN_ROOF - EL_REF:.1f} ft, 2 storeys over a\nbasement garage"),
+                ("Structure", "Concrete retaining walls,\nsteel frame at the doors,\nwood trusses and walls"),
+                ("Services", "All-electric: heat pumps,\nelectric water heaters,\n400 A service, 3 meters"),
+            ]),
+            ("The property", [
+                ("Owner of record", "R & L RENTALS LLC"),
+                ("Deed", "Book 1246, Page 78"),
+                ("Lot", f"50 ft x 34 to 48 ft, {LOT_AREA_DEED:,.0f} sf"),
+                ("Existing", "1929 house, 768 sf"),
+            ]),
+        ]),
+        (c2, 4.0, [
+            ("How your requests were handled", [
+                ("Most cars", "Three. The lot is 50 ft wide and\nside setbacks leave 35'-6\". Three\n8'-11\" stalls and the stair fill it.\nA duplex also requires three."),
+                ("Duplex", "Two stacked flats with identical\nplans so plumbing and structure\nline up."),
+                ("Storage", "Inside the insulated envelope on\nthe garage level, with a 16 ft rack."),
+                ("Tow trucks", "Each car has its own straight run\nto a door; no posts in the apron;\nflush floor. See C-103."),
+                ("Entrance", "One street-level door to a common\nstair, reached by a landing on the\nlot. No steps."),
+                ("City property", "Only the driveway apron is in the\nright-of-way. No walls, steps, posts\nor porches cross the lot line."),
+            ]),
+            ("Follows the code", [
+                "Side setbacks, lot coverage, height, parking count,\nporch standard, unit separation, egress, stairs,\nsmoke/CO alarms, energy code targets.",
+            ]),
+        ]),
+        (c3, 4.0, [
+            ("Cannot follow the code: approvals needed", [
+                f"1.  Rear setback. {m['r_ne']:.1f} ft at the tightest corner against\n     20 ft required. The R-2 setbacks leave ±{m['env_area']:,.0f} sf of\n     buildable area on this lot, so nothing fits without it.",
+                "2.  Front setback. 8 ft against 10 ft, unless the block-\n     averaging rule sets it by the neighbours.",
+                "3.  Garage width. 78 % of the front against 65 %. Two\n     cars would comply, but then the duplex is one\n     parking space short. One or the other needs relief.",
+                "4.  Driveway width at the street (26 ft against 22 ft)\n     and a sidewalk waiver: City Engineer.",
+            ]),
+            ("Order of work", [
+                "1.  Boundary and topographic survey.",
+                "2.  Pre-application meeting, Planning Division,\n     389 Spruce St, 304-284-7431.",
+                "3.  Purchase contingent on Board of Zoning Appeals\n     approval. Do not demolish before it.",
+                "4.  Geotechnical borings and shoring concept.",
+                "5.  Architect and engineers take over this set.",
+                "6.  Utilities: MUB sewer/water taps, Mon Power service.",
+            ]),
+        ]),
+    ]
+    text_columns(bg, cols, top=top - 1.92, fs=6.6, lh=0.168)
+    kx = plan_axes(fig, c2 + 0.55, MARGIN + 0.3, (-22, 74), (-25, 52), 34)
     rect(kx, -22, PAVE_S, 74, PAVE_N, fc="#e3e5e8", ec="none", z=1)
-    txt(kx, 26, -14, "BAIRD STREET", size=5.6, color=GREY, weight="bold")
+    rect(kx, -22, PAVE_N, 74, 0, fc="#fbe9e7", ec="none", z=1)
+    txt(kx, 26, -14, "BAIRD STREET", size=5.4, color=GREY, weight="bold")
     poly(kx, LOT, fc="none", ec=ACCENT, lw=1.2, z=4, ls=(0, (9, 2.5, 1.5, 2.5)))
-    rect(kx, BX0, BY0, BX1, BY1, fc="#d9dcdf", ec=INK, lw=1.2, z=5)
-    poly(kx, [(12.5, BY0), (28.5, BY0), (30.2, PAVE_N), (10.3, PAVE_N)], fc="#cfd6de", ec=INK, lw=0.4, z=3)
-    txt(kx, 27, 19, "PROPOSED\n36' x 22'", size=5.4, weight="bold", z=9)
-    txt(kx, -11, 22, "442\nBAIRD", size=5.0, color=GREY)
-    txt(kx, 62, 18, "441\nBAIRD", size=5.0, color=GREY)
-    txt(kx, 30, 46, "386 FOREST AVE", size=5.0, color=GREY)
-    txt(kx, 25, -2.6, "50'", size=5.0, color=ACCENT)
-    txt(kx, 52.6, 17, "34'", size=5.0, color=ACCENT, rot=90)
-    txt(kx, -0.6, 26, "48'", size=5.0, color=ACCENT, rot=83)
+    poly(kx, OUT, fc="#d9dcdf", ec=INK, lw=1.2, z=5)
+    poly(kx, APRON, fc="#cfd6de", ec=INK, lw=0.4, z=3)
+    txt(kx, 27, 20, "PROPOSED", size=5.2, weight="bold", z=9)
+    txt(kx, -11, 22, "442\nBAIRD", size=4.8, color=GREY)
+    txt(kx, 62, 18, "441\nBAIRD", size=4.8, color=GREY)
+    txt(kx, 34, 45, "386 FOREST", size=4.8, color=GREY)
     north_arrow(kx, 66, 42, 4.2, 6)
-    txt(kx, -21, 49.5, "KEY PLAN  ·  1\" = 30'", size=6.2, weight="bold", ha="left")
+    txt(kx, -21, 49.5, "KEY PLAN", size=6.0, weight="bold", ha="left")
     save(fig, "G-001", pdf)
+
+
+def sheet_g002(pdf, m):
+    fig, bg = new_sheet("G-002", "Code analysis and general notes", "No scale", [
+        ("Who stamps what", [
+            "Whether an architect's seal is required",
+            "for a two-family dwelling depends on",
+            "state law and on what the city will",
+            "accept. Expect at minimum:",
+            "· Structural engineer (PE): all S sheets,",
+            "  retaining walls, steel frame, shoring.",
+            "· Geotechnical engineer: soil report.",
+            "· Surveyor: boundary, topo, stake-out.",
+            "· Civil engineer: grading, driveway,",
+            "  drainage, utility taps.",
+            "· Architect: recommended for the code",
+            "  package and the zoning hearing.",
+            "· Licensed plumber, electrician and",
+            "  HVAC contractor under the trade",
+            "  permits.",
+            "Confirm with Morgantown Code",
+            "Enforcement before hiring.",
+        ]),
+    ])
+    L = MARGIN + 0.45
+    bg.text(L, SHEET_H - MARGIN - 0.3, "CODE ANALYSIS AND GENERAL NOTES", fontsize=12, fontweight="bold", va="center")
+    cols = [
+        (L, 4.0, [
+            ("Zoning (Morgantown P&Z Code)", [
+                ("District", "R-2; two-family is permitted"),
+                ("Lot", "2,052 sf deeded; 5,000 min.\nNonconforming, buildable\nunder 1373.04"),
+                ("Frontage", "50 ft (40 min.) ✓"),
+                ("Front setback", "8 ft (10 min.) ✗ or 1363.02(C)"),
+                ("Side setbacks", f"5.0 and {m['w_n']:.1f} to {m['w_s']:.1f} ft (5 min.) ✓"),
+                ("Rear setback", f"{m['r_ne']:.1f} to {m['r_nw']:.1f} ft (20 min.) ✗"),
+                ("Coverage", f"{m['cov']:.0f} % (50 max) ✓"),
+                ("Height", f"{EL_MEAN_ROOF - EL_REF:.1f} ft (35 max) ✓"),
+                ("Storeys", "2 over basement (2.5 max) ✓\nsubject to basement ruling"),
+                ("Min. height", "Two-family: 2 storeys ✓"),
+                ("Parking", "3 provided (1.5 x 2 = 3) ✓"),
+                ("Garage width", "78 % of front (65 max) ✗"),
+                ("Front porch", "73 % of front (50 min.) ✓"),
+                ("HVAC units", "Rear yard, 2 ft+ off side line ✓"),
+                ("Lighting", "Full cutoff, no glare ✓"),
+                ("Sidewalk", "5 ft required; request waiver"),
+            ]),
+            ("Right-of-way rule for this design", [
+                "Nothing permanent is built on city property except\nthe driveway apron, which is permitted work under a\ndriveway permit. Retaining walls, the entry landing,\ndrains, lights, meters, mailboxes and porches all stay\non the lot. Banks beside the apron are regraded,\nnot walled. This avoids an encroachment agreement.",
+            ]),
+        ]),
+        (L + 4.42, 4.0, [
+            ("Building code (2018 IRC, two-family)", [
+                ("Classification", "Two-family dwelling, IRC scope:\nseparate units, 3 storeys or\nfewer above grade"),
+                ("Unit separation", "R302.3: 1-hour floor/ceiling and\nwalls, tight to the roof deck"),
+                ("Garage", "R302.6: 5/8 in. Type X ceiling\nunder habitable rooms; R302.5:\n20-minute door to the stair"),
+                ("Lot-line walls", "R302.1: under 5 ft needs a 1-hour\nwall. All walls here are 5 ft or\nmore; eaves kept 4 ft+ away"),
+                ("Egress", "R311: each unit has a door to\nthe enclosed stair leading\noutside, not through the garage"),
+                ("Stairs", "R311.7: 36 in. wide, 7-3/4 in. max\nriser, 10 in. min. tread, 6'-8\"\nheadroom, handrail 34 to 38 in."),
+                ("Escape windows", "R310: every bedroom"),
+                ("Alarms", "R314 smoke, R315 CO"),
+                ("Guards", "R312: 36 in. at porches, 4 in.\nsphere rule"),
+                ("Ceilings", "R305: 7 ft minimum"),
+                ("Sprinklers", "Confirm state amendment for\ntwo-family dwellings"),
+                ("Accessibility", "Not required for two units"),
+            ]),
+        ]),
+        (L + 8.84, 4.0, [
+            ("Energy (2015 IECC, climate zone 5A)", [
+                ("Ceiling", "R-49"),
+                ("Wood walls", "R-20, or R-13 + R-5 continuous"),
+                ("Basement walls", "R-15 continuous or R-19 cavity"),
+                ("Floor over garage", "R-30"),
+                ("Slab edge", "R-10, 2 ft, at heated rooms"),
+                ("Windows", "U-0.32 or better"),
+                ("Air leakage", "Blower-door test, 5 ACH50 max"),
+            ]),
+            ("Trades (as adopted by West Virginia)", [
+                ("Plumbing", "2018 IPC / IRC Part VII"),
+                ("Mechanical", "2018 IMC / IRC Part V"),
+                ("Electrical", "2020 NEC"),
+                ("Fuel gas", "None: all-electric building"),
+            ]),
+            ("Permits to expect", [
+                "Zoning variance (BZA) · demolition permit and\nutility disconnects · asbestos survey of the 1929\nhouse before demolition · building permit ·\ndriveway and right-of-way work permit · trade\npermits · MUB water and sewer taps · Mon Power\nservice · erosion and sediment controls.",
+            ]),
+            ("Edition check", [
+                "Editions are from the state rule in force when this\nwas prepared. Confirm the editions and any local\namendments with Code Enforcement before design.",
+            ]),
+        ]),
+    ]
+    text_columns(bg, cols, fs=6.3, lh=0.162)
+    save(fig, "G-002", pdf)

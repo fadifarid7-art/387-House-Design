@@ -1,14 +1,58 @@
-# 387 Baird Street, Morgantown WV: purchase research and concept drawings
+# 387 Baird Street, Morgantown WV: purchase research and head-start drawing set
 
-Feasibility study for buying 387 Baird St, removing the existing house, and building a small
-house over a drive-under garage with storage space.
+Research for buying 387 Baird St, removing the existing house, and building a **two-family dwelling
+(two stacked flats) over a 3-car garage with a conditioned owner storage room**.
 
-**Drawing set:** [`drawings/387-Baird-St_Concept-Set.pdf`](drawings/387-Baird-St_Concept-Set.pdf)
-(9 sheets, 11 x 17 in). Individual sheets are in [`drawings/png/`](drawings/png/).
+**Drawing set, Rev B:** [`drawings/387-Baird-St_Permit-Head-Start-Set.pdf`](drawings/387-Baird-St_Permit-Head-Start-Set.pdf)
+(22 sheets, 11 x 17 in). Individual sheets are in [`drawings/png/`](drawings/png/).
 
-> Concept only, not for construction. Prepared without a licence, a boundary survey or a site
-> visit, from public records retrieved 21 Nov 2026. It is meant to be handed to a licensed
-> architect, engineer and surveyor as a starting point.
+> Preliminary, not for construction. This is a coordinated first draft of every discipline so the
+> licensed architect and engineers start from a worked-out scheme. It is not engineered and cannot
+> be stamped as-is: each professional must review, recalculate and take responsibility for their
+> own sheets. No boundary survey, soil report or site visit is behind it.
+
+## Rev B at a glance
+
+| Request | How it is handled |
+|---|---|
+| As many cars as possible | Three, side by side. The lot is 50 ft wide and the 5 ft side setbacks leave a 35'-6" building; three 8'-11" stalls plus the stair fill it. A duplex also requires three spaces (1.5 per unit). |
+| Duplex | Two stacked flats with identical plans, each 2 bed / 1 bath, about 780 sq ft. |
+| Storage in the house | A 17'-0" x 5'-8" room on the garage level, inside the insulated envelope, with a mini-split, dehumidifier and a 16 ft rack. |
+| Tow trucks | Every car has a straight run to a door (no tandem, no stackers), no posts in the apron, a flush threshold, a 16 ft door with no centre post. See sheet C-103. |
+| Entrance | One street-level door to an enclosed common stair for both units, reached by a level landing on the lot. No exterior steps. |
+| Nothing on city property | Only the driveway apron crosses the right-of-way. Walls, landing, drains, meters and porches stay on the lot; banks beside the apron are regraded, not walled. |
+| Follow the code | Side setbacks, coverage (43 %), height (25.6 ft), parking, porch standard, unit separation, egress, stairs, alarms and energy targets are met. The items below cannot be. |
+
+### What cannot meet the code and needs approval
+
+1. **Rear setback.** 5.3 ft at the tightest corner against 20 ft required. The R-2 setbacks leave
+   about 396 sq ft of buildable area on this lot, so no building fits without this variance.
+2. **Front setback.** 8 ft against 10 ft, unless the developed-block averaging rule (1363.02(C))
+   sets it by the neighbouring houses.
+3. **Garage width.** 78 % of the front against a 65 % limit (1337.07(B)(5)). Two cars would
+   comply, but then the duplex is one parking space short, so one or the other needs relief.
+4. **Driveway width** at the street (26 ft against 22 ft) and a **sidewalk waiver**: City Engineer.
+
+### Structure in one paragraph
+
+Concrete walls 12 in. thick retain 8 to 13 ft of soil on three sides and are propped at the top by
+the Unit A floor. Because the garage doors leave almost no front wall, a steel beam on four steel
+columns carries the front of both floors and the roof and resists sideways load; that frame is
+the critical engineered element. Floors are 20 in. open-web wood trusses spanning front to back,
+which keeps the garage column-free. Every member size on the S sheets is a preliminary
+assumption.
+
+### Sheets
+
+| Sheets | Content |
+|---|---|
+| G-001, G-002 | Cover and summary; code analysis and general notes |
+| C-101 to C-103 | Existing site; site plan and zoning; vehicle access and towing |
+| A-101 to A-301 | Garage level, Unit A, Unit B, street elevation, building section |
+| S-001 to S-301 | Structural criteria, foundation, floor framing, roof framing and shear walls, sections |
+| P-101 to P-201 | Plumbing plans, riser diagram and schedules |
+| M-101 | Heat pumps and ventilation, typical unit |
+| E-101 to E-201 | Power and lighting plans, one-line diagram and load calculations |
 
 ## Who owns it and when it last sold
 
@@ -47,84 +91,19 @@ the rear boundary, which matters because the rear setback is the main constraint
 
 Confirmed on the City of Morgantown zoning layer. No overlay district is mapped at the parcel.
 
-| Standard | R-2 requirement | This lot / concept |
+| Standard | R-2 requirement | Rev B design |
 |---|---|---|
-| Minimum lot area | 5,000 sq ft | about 2,050 sq ft (legal nonconforming lot) |
+| Use | Two-family dwelling permitted | Two stacked flats |
+| Minimum lot area | 5,000 sq ft | about 2,050 sq ft (legal nonconforming lot, buildable under 1373.04) |
 | Minimum frontage | 40 ft | 50 ft |
-| Front setback | 10 ft min, 20 ft max | 8 ft shown |
-| Side setback | 5 ft | 5.0 ft east, 5.5 to 8.0 ft west |
-| Rear setback | 20 ft | 5.3 to 15.9 ft shown |
-| Lot coverage | 50 % max | 39 % |
-| Height | 2.5 storeys or 35 ft | 25.6 ft, two storeys over the garage level |
-| Parking | 2 spaces per single-family dwelling | 2 inside |
-
-## What is possible
-
-1. **By right, almost nothing.** Applying the R-2 setbacks to this lot leaves a wedge of about
-   396 sq ft, 4.6 ft deep at the east end and 16 ft at the west. A house or a car does not fit.
-2. **With a rear-setback variance, a 36 x 22 ft building fits**: 792 sq ft per floor, 39 %
-   coverage, 5 ft side yards. A nonconforming lot may be developed if the district standards are
-   met "through design or by approved variance" (section 1373.04).
-3. **The under-garage idea works.** Cutting the garage in at street level (slab about EL 915.5)
-   puts the main floor about level with the rear yard (EL 925.5). The rear and side walls of the
-   garage become retaining walls holding 7.5 to 10.5 ft of soil.
-4. **Tearing the house down ends its grandfathered setbacks.** Under section 1373.06 a
-   nonconforming structure that is voluntarily destroyed must be rebuilt to current standards.
-   Get the variance before demolishing, and make any offer contingent on Board of Zoning Appeals
-   approval.
-5. **Storage for other properties needs a written answer from the city.** R-2 allows indoor
-   storage that is accessory to the dwelling. The code defines a private garage as housing the
-   occupants' automobiles, "not commercial vehicles", and stocking materials for other rental
-   properties could be read as a contractor or warehouse use.
-
-## How many cars
-
-Parking is only possible inside the building. The front yard is 8 ft deep, and of the 15 ft
-between the garage door and the pavement about 7 ft is city right-of-way, so nothing can legally
-park on the apron. The street is one lane with no room to park on it.
-
-| Option | Cars | Storage | Notes |
-|---|---|---|---|
-| A (drawn) | 2 | 177 sq ft room plus shelving | Meets the 2-space minimum |
-| B | 1 | about 370 sq ft | Needs a parking variance |
-| C | 3 | wall shelving only | Slab drops about 1 ft; garage exceeds the 65 % facade limit |
-
-## The concept
-
-- **Lower level** (792 sq ft): 2-car garage 21'-0" x 20'-4" behind one 16 x 8 ft door, and a
-  storage/workshop room 8'-8" x 20'-4" with a loading door at pickup-bed height.
-- **Main level** (792 sq ft): living, dining, kitchen, powder room, laundry; covered front porch;
-  rear door walks out at grade.
-- **Upper level** (792 sq ft): two bedrooms, a study, two baths.
-- 1,584 sq ft of living area over the garage level.
-
-## Sheets
-
-| Sheet | Title |
-|---|---|
-| G-001 | Cover and summary |
-| C-101 | Existing site conditions |
-| C-102 | Zoning envelope and site plan |
-| A-101 | Lower level: garage + storage |
-| A-102 | Main level: living |
-| A-103 | Upper level: bedrooms |
-| A-201 | Street elevation |
-| A-301 | Building section |
-| A-401 | Parking and storage options |
-
-## Open questions for the licensed team
-
-- **Surveyor:** boundary and topographic survey. Public GIS here is good to about 3 to 5 ft, and
-  the three area figures disagree by 140 sq ft.
-- **Planning Division** (389 Spruce St, 304-284-7431): pre-application meeting on the rear
-  setback variance, whether the developed-block averaging rule (1363.02(C)) sets the front
-  setback, whether the garage level counts as a basement or a storey, and the storage use.
-- **Geotechnical and structural engineer:** borings, rock depth, any old mine workings,
-  retaining-wall design, and shoring next to 441 and 442 Baird and 386 Forest.
-- **Civil engineer / City Engineer:** driveway onto an 11 % one-lane street. The street falls
-  about 1.8 ft across the 16 ft door, so the apron has to warp from about 0 % to 12 %.
-- **Architect:** fire separation at the east wall (5 ft from the line) and the north-east corner
-  (5.3 ft), and the three elevations not drawn here.
+| Front setback | 10 ft min, 20 ft max | 8 ft (needs relief or block averaging) |
+| Side setback | 5 ft | 5.0 ft east, 5.5 to 8.5 ft west |
+| Rear setback | 20 ft | 5.3 to 10.9 ft (variance) |
+| Lot coverage | 50 % max | 43 % |
+| Height | 2.5 storeys or 35 ft | 25.6 ft, two storeys over a basement garage |
+| Parking | 1.5 spaces per unit = 3 | 3, all inside |
+| Garage width | 65 % of the front max | 78 % (needs relief) |
+| Front porch | 50 % of the front min | 73 % |
 
 ## Limits of this study
 
@@ -135,6 +114,9 @@ park on the apron. The street is one lane with no room to park on it.
 - The zoning text was read from the city's published 2019 edition of the Planning and Zoning
   Code. The R-2 numbers match the attributes on the city's current zoning layer, but later
   amendments should be checked on Municode.
+- Building code editions (2018 IRC/IPC/IMC, 2020 NEC, 2015 IECC) are from the state rule as last
+  checked; confirm the editions and local amendments with Morgantown Code Enforcement.
+- Utility locations (sewer, water, power) in Baird St are unknown.
 - No cost estimate is included.
 
 ## Sources
@@ -155,5 +137,6 @@ pip install matplotlib numpy pillow pyproj shapely
 python3 src/make_drawings.py
 ```
 
-The source data used is in [`data/`](data/). The design dimensions are constants near the bottom
-of `src/common.py`.
+The source data used is in [`data/`](data/). The design dimensions are constants in the "Proposed
+concept, Rev B" block of `src/common.py`; `src/levels.py` holds the base floor plans that every
+trade sheet is drawn over.

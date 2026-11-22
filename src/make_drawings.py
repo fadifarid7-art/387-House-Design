@@ -1,29 +1,34 @@
-"""Build the 387 Baird St concept drawing set: drawings/387-Baird-St_Concept-Set.pdf + PNG sheets."""
+"""Build the 387 Baird St head-start set (Rev B): drawings/387-Baird-St_Permit-Head-Start-Set.pdf + PNG sheets."""
+import glob
 import os
+
 from matplotlib.backends.backend_pdf import PdfPages
 
-import building_sheets as b
+import arch_sheets as a
 import cover_sheet as c
+import mep_sheets as mp
 import site_sheets as s
+import struct_sheets as st
 from common import ROOT
 
-OUT = os.path.join(ROOT, "drawings", "387-Baird-St_Concept-Set.pdf")
-TMP = OUT + ".tmp"
+OUT_PDF = os.path.join(ROOT, "drawings", "387-Baird-St_Permit-Head-Start-Set.pdf")
+TMP = OUT_PDF + ".tmp"
+for f in glob.glob(os.path.join(ROOT, "drawings", "png", "*.png")):
+    os.remove(f)
 with PdfPages(TMP) as pdf:
-    # site sheets first to obtain computed metrics, cover is re-ordered below
     with PdfPages(os.devnull) as scratch:
         m = s.sheet_c102(scratch)
     c.sheet_g001(pdf, m)
+    c.sheet_g002(pdf, m)
     s.sheet_c101(pdf)
     s.sheet_c102(pdf)
-    b.sheet_a101(pdf)
-    b.sheet_a102(pdf)
-    b.sheet_a103(pdf)
-    b.sheet_a201(pdf)
-    b.sheet_a301(pdf)
-    b.sheet_a401(pdf)
+    s.sheet_c103(pdf)
+    for fn in (a.sheet_a101, a.sheet_a102, a.sheet_a103, a.sheet_a201, a.sheet_a301,
+               st.sheet_s001, st.sheet_s101, st.sheet_s102, st.sheet_s103, st.sheet_s301,
+               mp.sheet_p101, mp.sheet_p102, mp.sheet_p201, mp.sheet_m101, mp.sheet_e101, mp.sheet_e102, mp.sheet_e201):
+        fn(pdf)
     d = pdf.infodict()
-    d["Title"] = "387 Baird Street, Morgantown WV: concept drawing set"
-    d["Subject"] = "Feasibility concept, not for construction"
-os.replace(TMP, OUT)
-print("wrote", OUT, m)
+    d["Title"] = "387 Baird Street, Morgantown WV: two-family dwelling head-start set, Rev B"
+    d["Subject"] = "Preliminary, not for construction"
+os.replace(TMP, OUT_PDF)
+print("wrote", OUT_PDF, len(c.INDEX), "sheets")

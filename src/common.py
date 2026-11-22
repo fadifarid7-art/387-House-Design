@@ -152,15 +152,30 @@ def byright_envelope():
 
 
 # ----------------------------------------------------------------------------
-# Proposed concept (Scheme A)
+# Proposed concept, Rev B: two-family dwelling (stacked flats) over a 3-car garage
 # ----------------------------------------------------------------------------
-BX0, BX1, BY0, BY1 = 9.0, 45.0, 8.0, 30.0      # building footprint, 36' x 22'
-EL_GAR, EL_MAIN, EL_UP = 915.5, 925.5, 935.5    # finished floors
-EL_PLATE = EL_UP + 8.1                           # 8'-1" upper wall
+BX0, BX1, BY0, BY1 = 9.5, 45.0, 8.0, 30.0       # main block, 35'-6" x 22'-0"
+WX1, WY1 = 28.5, 35.0                           # rear wing (west 19'-0"), 5'-0" deeper
+OUT = [(BX0, BY0), (BX1, BY0), (BX1, BY1), (WX1, BY1), (WX1, WY1), (BX0, WY1)]
+IN_L = [(10.5, 8.67), (44.0, 8.67), (44.0, 29.0), (27.5, 29.0), (27.5, 34.0), (10.5, 34.0)]   # inside of concrete
+IN_U = [(10.0, 8.5), (44.5, 8.5), (44.5, 29.5), (28.0, 29.5), (28.0, 34.5), (10.0, 34.5)]     # inside of 2x6 walls
+FOOTPRINT = (BX1 - BX0) * (BY1 - BY0) + (WX1 - BX0) * (WY1 - BY1)
+EL_GAR, EL_MAIN, EL_UP = 914.5, 925.5, 935.5    # finished floors (11'-0" and 10'-0" floor to floor)
+EL_PLATE = EL_UP + 8.1
 EL_RIDGE = EL_PLATE + (BY1 - BY0) / 2 * 0.5      # 6:12 gable, ridge parallel to street
 EL_MEAN_ROOF = (EL_PLATE + EL_RIDGE) / 2
-EL_REF = (915.5 + 926.0) / 2                     # mid-point of lowest/highest grade at footprint
+EL_REF = (914.5 + 927.0) / 2                     # mid-point of lowest/highest grade at footprint
 PAVE_N, PAVE_S = -7.0, -21.0                     # approx. pavement edges (LiDAR profile)
+# garage level
+STALLS = [(10.5, 19.39), (19.39, 28.28), (28.28, 37.17)]
+DOOR_A = (11.4, 27.4)                            # 16'-0" x 8'-0" overhead door, stalls 1-2
+DOOR_B = (28.9, 36.9)                            # 8'-0" x 8'-0" overhead door, stall 3
+ENTRY = (40.9, 43.9)                             # 3'-0" common entry door
+SHAFT_L = (37.5, 44.0, 8.67, 22.3)               # stair shaft, lower level (x0, x1, y0, y1)
+SHAFT_U = (37.5, 44.5, 8.5, 22.2)                # stair shaft, unit levels
+STORE_Y = 28.0                                   # south face of conditioned storage room partition
+APRON = [(DOOR_A[0], BY0), (DOOR_B[1], BY0), (37.7, PAVE_N), (10.6, PAVE_N)]
+REV = "B"
 
 
 def street_el(x):
@@ -183,7 +198,7 @@ SHEET_W, SHEET_H = 17.0, 11.0
 TB_W = 2.9
 MARGIN = 0.35
 PROJECT = "387 BAIRD STREET"
-ISSUE = "CONCEPT STUDY · 21 NOV 2026"
+ISSUE = "REV B · HEAD-START SET · 22 NOV 2026"
 
 
 def ftin(v, zero_in=True):
@@ -211,8 +226,8 @@ def new_sheet(number, title, scale_txt, notes=None):
     bg.text(tx, top - 0.66, "MORGANTOWN, WV 26505", fontsize=8.5, color=INK, va="center")
     bg.text(tx, top - 0.88, "Tax Dist. 13 · Map 29 · Parcel 84", fontsize=7.5, color=GREY, va="center")
     bg.plot([x0, SHEET_W - MARGIN], [top - 1.08, top - 1.08], color=INK, lw=0.6)
-    bg.text(tx, top - 1.30, "REPLACEMENT DWELLING WITH", fontsize=7.6, color=INK, va="center")
-    bg.text(tx, top - 1.48, "DRIVE-UNDER GARAGE / STORAGE", fontsize=7.6, color=INK, va="center")
+    bg.text(tx, top - 1.30, "TWO-FAMILY DWELLING OVER", fontsize=7.6, color=INK, va="center")
+    bg.text(tx, top - 1.48, "3-CAR GARAGE + OWNER STORAGE", fontsize=7.6, color=INK, va="center")
     bg.plot([x0, SHEET_W - MARGIN], [top - 1.68, top - 1.68], color=INK, lw=0.6)
     # notes
     y = top - 1.95
@@ -228,10 +243,10 @@ def new_sheet(number, title, scale_txt, notes=None):
     by = MARGIN
     bg.plot([x0, SHEET_W - MARGIN], [by + 2.55, by + 2.55], color=INK, lw=0.6)
     bg.add_patch(Rectangle((x0 + 0.12, by + 1.52), TB_W - 0.24, 0.92, fill=False, ec=ACCENT, lw=1.1))
-    bg.text(x0 + TB_W / 2, by + 2.12, "CONCEPT · NOT FOR CONSTRUCTION", fontsize=7.6, fontweight="bold",
+    bg.text(x0 + TB_W / 2, by + 2.12, "PRELIMINARY · NOT FOR CONSTRUCTION", fontsize=7.2, fontweight="bold",
             color=ACCENT, ha="center", va="center")
     bg.text(x0 + TB_W / 2, by + 1.80,
-            "Prepared without a licence, boundary survey or site\nvisit. For discussion with a licensed architect,\nengineer and surveyor only.",
+            "Head-start draft, not engineered. No licence, survey,\nsoil report or site visit behind it. For review and\nredesign by the licensed professionals of record.",
             fontsize=5.6, color=ACCENT, ha="center", va="center", linespacing=1.25)
     bg.plot([x0, SHEET_W - MARGIN], [by + 1.40, by + 1.40], color=INK, lw=0.6)
     bg.text(tx, by + 1.22, "SHEET TITLE", fontsize=5.6, color=GREY, va="center")
