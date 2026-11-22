@@ -353,9 +353,11 @@ def site_work(ax, bg=False, labels=False):
     poly(ax, m.WALK, fc="#e7eaee" if not bg else "#f3f4f6", ec=c, lw=0.5, z=2)
     rect(ax, *m.TRASH[:2], *m.TRASH[2:], fc="#dfe3d6" if not bg else "#f3f4f6", ec=c, lw=0.6, z=3)
     if not bg:
+        cw, cd = 26 / 12, 34 / 12
+        step = (m.TRASH[2] - m.TRASH[0] - 0.1) / 4
         for i in range(4):
-            rect(ax, m.TRASH[0] + 0.25 + i * 1.62, m.TRASH[1] + 0.15, m.TRASH[0] + 1.55 + i * 1.62, m.TRASH[3] - 0.25,
-                 fc=PAPER, ec=GREY, lw=0.4, z=4)
+            x0 = m.TRASH[0] + 0.05 + i * step + (step - cw) / 2
+            rect(ax, x0, m.TRASH[1] + 0.12, x0 + cw, m.TRASH[1] + 0.12 + cd, fc=PAPER, ec=GREY, lw=0.4, z=4)
     line(ax, m.WING_W, lw=2.2, color=CONC if not bg else BG_WALL, z=3)
     line(ax, m.WING_E, lw=1.8, color=CONC if not bg else BG_WALL, z=3)
     line(ax, [(m.OPEN[0], m.YF - 0.6), (m.OPEN[1], m.YF - 0.6)], lw=1.4, color=BLUE if not bg else BG_EDGE, z=6)     # trench drain

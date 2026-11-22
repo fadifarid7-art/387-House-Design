@@ -149,9 +149,9 @@ def apron_x(y, side):
     return (OPEN[0] + 1.5 * (1 - t)) if side == 0 else (OPEN[1] - 1.5 * (1 - t))
 
 
-LAND_Y0 = 3.3                                                       # entry landing, level with the garage floor
+LAND_Y0 = 3.67                                                      # entry landing, level with the garage floor
 WALK = [(apron_x(LAND_Y0, 1), LAND_Y0), (XE, LAND_Y0), (XE, YF), (OPEN[1], YF)]
-TRASH = (38.0, 0.5, XE, LAND_Y0)                                    # screened bay for 4 carts, opens onto the landing
+TRASH = (36.0, 0.5, XE, LAND_Y0)                                    # screened bay for 4 carts (26 x 34 in. each), opens onto the landing
 WING_W = [(OPEN[0], YF), (apron_x(0.5, 0), 0.5)]                    # west wing wall beside the apron (retains the front yard)
 WING_E = [(apron_x(0.5, 1) + 0.2, 0.5), (XE + 0.35, 0.5), (XE + 0.35, YF)]   # low wall around the trash bay and landing
 HP = [(xw_o(20.5) - 1.1, 20.5), (xw_o(24.6) - 1.1, 24.6)]           # heat-pump pads A, B: side-discharge units 38 x 15 in.
@@ -575,6 +575,8 @@ def check(verbose=False):
     ok(UTIL[1] - UTIL[0] >= 6.0 and UTIL[3] - UTIL[2] >= 4.3, "utility room too small")
     ok(all(y >= 0.5 - 1e-6 for _, y in WALK + WING_E + WING_W) and TRASH[1] >= 0.5 - 1e-6, "site wall or bay in the right-of-way")
     ok(OPEN_CLEAR_H >= 7.0, "garage opening under 7 ft clear")
+    ok(TRASH[2] - TRASH[0] >= 4 * 26 * IN + 0.1 and TRASH[3] - TRASH[1] >= 34 * IN + 0.3, "trash bay too small for four carts")
+    ok(TRASH[0] >= apron_x(TRASH[3], 1), "trash bay overlaps the apron")
     for st_ in (STACK_1, STACK_2, STACK_3):
         ok(Polygon(IN_U).contains(Point(*st_).buffer(0.17)), "a plumbing stack is outside the building")
     for (hx, hy) in HP:

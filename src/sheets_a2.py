@@ -412,8 +412,8 @@ def front_labels(ax, xl, yl):
         size=4.4, color=ACCENT)
     line(ax, [(XE - 9, zm), (XE + 4.4, zm)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
     txt(ax, XE - 0.5, zm + 0.5, f"MEAN ROOF LEVEL EL {zm:.1f}", size=3.7, color=ACCENT, ha="right", z=12)
-    dim(ax, (XE + 3.7, ag), (XE + 3.7, zm), 0, f"ZONING HEIGHT {ftin(m.zoning_height())} (avg. grade to mean roof)", ext=False, size=4.0, color=ACCENT, side=-1)
-    dim(ax, (XE + 3.7, zm), (XE + 3.7, ag + 35), 0, f"{ftin(35 - m.zoning_height())} SPARE", ext=False, size=4.0, color=ACCENT, side=-1)
+    dim(ax, (XE + 3.6, ag), (XE + 3.6, zm), 0, f"ZONING HEIGHT {ftin(m.zoning_height())} (avg. grade to mean roof)", ext=False, size=4.0, color=ACCENT)
+    dim(ax, (XE + 3.6, zm), (XE + 3.6, ag + 35), 0, f"{ftin(35 - m.zoning_height())} SPARE", ext=False, size=4.0, color=ACCENT)
     line(ax, [(XE - 4, ag), (XE + 4.4, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
     txt(ax, XE + 0.3, ag - 0.6, f"AVG. GRADE EL {ag:.1f}", size=3.7, color=ACCENT, ha="left", z=12)
     # widths
@@ -421,22 +421,22 @@ def front_labels(ax, xl, yl):
     dim(ax, (0, 953.2), (X0, 953.2), 0, ftin(X0), ext=False, size=4.2, color=ACCENT)
     dim(ax, (XE, 953.2), (50, 953.2), 0, ftin(50 - XE), ext=False, size=4.2, color=ACCENT)
     # heights on the east side of the facade
-    xd = 46.3
-    dim(ax, (xd, m.EL_GAR), (xd, m.EL_A), 0, fi(m.EL_A - m.EL_GAR), ext=False, size=4.2, side=-1)
-    dim(ax, (xd, m.EL_A), (xd, m.EL_B), 0, fi(m.EL_B - m.EL_A), ext=False, size=4.2, side=-1)
-    dim(ax, (xd, m.EL_B), (xd, m.EL_PLATE), 0, fi(m.EL_PLATE - m.EL_B, 8), ext=False, size=4.2, side=-1)
+    xd = 46.6
+    dim(ax, (xd, m.EL_GAR), (xd, m.EL_A), 0, fi(m.EL_A - m.EL_GAR), ext=False, size=4.2)
+    dim(ax, (xd, m.EL_A), (xd, m.EL_B), 0, fi(m.EL_B - m.EL_A), ext=False, size=4.2)
+    dim(ax, (xd, m.EL_B), (xd, m.EL_PLATE), 0, fi(m.EL_PLATE - m.EL_B, 8), ext=False, size=4.2)
     for el in (m.EL_GAR, m.EL_A, m.EL_B, m.EL_PLATE):
         line(ax, [(XE + 0.2, el), (xd + 0.5, el)], lw=0.25, color=GREY, z=8)
     # call-outs
     txt(ax, 20.0, Z_B1_BOT + 0.58, "STEEL BEAM B1, DROPPED UNDER THE FLOOR TRUSSES", size=3.6, color=PAPER, z=9)
-    txt(ax, 19.6, 920.9, f"OPEN GARAGE, NO DOORS · {ftin(m.OPEN_W)} x {ftin(m.OPEN_CLEAR_H)} CLEAR", size=4.2, weight="bold", z=9)
+    txt(ax, 19.4, 919.75, f"OPEN GARAGE, NO DOORS · {ftin(m.OPEN_W)} x {ftin(m.OPEN_CLEAR_H)} CLEAR", size=4.2, weight="bold", z=9)
     note(ax, (m.COL_X[1], 919.2), (29.6, 918.6), "HSS 6x6\nPOST", size=3.8, ha="left")
     txt(ax, (m.ENTRY[0] + m.ENTRY[1]) / 2, m.EL_GAR + 2.0, "STREET\nDOOR", size=3.6, z=9)
     note(ax, (m.TRASH[0], m.EL_GAR + 4.2), (41.0, 911.9), "TRASH SCREEN IN FRONT OF THE\nLOBBY WALL (dotted, see C-107)", size=3.8, ha="center")
     note(ax, (9.0, 923.0), (2.0, 918.0), "CONCRETE\nRETURN PIER\n(buried below\nthe front yard)", size=3.8, ha="center")
-    note(ax, (12.6, 918.6), (7.2, 913.2), "WING WALL beside the apron\nretains the front yard (C-107)", size=3.8, ha="center")
+    note(ax, (12.6, 918.6), (6.4, 911.9), "WING WALL beside the apron\nretains the front yard (C-107)", size=3.8, ha="center")
     note(ax, (XE - 0.3, 916.5), (48.0, 914.0), "LOW WALL\nat the landing", size=3.8, ha="left")
-    note(ax, (25.0, elev(25.0, m.YF)), (22.0, 912.2), "EXISTING GROUND AT THE FRONT WALL\n(removed for the garage and landing)", size=3.8, ha="center", color=EARTH)
+    note(ax, (33.2, elev(33.2, m.YF)), (27.0, 911.9), "EXISTING GROUND AT THE FRONT WALL\n(removed for the garage and landing)", size=3.8, ha="center", color=EARTH)
     txt(ax, 3.0, street_el(3.0) - 1.0, "BAIRD ST PAVEMENT (in front), falls 11.4 % east", size=3.9, color=BLUE, rot=-6.5, ha="left", z=12)
     txt(ax, 34.5, m.EL_A - 0.95, "UNIT A PORCH, CANTILEVERED 4'-0\", 36 in. GUARD", size=3.8, z=11)
     txt(ax, 34.5, m.EL_B - 1.1, "UNIT B PORCH, CANTILEVERED 4'-0\", 36 in. GUARD", size=3.8, z=11)
@@ -516,7 +516,7 @@ def rear_labels(ax, xl, yl, wins, ct, ll):
     note(ax, (w1[1] + 1.17, w1[3] + 2), (12.3, 931.6), f"W1 ESCAPE WINDOW\nSILL EL {w1[3]:.1f}", size=3.8, ha="left")
     note(ax, (24.0, np.interp(24.0, [c[0] for c in ct], [c[1] for c in ct]) - 0.25), (16.5, 923.2),
          "CONCRETE STEM WALL carried to 8 in.\nabove finish grade, siding starts there", size=3.8, ha="center")
-    note(ax, (20.5, np.interp(20.5, [c[0] for c in ll], [c[1] for c in ll])), (14.0, 937.6),
+    note(ax, (20.5, np.interp(20.5, [c[0] for c in ll], [c[1] for c in ll])), (14.5, 934.6),
          "EXISTING GROUND AT THE REAR LOT LINE (dotted red)\n5'-2\" in front of this wall; 6 ft fence on the line not drawn", size=3.8, ha="center", color=ACCENT)
     txt(ax, 13.0, 918.6, "dashed brown: existing ground at the wall · solid: finish grade, cut 6 in. for the swale that falls east",
         size=3.7, color=EARTH, z=12)
@@ -943,7 +943,7 @@ def sheet_a202(pdf):
     zt = g + 0.33 + HP_H + 0.6
     dim(ax3, (lx, zt), (hx - d / 2, zt), 0, ftin((hx - d / 2 - lx) * CL), ext=False, size=4.2)
     dim(ax3, (hx - d / 2, zt), (hx + d / 2, zt), 0, "15\"", ext=False, size=4.0)
-    dim(ax3, (lx, 920.2), (xo, 920.2), 0, "5'-2\" WALL TO LOT LINE", ext=False, size=4.2, color=ACCENT)
+    dim(ax3, (lx, 920.2), (xo, 920.2), 0, "5'-2\"", ext=False, size=4.4, color=ACCENT)
     txt(ax3, hx, g + 0.33 + HP_H / 2, "HP", size=4.0, weight="bold", z=9)
     truss_a = [(xo + 0.5, A_T0), (xl3[1], A_T0), (xl3[1], m.EL_A), (xo + 0.5, m.EL_A)]
     poly(ax3, truss_a, fc=WOODC, ec=INK, lw=0.6, z=3)
