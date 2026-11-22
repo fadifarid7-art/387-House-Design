@@ -152,7 +152,7 @@ def byright_envelope():
 
 
 # ----------------------------------------------------------------------------
-# Proposed concept, Rev B: two-family dwelling (stacked flats) over a 3-car garage
+# Proposed concept, Rev C: two-family dwelling (two 3-bed / 3-bath flats) over a 3-car garage
 # ----------------------------------------------------------------------------
 BX0, BX1, BY0, BY1 = 9.5, 45.0, 8.0, 30.0       # main block, 35'-6" x 22'-0"
 WX1, WY1 = 28.5, 35.0                           # rear wing (west 19'-0"), 5'-0" deeper
@@ -171,11 +171,11 @@ STALLS = [(10.5, 19.39), (19.39, 28.28), (28.28, 37.17)]
 DOOR_A = (11.4, 27.4)                            # 16'-0" x 8'-0" overhead door, stalls 1-2
 DOOR_B = (28.9, 36.9)                            # 8'-0" x 8'-0" overhead door, stall 3
 ENTRY = (40.9, 43.9)                             # 3'-0" common entry door
-SHAFT_L = (37.5, 44.0, 8.67, 22.3)               # stair shaft, lower level (x0, x1, y0, y1)
-SHAFT_U = (37.5, 44.5, 8.5, 22.2)                # stair shaft, unit levels
+SHAFT_L = (37.5, 44.0, 8.67, 21.87)               # stair shaft, lower level (x0, x1, y0, y1)
+SHAFT_U = (37.5, 44.5, 8.5, 21.7)                # stair shaft, unit levels
 STORE_Y = 28.0                                   # south face of conditioned storage room partition
 APRON = [(DOOR_A[0], BY0), (DOOR_B[1], BY0), (37.7, PAVE_N), (10.6, PAVE_N)]
-REV = "B"
+REV = "C"
 
 
 def street_el(x):
@@ -198,7 +198,7 @@ SHEET_W, SHEET_H = 17.0, 11.0
 TB_W = 2.9
 MARGIN = 0.35
 PROJECT = "387 BAIRD STREET"
-ISSUE = "REV B · HEAD-START SET · 22 NOV 2026"
+ISSUE = "REV C · HEAD-START SET · 22 NOV 2026"
 
 
 def ftin(v, zero_in=True):

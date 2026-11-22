@@ -1,4 +1,4 @@
-"""Build the 387 Baird St head-start set (Rev B): drawings/387-Baird-St_Permit-Head-Start-Set.pdf + PNG sheets."""
+"""Build the 387 Baird St head-start set (Rev C): drawings/387-Baird-St_Permit-Head-Start-Set.pdf + PNG sheets."""
 import glob
 import os
 
@@ -24,11 +24,20 @@ with PdfPages(TMP) as pdf:
     s.sheet_c102(pdf)
     s.sheet_c103(pdf)
     for fn in (a.sheet_a101, a.sheet_a102, a.sheet_a103, a.sheet_a201, a.sheet_a301,
-               st.sheet_s001, st.sheet_s101, st.sheet_s102, st.sheet_s103, st.sheet_s301,
-               mp.sheet_p101, mp.sheet_p102, mp.sheet_p201, mp.sheet_m101, mp.sheet_e101, mp.sheet_e102, mp.sheet_e201):
+               st.sheet_s001, st.sheet_s101, st.sheet_s102, st.sheet_s103, st.sheet_s104, st.sheet_s301, mp.sheet_p101):
         fn(pdf)
+    mp.unit_plumbing_sheet(pdf, "P-102", "A")
+    mp.unit_plumbing_sheet(pdf, "P-103", "B")
+    mp.sheet_p201(pdf)
+    mp.sheet_m101(pdf)
+    mp.unit_hvac_sheet(pdf, "M-102", "A")
+    mp.unit_hvac_sheet(pdf, "M-103", "B")
+    mp.sheet_e101(pdf)
+    mp.unit_power_sheet(pdf, "E-102", "A")
+    mp.unit_power_sheet(pdf, "E-103", "B")
+    mp.sheet_e201(pdf)
     d = pdf.infodict()
-    d["Title"] = "387 Baird Street, Morgantown WV: two-family dwelling head-start set, Rev B"
+    d["Title"] = "387 Baird Street, Morgantown WV: two-family dwelling head-start set, Rev C"
     d["Subject"] = "Preliminary, not for construction"
 os.replace(TMP, OUT_PDF)
 print("wrote", OUT_PDF, len(c.INDEX), "sheets")

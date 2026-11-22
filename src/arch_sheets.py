@@ -97,19 +97,19 @@ def sheet_a101(pdf):
 
 def unit_sheet(pdf, number, unit, el, notes):
     fig, bg = new_sheet(number, f"Unit {unit} plan", "3/16\" = 1'-0\"", notes)
-    ax = plan_frame(fig, f"Unit {unit} floor plan", f"{'Main' if unit == 'A' else 'Upper'} level · finished floor EL {el:.1f} · 2 bedrooms, 1 bath · ±780 sf net")
+    ax = plan_frame(fig, f"Unit {unit} floor plan", f"{'Main' if unit == 'A' else 'Upper'} level · finished floor EL {el:.1f} · 3 bedrooms, 3 baths · ±780 sf net")
     if unit == "A":
         poly(ax, APRON, fc="none", ec=GREY, lw=0.4, z=2, ls="--")
         txt(ax, 24, 0.8, "driveway apron below", size=4.8, color=GREY)
-        rect(ax, 30, BY1, 44, 34.2, fc="#f3f4f5", ec=GREY, lw=0.5, z=2, ls="--")
-        txt(ax, 37.5, 32.2, "REAR YARD AT GRADE\nheat-pump pads", size=4.8, color=GREY)
+        rect(ax, 29.2, BY1, 44, 34.2, fc="#f3f4f5", ec=GREY, lw=0.5, z=2, ls="--")
+        txt(ax, 37.0, 32.2, "REAR YARD AT GRADE\nheat-pump pads", size=4.8, color=GREY)
     else:
         rect(ax, BX0 - 1, BY0 - 1, BX1 + 1, BY1 + 1, fc="none", ec=GREY, lw=0.4, z=2, ls=(0, (6, 3)))
         txt(ax, 47.2, 12, "ROOF EAVE ABOVE", size=4.4, color=GREY, rot=90)
     porch(ax)
     txt(ax, 22.5, 6.1, "COVERED PORCH  26'-0\" x 4'-0\"  (cantilevered)", size=5.4, weight="bold", box=True)
     unit_plan(ax, "arch", unit)
-    txt(ax, 16, 8.95, "8' SLIDING DOOR", size=4.2, color=GREY)
+    txt(ax, 26, 8.95, "8' SLIDING DOOR", size=4.2, color=GREY)
     txt(ax, 39.2, 10.6, "UNIT\nENTRY", size=4.4, color=RATED)
     dim(ax, (BX0, WY1), (WX1, WY1), 1.6, "19'-0\"", size=5.4)
     dim(ax, (WX1, BY1), (BX1, BY1), 1.6 if unit == "B" else 5.6, "16'-6\"", size=5.4)
@@ -124,36 +124,38 @@ def sheet_a102(pdf):
     unit_sheet(pdf, "A-102", "A", EL_MAIN, [
         ("Unit A (main level)", [
             f"Finished floor EL {EL_MAIN:.1f}, 11'-0\" above the",
-            "garage slab. 2 bedrooms, 1 bath, laundry",
-            "closet. Gross 876 sf including the",
-            "common stair; about 780 sf inside the unit.",
-            "8'-3\" ceilings.",
+            "garage slab. 3 bedrooms, each with its",
+            "own bath and entry hall, plus a shared",
+            "living room / kitchen and laundry.",
+            "Gross 876 sf with the common stair;",
+            "about 780 sf inside the unit. 8'-3\" ceilings.",
+        ]),
+        ("Bedrooms", [
+            "Bedroom 1: 106 sf. Bedroom 2: 81 sf.",
+            "Bedroom 3: 80 sf. The code minimum is",
+            "70 sf and 7 ft in each direction, so",
+            "these are compact rooms.",
+            "Each has an emergency escape window",
+            "on an outside wall (IRC R310): 5.7 sf",
+            "clear, sill 44 in. max above the floor.",
+        ]),
+        ("Baths", [
+            "Three 3/4 baths (shower, toilet, sink),",
+            "each entered only from its own suite.",
+            "Baths 2 and 3 and the laundry share one",
+            "plumbing stack; bath 1 and the kitchen",
+            "share the other.",
         ]),
         ("Access", [
-            "Enter from the common stair landing",
-            "at the front-east corner. The stair is a",
-            "1-hour enclosure with its own street",
-            "door, so neither unit is entered through",
-            "the garage or through the other unit.",
+            "Unit door opens off the common stair",
+            "landing. The stair is a 1-hour enclosure",
+            "with its own street door.",
         ]),
         ("Grade at this level", [
             "Rear grade is ±1 to 1.5 ft above the floor",
             "at the wing and ±0.5 to 2.5 ft below it at",
-            "the east end. The wing's rear wall and",
-            "part of the west wall are concrete to",
-            "3 ft above the floor (see S-301).",
-        ]),
-        ("Bedrooms", [
-            "Each has an emergency escape window",
-            "to the rear yard (IRC R310): 5.7 sf clear,",
-            "sill 44 in. max above the floor.",
-            "Bedroom 2 is 94 sf (70 sf minimum).",
-        ]),
-        ("Two-family design standards", [
-            "Street-facing porch is 26 ft of a 35'-6\"",
-            "front = 73 % (50 % minimum, 1337.07).",
-            "Porch projects 4 ft into the 8 ft front",
-            "yard (half the setback is allowed).",
+            "the east end. The wing's rear wall is",
+            "concrete to 3 ft above the floor (S-301).",
         ]),
     ])
 
@@ -163,17 +165,17 @@ def sheet_a103(pdf):
         ("Unit B (upper level)", [
             f"Finished floor EL {EL_UP:.1f}, 10'-0\" above",
             "Unit A. Same plan as Unit A so the",
-            "kitchens, baths and laundry stack on",
-            "one wet wall. 8'-1\" ceilings, sloping to",
-            "6'-10\" at the rear of the wing.",
+            "kitchens, baths and laundry stack.",
+            "3 bedrooms, 3 baths. 8'-1\" ceilings,",
+            "sloping to 6'-10\" at the rear of the wing.",
         ]),
-        ("Area summary (gross)", [
+        ("Building totals", [
+            "6 bedrooms, 6 private baths, 2 kitchens",
             f"Garage level                         {FOOTPRINT:,.0f} sf",
             f"Unit A level                          {FOOTPRINT:,.0f} sf",
             f"Unit B level                          {FOOTPRINT:,.0f} sf",
             "Each unit, net of stair          ±780 sf",
-            f"Lot coverage  {FOOTPRINT / LOT_AREA_DEED * 100:.0f} % of deeded area",
-            "(50 % maximum)",
+            f"Lot coverage  {FOOTPRINT / LOT_AREA_DEED * 100:.0f} % (50 % maximum)",
         ]),
         ("Separation between units", [
             "IRC R302.3: 1-hour floor/ceiling",
@@ -186,8 +188,8 @@ def sheet_a103(pdf):
             "R-2 allows 2.5 storeys / 35 ft. The",
             "garage level is ±60 % below the average",
             "adjoining grade, so it should rate as a",
-            "basement, not a storey: two storeys",
-            "over a basement. Confirm with Planning.",
+            "basement: two storeys over a basement.",
+            "Confirm with Planning.",
             f"Height to mean roof: {EL_MEAN_ROOF - EL_REF:.1f} ft.",
         ]),
     ])
@@ -215,6 +217,7 @@ def sheet_a201(pdf):
             "at slab level, no steps.",
             "Units A and B: stacked covered porches",
             "cantilevered 4 ft, sliding doors behind.",
+            "Bedrooms are at the rear and sides.",
             "Gable roof, ridge parallel to the street.",
         ]),
         ("Materials (1337.07)", [
@@ -264,10 +267,10 @@ def sheet_a201(pdf):
         line(ax, [(BX0, y), (BX1, y)], lw=0.12, color=LIGHT, z=3)
     line(ax, [(BX0, EL_UP), (BX1, EL_UP)], lw=0.5, z=4)
     for el in (EL_MAIN, EL_UP):
-        rect(ax, 12, el, 20, el + 6.8, fc="#dfe7ee", ec=INK, lw=0.7, z=4)
-        line(ax, [(16, el), (16, el + 6.8)], lw=0.5, z=4)
-        rect(ax, 25, el + 2.6, 30, el + 6.8, fc="#dfe7ee", ec=INK, lw=0.7, z=4)
-        line(ax, [(27.5, el + 2.6), (27.5, el + 6.8)], lw=0.5, z=4)
+        rect(ax, 22, el, 30, el + 6.8, fc="#dfe7ee", ec=INK, lw=0.7, z=4)
+        line(ax, [(26, el), (26, el + 6.8)], lw=0.5, z=4)
+        rect(ax, 12, el + 2.6, 17, el + 6.8, fc="#dfe7ee", ec=INK, lw=0.7, z=4)
+        line(ax, [(14.5, el + 2.6), (14.5, el + 6.8)], lw=0.5, z=4)
         rect(ax, 39.5, el + 3.4, 43, el + 7.2, fc="#dfe7ee", ec=INK, lw=0.7, z=4)
         # cantilevered porch
         rect(ax, 9.5, el - 0.9, 35.5, el, fc="#e9e4d9", ec=INK, lw=0.8, z=10)
@@ -344,7 +347,9 @@ def section_base(ax, XS, xl, bottom, labels=True):
     rect(ax, WY1 - 0.52, EL_MAIN + 3.4, WY1 + 0.02, EL_MAIN + 7.0, fc=PAPER, ec=INK, lw=0.4, z=7)
     rect(ax, WY1 - 0.52, EL_UP + 2.4, WY1 + 0.02, EL_UP + 6.0, fc=PAPER, ec=INK, lw=0.4, z=7)
     for el in (EL_MAIN, EL_UP):                                                                  # partition at y=20
-        rect(ax, 20, el, 20.375, (EL_UP - 1.73) if el == EL_MAIN else EL_PLATE, fc=POCHE, z=6)
+        top_el = (EL_UP - 1.73) if el == EL_MAIN else EL_PLATE
+        rect(ax, 18.5, el + 6.8, 18.9, top_el, fc=POCHE, z=6)                                      # door head, hall 1
+        rect(ax, 23.5, el + 6.8, 23.9, top_el, fc=POCHE, z=6)
     # roof: 6:12 gable over the 22 ft block, 3:12 broken pitch over the wing
     ym = (BY0 + BY1) / 2
     top = [(BY0 - 1.2, EL_PLATE - 0.6), (ym, EL_RIDGE), (BY1, EL_PLATE), (WY1 + 1.2, EL_PLATE - 1.55)]
@@ -407,10 +412,12 @@ def sheet_a301(pdf):
         ax.add_patch(plt.Circle((wx, EL_GAR + 1.05), 1.05, fc=PAPER, ec=FURN, lw=0.6, zorder=6))
     txt(ax, 18, EL_GAR + 7.0, "GARAGE", size=6.2, weight="bold")
     txt(ax, 31.2, EL_GAR + 5.0, "OWNER\nSTORAGE", size=5.0, weight="bold")
-    txt(ax, 14, EL_MAIN + 4.4, "UNIT A · LIVING", size=6.0, weight="bold")
-    txt(ax, 27.5, EL_MAIN + 4.4, "BEDROOM 1", size=5.6, weight="bold")
-    txt(ax, 14, EL_UP + 4.2, "UNIT B · LIVING", size=6.0, weight="bold")
-    txt(ax, 27.5, EL_UP + 4.2, "BEDROOM 1", size=5.6, weight="bold")
+    txt(ax, 13.4, EL_MAIN + 4.4, "UNIT A · LIVING", size=5.8, weight="bold")
+    txt(ax, 21.2, EL_MAIN + 4.4, "HALL", size=4.6, color=GREY)
+    txt(ax, 29.3, EL_MAIN + 4.4, "BEDROOM 1", size=5.6, weight="bold")
+    txt(ax, 13.4, EL_UP + 4.2, "UNIT B · LIVING", size=5.8, weight="bold")
+    txt(ax, 21.2, EL_UP + 4.2, "HALL", size=4.6, color=GREY)
+    txt(ax, 29.3, EL_UP + 4.2, "BEDROOM 1", size=5.6, weight="bold")
     txt(ax, 19, EL_PLATE + 2.0, "ATTIC / TRUSSES · 6:12", size=4.8, color=GREY)
     txt(ax, 1.4, EL_MAIN + 5.2, "PORCH", size=4.6)
     txt(ax, 1.4, EL_UP + 5.2, "PORCH", size=4.6)

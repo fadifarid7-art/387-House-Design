@@ -7,10 +7,12 @@ INDEX = [("G-001", "Cover and summary"), ("G-002", "Code analysis and general no
          ("A-101", "Garage level plan"), ("A-102", "Unit A plan"), ("A-103", "Unit B plan"),
          ("A-201", "Street elevation"), ("A-301", "Building section"),
          ("S-001", "Structural notes and criteria"), ("S-101", "Foundation plan"), ("S-102", "Unit A floor framing"),
-         ("S-103", "Roof framing and shear walls"), ("S-301", "Structural sections"),
-         ("P-101", "Plumbing: garage level"), ("P-102", "Plumbing: typical unit"), ("P-201", "Plumbing riser and schedules"),
-         ("M-101", "Mechanical: typical unit"),
-         ("E-101", "Electrical: garage level"), ("E-102", "Electrical: typical unit"), ("E-201", "One-line diagram and loads")]
+         ("S-103", "Unit B floor framing"), ("S-104", "Roof framing and shear walls"), ("S-301", "Structural sections"),
+         ("P-101", "Plumbing: garage level"), ("P-102", "Plumbing: Unit A"), ("P-103", "Plumbing: Unit B"),
+         ("P-201", "Plumbing riser and schedules"),
+         ("M-101", "Mechanical: garage level"), ("M-102", "Mechanical: Unit A"), ("M-103", "Mechanical: Unit B"),
+         ("E-101", "Electrical: garage level"), ("E-102", "Electrical: Unit A"), ("E-103", "Electrical: Unit B"),
+         ("E-201", "One-line diagram and loads")]
 
 
 def sheet_g001(pdf, m):
@@ -20,16 +22,16 @@ def sheet_g001(pdf, m):
     top = SHEET_H - MARGIN
     bg.text(tx, top - 1.95, "DRAWING INDEX", fontsize=7.2, fontweight="bold", va="top")
     for i, (n, t) in enumerate(INDEX):
-        bg.text(tx, top - 2.2 - i * 0.176, n, fontsize=6.3, fontweight="bold", va="top")
-        bg.text(tx + 0.6, top - 2.2 - i * 0.176, t, fontsize=6.3, va="top")
-    bg.text(tx, top - 6.3, "SOURCES", fontsize=7.2, fontweight="bold", va="top")
+        bg.text(tx, top - 2.2 - i * 0.158, n, fontsize=5.9, fontweight="bold", va="top")
+        bg.text(tx + 0.6, top - 2.2 - i * 0.158, t, fontsize=5.9, va="top")
+    bg.text(tx, top - 6.62, "SOURCES", fontsize=7.2, fontweight="bold", va="top")
     src = ["County assessment record, parcel", "31-13-0029-0084-0000 · tax map 09-0029", "City of Morgantown zoning layer + code",
            "WV State Building Code, 87 CSR 4", "WV 1 m LiDAR · public GIS, 21 Nov 2026"]
     for i, s in enumerate(src):
-        bg.text(tx, top - 6.55 - i * 0.16, s, fontsize=5.8, va="top", color=INK)
+        bg.text(tx, top - 6.86 - i * 0.155, s, fontsize=5.6, va="top", color=INK)
     L = MARGIN + 0.45
     bg.text(L, top - 0.62, "387 BAIRD STREET", fontsize=30, fontweight="bold", va="center")
-    bg.text(L, top - 1.08, "Two-family dwelling over a 3-car garage with owner storage · head-start permit set, Rev B",
+    bg.text(L, top - 1.08, "Two-family dwelling, six bedrooms and six baths, over a 3-car garage · head-start permit set, Rev C",
             fontsize=12, va="center", color=INK)
     bg.text(L, top - 1.40, "Morgantown, Monongalia County, West Virginia 26505 · Tax District 13 (5th Ward), Map 29, Parcel 84 · Zoned R-2",
             fontsize=8, va="center", color=GREY)
@@ -43,12 +45,13 @@ def sheet_g001(pdf, m):
             ]),
             ("The building", [
                 ("Garage level", "3 cars side by side + 96 sf\nconditioned owner storage,\nlobby, mech room"),
-                ("Unit A", "Main level, 2 bed / 1 bath,\n±780 sf"),
+                ("Unit A", "Main level, 3 bedrooms each\nwith a private bath, ±780 sf"),
                 ("Unit B", "Upper level, same plan"),
+                ("Total", "6 bedrooms, 6 baths"),
                 ("Footprint", f"{FOOTPRINT:,.0f} sf, {m['cov']:.0f} % of the lot"),
                 ("Height", f"{EL_MEAN_ROOF - EL_REF:.1f} ft, 2 storeys over a\nbasement garage"),
                 ("Structure", "Concrete retaining walls,\nsteel frame at the doors,\nwood trusses and walls"),
-                ("Services", "All-electric: heat pumps,\nelectric water heaters,\n400 A service, 3 meters"),
+                ("Services", "All-electric: heat pumps, 80 gal\nwater heaters, 400 A service"),
             ]),
             ("The property", [
                 ("Owner of record", "R & L RENTALS LLC"),
@@ -60,8 +63,9 @@ def sheet_g001(pdf, m):
         (c2, 4.0, [
             ("How your requests were handled", [
                 ("Most cars", "Three. The lot is 50 ft wide and\nside setbacks leave 35'-6\". Three\n8'-11\" stalls and the stair fill it.\nA duplex also requires three."),
-                ("Duplex", "Two stacked flats with identical\nplans so plumbing and structure\nline up."),
-                ("Storage", "Inside the insulated envelope on\nthe garage level, with a 16 ft rack."),
+                ("Six bedrooms", "Three per flat, each with its own\nbath and entry hall. Rooms are\n80 to 106 sf (70 sf minimum)."),
+                ("Every floor drawn", "Each trade has a separate sheet\nfor the garage, Unit A and Unit B."),
+                ("Storage", "One 96 sf conditioned room on\nthe garage level, 16 ft rack."),
                 ("Tow trucks", "Each car has its own straight run\nto a door; no posts in the apron;\nflush floor. See C-103."),
                 ("Entrance", "One street-level door to a common\nstair, reached by a landing on the\nlot. No steps."),
                 ("City property", "Only the driveway apron is in the\nright-of-way. No walls, steps, posts\nor porches cross the lot line."),
@@ -160,7 +164,8 @@ def sheet_g002(pdf, m):
                 ("Lot-line walls", "R302.1: under 5 ft needs a 1-hour\nwall. All walls here are 5 ft or\nmore; eaves kept 4 ft+ away"),
                 ("Egress", "R311: each unit has a door to\nthe enclosed stair leading\noutside, not through the garage"),
                 ("Stairs", "R311.7: 36 in. wide, 7-3/4 in. max\nriser, 10 in. min. tread, 6'-8\"\nheadroom, handrail 34 to 38 in."),
-                ("Escape windows", "R310: every bedroom"),
+                ("Escape windows", "R310: all six bedrooms"),
+                ("Room sizes", "R304: 70 sf and 7 ft minimum;\nsmallest bedroom is 80 sf"),
                 ("Alarms", "R314 smoke, R315 CO"),
                 ("Guards", "R312: 36 in. at porches, 4 in.\nsphere rule"),
                 ("Ceilings", "R305: 7 ft minimum"),

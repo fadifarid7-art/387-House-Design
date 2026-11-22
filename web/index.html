@@ -81,9 +81,9 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
 
 <div class="wrap">
   <header class="cover">
-    <div class="eyebrow">Morgantown, WV 26505 · Tax District 13 · Map 29 · Parcel 84 · Zoned R-2 · Rev B</div>
+    <div class="eyebrow">Morgantown, WV 26505 · Tax District 13 · Map 29 · Parcel 84 · Zoned R-2 · Rev C</div>
     <h1>387 Baird Street</h1>
-    <p class="lede">A two-family dwelling over a three-car garage with a conditioned owner storage room. Twenty-two coordinated sheets across architecture, structure, plumbing, mechanical and electrical, prepared as a head start for the licensed architect and engineers.</p>
+    <p class="lede">A two-family dwelling with six bedrooms and six private baths over a three-car garage with a conditioned owner storage room. Twenty-seven coordinated sheets across architecture, structure, plumbing, mechanical and electrical, with every floor drawn for every trade, prepared as a head start for the licensed architect and engineers.</p>
     <div class="stamp">Preliminary · not for construction · not engineered</div>
   </header>
 
@@ -93,7 +93,7 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
 
   <dl class="facts">
     <div><dt>Cars</dt><dd>3, side by side<small>Each with a straight run to a door. A duplex requires three.</small></dd></div>
-    <div><dt>Units</dt><dd>2 stacked flats<small>2 bed / 1 bath, about 780 sq ft each, identical plans</small></dd></div>
+    <div><dt>Bedrooms</dt><dd>6, each with a private bath<small>Two stacked flats of 3 bedrooms and 3 baths, about 780 sq ft each</small></dd></div>
     <div><dt>Owner storage</dt><dd>17'-0" x 5'-8", conditioned<small>Garage level, inside the insulated envelope, 16 ft rack</small></dd></div>
     <div><dt>Footprint</dt><dd>876 sq ft, 43 % of the lot<small>25.6 ft high, two storeys over a basement garage</small></dd></div>
   </dl>
@@ -106,8 +106,9 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
       <thead><tr><th>Request</th><th>In the design</th></tr></thead>
       <tbody>
         <tr><td>As many cars as possible</td><td>Three. The lot is 50 ft wide and the side setbacks leave a 35'-6" building; three 8'-11" stalls and the stair fill it.</td></tr>
-        <tr><td>Duplex</td><td>Two stacked flats with the same plan, so kitchens, baths and structure line up.</td></tr>
-        <tr><td>Storage inside the house</td><td>A room behind stalls 1 and 2, insulated and conditioned, on the house meter.</td></tr>
+        <tr><td>Six bedrooms with private baths</td><td>Three per flat. Each bedroom has its own entry hall, bath and escape window. Rooms are 80 to 106 sq ft; the code minimum is 70.</td></tr>
+        <tr><td>All floor plans</td><td>Each trade has a separate sheet for the garage level, Unit A and Unit B.</td></tr>
+        <tr><td>Storage inside the house</td><td>One room behind stalls 1 and 2, insulated and conditioned, on the house meter. The separate suite was dropped.</td></tr>
         <tr><td>Easy for tow trucks</td><td>No tandem or stacked cars, no posts in the apron, a flush threshold, and a 16 ft door with no centre post. Sheet C-103 shows the two-move tow.</td></tr>
         <tr><td>Entrance</td><td>One street-level door to an enclosed common stair, reached by a level landing on the lot. No exterior steps.</td></tr>
         <tr><td>Nothing on city property</td><td>Only the driveway apron crosses the right-of-way. Walls, landing, drains, meters and porches stay on the lot.</td></tr>
@@ -122,7 +123,7 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
     <table>
       <thead><tr><th>Standard</th><th>R-2 requires</th><th>Design</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td>Use</td><td>Two-family permitted</td><td>Two stacked flats</td><td class="ok">Meets</td></tr>
+        <tr><td>Use</td><td>Two-family permitted</td><td>Two flats, 3 bedrooms and 3 baths each</td><td class="ok">Meets</td></tr>
         <tr><td>Lot area</td><td>5,000 sq ft minimum</td><td>about 2,050 sq ft</td><td class="warn">Legal nonconforming lot</td></tr>
         <tr><td>Side setbacks</td><td>5 ft</td><td>5.0 ft east, 5.5 to 8.5 ft west</td><td class="ok">Meets</td></tr>
         <tr><td>Lot coverage</td><td>50 % maximum</td><td>43 %</td><td class="ok">Meets</td></tr>
@@ -157,7 +158,7 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
     </ul>
 
     <h2>Drawing set</h2>
-    <p>Twenty-two sheets drawn for 11 x 17 in paper. Select a sheet to enlarge it. The print-ready PDF and the scripts that generate it are in the project repository.</p>
+    <p>Twenty-seven sheets drawn for 11 x 17 in paper. Select a sheet to enlarge it. The print-ready PDF and the scripts that generate it are in the project repository.</p>
     <nav class="index" aria-label="Sheets" id="sheet-index"></nav>
   </div>
 
@@ -191,7 +192,7 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
       <li><a href="https://firemarshal.wv.gov/media/39311/download?inline=">West Virginia State Building Code rule, 87 CSR 4</a></li>
       <li>WV statewide parcel service, 1 m LiDAR DEM and 2026 orthophoto, WV GIS Technical Center</li>
     </ul>
-    <footer>Rev B, 22 November 2026. Records retrieved 21 November 2026. Elevations are NAVD88 feet from state LiDAR.</footer>
+    <footer>Rev C, 22 November 2026. Records retrieved 21 November 2026. Elevations are NAVD88 feet from state LiDAR.</footer>
   </div>
 </div>
 
@@ -203,21 +204,26 @@ const SHEETS = [
   ["C-102", "Site plan and zoning", "The red tint is all the R-2 setbacks leave. The heavy outline is the proposed footprint."],
   ["C-103", "Vehicle access and towing", "A wheel-lift wrecker hooking up to stall 2 and leaving downhill."],
   ["A-101", "Garage level plan", "Three cars, the conditioned storage room, lobby, stair and mech room."],
-  ["A-102", "Unit A plan", "Main-level flat: two bedrooms, one bath, covered porch."],
+  ["A-102", "Unit A plan", "Main-level flat: three bedrooms, each with its own bath and entry hall."],
   ["A-103", "Unit B plan", "Upper-level flat, same plan as Unit A."],
   ["A-201", "Street elevation", "From Baird Street looking north. The dashed blue line is the pavement."],
   ["A-301", "Building section", "Cut through the garage, storage room and rear wing. The dashed brown line is the existing ground."],
   ["S-001", "Structural notes and criteria", "Assumed loads, materials, structural system and preliminary member schedule."],
   ["S-101", "Foundation plan", "Footings, slab, column pads, footing drain and sump."],
   ["S-102", "Unit A floor framing", "Floor trusses and the steel frame across the garage doors."],
-  ["S-103", "Roof framing and shear walls", "Roof trusses and the wall lines that resist sideways load."],
+  ["S-103", "Unit B floor framing", "Floor trusses bearing on Unit A's walls, with headers over the front openings."],
+  ["S-104", "Roof framing and shear walls", "Roof trusses and the wall lines that resist sideways load."],
   ["S-301", "Structural sections", "Retaining wall at its tallest point and the front steel frame, with a rough gravity check."],
-  ["P-101", "Plumbing: garage level", "Water service, water heaters, building drain, trench drain and sump."],
-  ["P-102", "Plumbing: typical unit", "Supply, waste and vent piping for one flat."],
-  ["P-201", "Plumbing riser and schedules", "Riser diagram, fixture schedule and pipe sizes."],
-  ["M-101", "Mechanical: typical unit", "Heat-pump heads, outdoor units, bath, range and dryer exhaust."],
+  ["P-101", "Plumbing: garage level", "Water service, water heaters, both stacks, building drain, trench drain and sump."],
+  ["P-102", "Plumbing: Unit A", "Supply, waste and vent piping for three baths, kitchen and laundry."],
+  ["P-103", "Plumbing: Unit B", "Same layout on the upper floor, with vents through the roof."],
+  ["P-201", "Plumbing riser and schedules", "Two-stack riser diagram, fixture schedule and pipe sizes."],
+  ["M-101", "Mechanical: garage level", "Storage room heat pump and dehumidifier, heaters, optional garage exhaust."],
+  ["M-102", "Mechanical: Unit A", "Four heat-pump heads, three bath fans, range hood and dryer vent."],
+  ["M-103", "Mechanical: Unit B", "Same layout on the upper floor."],
   ["E-101", "Electrical: garage level", "Meter stack, house panel, lighting, receptacles and EV-ready conduits."],
-  ["E-102", "Electrical: typical unit", "Receptacles, lighting, alarms and the unit panel."],
+  ["E-102", "Electrical: Unit A", "Receptacles, lighting, alarms and the unit panel."],
+  ["E-103", "Electrical: Unit B", "Same layout on the upper floor."],
   ["E-201", "One-line diagram and loads", "Service one-line, load calculations and service size."]
 ];
 const host = document.getElementById("sheets");

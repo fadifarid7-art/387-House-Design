@@ -170,6 +170,7 @@ def sheet_c102(pdf):
     notes = [
         ("Zoning: R-2 district", [
             "Two-family dwelling: permitted use.",
+            "Each flat: 3 bedrooms, 3 baths.",
             "Min. lot 5,000 sf / 40 ft frontage",
             "Setbacks: front 10 to 20, side 5, rear 20",
             "Max. coverage 50 % · 2.5 storeys / 35 ft",
@@ -213,7 +214,7 @@ def sheet_c102(pdf):
     txt(ax, 53.5, 10, "10' FRONT\nSETBACK", size=5.0, color=ACCENT, ha="left")
     txt(ax, 53.5, rear_setback_y(50) - 0.2, "20' REAR\nSETBACK", size=5.0, color=ACCENT, ha="left")
     txt(ax, 27, 27.4, "PROPOSED TWO-FAMILY DWELLING", size=7.0, weight="bold", z=12)
-    txt(ax, 27, 25.4, f"{FOOTPRINT:,.0f} sf footprint · 2 storeys over a 3-car garage", size=5.6, z=12)
+    txt(ax, 27, 25.4, f"{FOOTPRINT:,.0f} sf footprint · two 3-bed / 3-bath flats over a 3-car garage", size=5.6, z=12)
     txt(ax, 27, 23.7, f"Garage slab EL {EL_GAR:.1f} · Unit A EL {EL_MAIN:.1f} · Unit B EL {EL_UP:.1f}", size=5.4, z=12)
     txt(ax, 19, 32.6, "REAR WING 19' x 5'", size=5.0, z=12)
     txt(ax, 22.5, 6.0, "PORCHES OVER (CANTILEVERED 4')", size=4.7, color=BLUE, z=12, box=True)
@@ -221,9 +222,9 @@ def sheet_c102(pdf):
     txt(ax, 41.2, 5.4, "ENTRY\nLANDING", size=4.6, color=BLUE, z=12)
     txt(ax, 62, -3.5, "CITY RIGHT-OF-WAY (tinted):\ndriveway apron only", size=5.0, color=ACCENT)
     txt(ax, -6, -3.5, "bank graded\nback 2:1,\nno wall", size=4.6, color=ACCENT)
-    for x in (31.5, 35.5, 39.5):
-        rect(ax, x - 1.5, 31.2, x + 1.5, 33.4, fc=PAPER, ec=BLUE, lw=0.6, z=9)
-    txt(ax, 35.5, 34.6, "HEAT-PUMP PADS", size=4.4, color=BLUE, z=12)
+    for x in (30.6, 33.6, 36.6):
+        rect(ax, x - 1.2, 31.2, x + 1.2, 33.4, fc=PAPER, ec=BLUE, lw=0.6, z=9)
+    txt(ax, 33.6, 34.6, "HEAT-PUMP PADS", size=4.4, color=BLUE, z=12)
     dim(ax, (BX0, WY1), (WX1, WY1), 1.3, "19'-0\"", size=5.2)
     dim(ax, (BX1, BY0), (BX1, BY1), -1.3, "22'-0\"", size=5.2, side=-1)
     dim(ax, (BX0, 36.9), (BX1, 36.9), 0, "35'-6\"", size=5.2, ext=False)

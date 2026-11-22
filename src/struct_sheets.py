@@ -208,9 +208,35 @@ def sheet_s101(pdf):
     save(fig, "S-101", pdf)
 
 
-def framing_base(ax, level_fn):
-    st = level_fn(ax, "bg") if level_fn is not unit_plan else unit_plan(ax, "bg", "A")
-    return st
+TR = "#7a5c2e"
+
+
+def floor_framing(ax, over_garage):
+    """Floor trusses at 16 in. o.c. spanning front to back; common to both unit floors."""
+    shaft = SHAFT_L if over_garage else SHAFT_U
+    y_front = FRAME_Y if over_garage else BY0 + 0.25
+    for x in np.arange(10.17, 28.4, 16 / 12):
+        line(ax, [(x, y_front), (x, 34.5)], lw=0.35, color=TR, z=7)
+        line(ax, [(x, 4.0), (x, y_front)], lw=0.35, color=TR, z=7, ls=(0, (3, 2)))
+    for x in np.arange(28.83, 37.1, 16 / 12):
+        line(ax, [(x, y_front), (x, 29.5)], lw=0.35, color=TR, z=7)
+        if x < 35.5:
+            line(ax, [(x, 4.0), (x, y_front)], lw=0.35, color=TR, z=7, ls=(0, (3, 2)))
+    for x in np.arange(38.2, 44.4, 16 / 12):
+        line(ax, [(x, shaft[3] + 0.3), (x, 29.5)], lw=0.35, color=TR, z=7)
+    rect(ax, 9.5, 4.0, 35.5, BY0, fc="none", ec=TR, lw=0.7, z=7, ls=(0, (3, 2)))
+    for x in (28.5, 37.3):
+        line(ax, [(x, y_front), (x, 29.5 if x > 30 else 34.5)], lw=1.3, color=TR, z=8)
+    txt(ax, 29.7, 26.6, "GT1", size=4.8, color=TR, weight="bold", rot=90, box=True)
+    txt(ax, 36.2, 26.6, "GT1", size=4.8, color=TR, weight="bold", rot=90, box=True)
+    rect(ax, shaft[0], shaft[2], shaft[1], shaft[3], fc="none", ec=INK, lw=0.6, z=8, hatch="xx")
+    txt(ax, 40.75, 15.2, "STAIR\nOPENING", size=5.0, weight="bold", box=True, z=10)
+    txt(ax, 19.2, 27.6, "FT1 · 20\" OPEN-WEB FLOOR TRUSSES @ 16\" O.C.", size=5.2, weight="bold", box=True, z=10)
+    txt(ax, 19.2, 26.4, "span 26'-4\" · front bearing to wing rear wall", size=4.8, box=True, z=10)
+    txt(ax, 33.0, 14.5, "FT1 @ 16\"\nspan 21'-4\"", size=4.8, box=True, z=10)
+    txt(ax, 41.2, 26.0, "FT1 @ 16\"\nspan 7'", size=4.4, box=True, z=10)
+    txt(ax, 22.5, 2.9, "4'-0\" PORCH CANTILEVER (TRUSS TOP CHORD EXTENDS) · 60 PSF LIVE", size=4.6, color=TR)
+    ax.annotate("", xy=(14, 33.6), xytext=(14, 9.4), arrowprops=dict(arrowstyle="<|-|>", lw=0.6, color=INK), zorder=10)
 
 
 def sheet_s102(pdf):
@@ -223,8 +249,7 @@ def sheet_s102(pdf):
             "garage stays column-free.",
             "Top-chord cantilever 4'-0\" for the porch.",
             "Truss maker designs to L/480 live load",
-            "with the loads on S-001. Unit B floor is",
-            "the same, bearing on 2x6 walls.",
+            "with the loads on S-001.",
         ]),
         ("Front frame (critical)", [
             "B1: W12 steel beam on C1-C4. It",
@@ -236,7 +261,7 @@ def sheet_s102(pdf):
         ]),
         ("Stair opening", [
             "Shaft walls run full height in concrete",
-            "or CMU to Unit A floor, wood above.",
+            "or CMU to this floor, wood above.",
             "Girder truss GT1 each side.",
         ]),
         ("Diaphragm", [
@@ -245,47 +270,75 @@ def sheet_s102(pdf):
             "floor to the concrete walls before",
             "backfilling: it props the walls.",
         ]),
+        ("Loads from above", [
+            "Six bathrooms and two kitchens sit on",
+            "these floors: allow for tile and",
+            "fixture dead load in the truss design.",
+        ]),
     ]
     fig, bg = new_sheet("S-102", "Unit A floor framing", "3/16\" = 1'-0\"", notes)
-    ax = plan_frame(fig, "Unit A floor framing plan", f"Framing at EL {EL_MAIN:.1f} over the garage · walls below shown grey · preliminary", street=False)
+    ax = plan_frame(fig, "Unit A floor framing plan", f"Framing at EL {EL_MAIN:.1f} over the garage · garage walls below shown grey · preliminary", street=False)
     lower_plan(ax, "bg", cars=False)
-    # trusses
-    for x in np.arange(10.17, 28.4, 16 / 12):
-        line(ax, [(x, FRAME_Y), (x, 34.5)], lw=0.35, color="#7a5c2e", z=7)
-        if x < 35.5:
-            line(ax, [(x, 4.0), (x, FRAME_Y)], lw=0.35, color="#7a5c2e", z=7, ls=(0, (3, 2)))
-    for x in np.arange(28.83, 37.1, 16 / 12):
-        line(ax, [(x, FRAME_Y), (x, 29.5)], lw=0.35, color="#7a5c2e", z=7)
-        if x < 35.5:
-            line(ax, [(x, 4.0), (x, FRAME_Y)], lw=0.35, color="#7a5c2e", z=7, ls=(0, (3, 2)))
-    for x in np.arange(38.2, 44.4, 16 / 12):
-        line(ax, [(x, 22.5), (x, 29.5)], lw=0.35, color="#7a5c2e", z=7)
-    rect(ax, 9.5, 4.0, 35.5, BY0, fc="none", ec="#7a5c2e", lw=0.7, z=7, ls=(0, (3, 2)))
-    for x in (28.5, 37.3):
-        line(ax, [(x, FRAME_Y), (x, 29.5 if x > 30 else 34.5)], lw=1.3, color="#7a5c2e", z=8)
-    txt(ax, 29.7, 26.6, "GT1", size=4.8, color="#7a5c2e", weight="bold", rot=90, box=True)
-    txt(ax, 36.2, 26.6, "GT1", size=4.8, color="#7a5c2e", weight="bold", rot=90, box=True)
-    # stair opening
-    rect(ax, 37.5, 8.67, 44.0, 22.3, fc="none", ec=INK, lw=0.6, z=8, hatch="xx")
-    txt(ax, 40.75, 15.5, "STAIR\nOPENING", size=5.0, weight="bold", box=True, z=10)
-    # steel frame
+    floor_framing(ax, True)
     line(ax, [(BX0, FRAME_Y), (BX1, FRAME_Y)], lw=3.0, color=STEEL, z=9)
     for i, cx in enumerate(COLS):
         rect(ax, cx - 0.35, FRAME_Y - 0.35, cx + 0.35, FRAME_Y + 0.35, fc=PAPER, ec=STEEL, lw=1.4, z=10)
         txt(ax, cx, 10.2, f"C{i + 1}", size=4.8, color=STEEL, weight="bold", box=True, z=11)
     txt(ax, 19.4, 6.4, "B1  W12 STEEL BEAM, CONTINUOUS OVER C2 AND C3 (PRELIM.) · FRAME RESISTS LATERAL LOAD AT THE OPEN FRONT", size=4.6, color=STEEL, box=True, z=11)
-    txt(ax, 19.2, 22.5, "FT1 · 20\" OPEN-WEB FLOOR TRUSSES @ 16\" O.C.", size=5.2, weight="bold", box=True, z=10)
-    txt(ax, 19.2, 21.3, "span 26'-4\" · bear on B1 and on the wing rear wall", size=4.8, box=True, z=10)
-    txt(ax, 33.0, 16.5, "FT1 @ 16\"\nspan 21'-4\"", size=4.8, box=True, z=10)
-    txt(ax, 41.2, 26.0, "FT1 @ 16\"\nspan 7'", size=4.4, box=True, z=10)
-    txt(ax, 22.5, 2.9, "4'-0\" PORCH CANTILEVER (TRUSS TOP CHORD EXTENDS) · 60 PSF LIVE", size=4.6, color="#7a5c2e")
-    ax.annotate("", xy=(14, 33.6), xytext=(14, 9.4), arrowprops=dict(arrowstyle="<|-|>", lw=0.6, color=INK), zorder=10)
     txt(ax, 5.0, 30.5, "ANCHOR FLOOR TO\nCONCRETE WALLS\nBEFORE BACKFILL", size=4.4, color=ACCENT)
     line(ax, [(8.2, 30.5), (9.6, 30.5)], lw=0.3, color=ACCENT)
     save(fig, "S-102", pdf)
 
 
 def sheet_s103(pdf):
+    notes = [
+        ("Unit B floor framing", [
+            "Same FT1 trusses and layout as the",
+            "Unit A floor, so bearing lines stack.",
+            "Here the trusses bear on the 2x6 stud",
+            "walls of Unit A instead of steel and",
+            "concrete.",
+        ]),
+        ("Headers in the front wall", [
+            "H1 over the 8 ft sliding door:",
+            "(3) 1-3/4 x 11-7/8 LVL on (3) 2x6",
+            "trimmers each end.",
+            "H2 over the 5 ft kitchen window:",
+            "(2) 1-3/4 x 9-1/4 LVL on (2) trimmers.",
+            "Both carry this floor, the porch and",
+            "the roof. Preliminary.",
+        ]),
+        ("Walls below (Unit A)", [
+            "Interior partitions in Unit A are not",
+            "bearing walls. Do not rely on them.",
+            "The stair enclosure walls are 1-hour",
+            "rated and continuous through this floor.",
+        ]),
+        ("Rated floor", [
+            "This is the 1-hour separation between",
+            "the two units (IRC R302.3). Build it to a",
+            "tested floor/ceiling design; firestop",
+            "every pipe, duct and wire through it.",
+        ]),
+        ("Sound", [
+            "Not required by the IRC, but strongly",
+            "recommended between rental units:",
+            "resilient channel, insulation and a",
+            "gypsum-concrete or mat underlayment.",
+        ]),
+    ]
+    fig, bg = new_sheet("S-103", "Unit B floor framing", "3/16\" = 1'-0\"", notes)
+    ax = plan_frame(fig, "Unit B floor framing plan", f"Framing at EL {EL_UP:.1f} over Unit A · Unit A walls below shown grey · preliminary", street=False)
+    unit_plan(ax, "bg", "A")
+    floor_framing(ax, False)
+    for (a, b, lab) in ((22, 30, "H1"), (12, 17, "H2"), (39.5, 43, "H2")):
+        line(ax, [(a - 0.4, BY0 + 0.25), (b + 0.4, BY0 + 0.25)], lw=3.0, color=STEEL, z=9)
+        txt(ax, (a + b) / 2, 6.6, lab, size=5.0, color=STEEL, weight="bold", box=True, z=11)
+    txt(ax, 22.5, 5.2, "BEARING ON UNIT A FRONT WALL (2x6 @ 16\") · LVL HEADERS OVER OPENINGS", size=4.6, color=STEEL, box=True, z=11)
+    save(fig, "S-103", pdf)
+
+
+def sheet_s104(pdf):
     notes = [
         ("Roof framing", [
             "RT1: common trusses at 24 in. o.c. over",
@@ -302,26 +355,26 @@ def sheet_s103(pdf):
             "hold-downs at ends (preliminary).",
             "Side and rear walls have long solid",
             "runs. The front wall is mostly glass:",
-            "narrow piers need engineered hold-",
-            "downs or a second steel frame at",
-            "Unit A level.",
+            "its narrow piers need engineered",
+            "hold-downs or a second steel frame",
+            "at Unit A level.",
         ]),
-        ("Unit B floor framing", [
-            "Same as S-102. Bears on Unit A 2x6",
-            "walls. Over the 8 ft sliding door and",
-            "5 ft window: (3) 1-3/4 x 11-7/8 LVL",
-            "headers on (3) 2x6 trimmers (prelim.).",
+        ("Roof penetrations", [
+            "Two 3 in. plumbing vents, bath and",
+            "dryer exhausts leave through walls,",
+            "not the roof. Keep vents 10 ft from",
+            "any opening and off the front slope.",
         ]),
         ("Fire separation", [
-            "Stair walls and the floor between units",
-            "are 1-hour assemblies. Do not notch or",
-            "bore them beyond the tested design.",
+            "Stair walls run tight to the roof deck.",
+            "Attic draft-stopping over the stair",
+            "wall line.",
         ]),
     ]
-    fig, bg = new_sheet("S-103", "Roof framing and shear walls", "3/16\" = 1'-0\"", notes)
+    fig, bg = new_sheet("S-104", "Roof framing and shear walls", "3/16\" = 1'-0\"", notes)
     ax = plan_frame(fig, "Roof framing plan and shear-wall key", "Trusses at 24 in. o.c. · walls of Unit B shown grey · preliminary", street=False)
     unit_plan(ax, "bg", "B")
-    c = "#7a5c2e"
+    c = TR
     poly(ax, [(BX0 - 1, BY0 - 1), (BX1 + 1, BY0 - 1), (BX1 + 1, BY1 + 1), (WX1 + 1, BY1 + 1), (WX1 + 1, WY1 + 1), (BX0 - 1, WY1 + 1)],
          fc="none", ec=c, lw=0.7, z=7, ls=(0, (6, 3)))
     for x in np.arange(10.5, 28.4, 2.0):
@@ -340,19 +393,18 @@ def sheet_s103(pdf):
         ax.annotate("", xy=(x, y + dy), xytext=(x, y), arrowprops=dict(arrowstyle="-|>", lw=0.6, color=c), zorder=10)
     txt(ax, 22.5, 5.2, "PORCH ROOF: 4' OUTLOOKERS AT PLATE", size=4.4, color=c)
     rect(ax, 9.0, 3.5, 36.0, BY0 - 1, fc="none", ec=c, lw=0.6, z=7, ls=(0, (3, 2)))
-    # shear walls
-    sw = [((BX0 + 0.25, 15.5), (BX0 + 0.25, 23.5)), ((BX0 + 0.25, 27.5), (BX0 + 0.25, 34.5)), ((10, WY1 - 0.25), (12.6, WY1 - 0.25)),
-          ((17.4, WY1 - 0.25), (28, WY1 - 0.25)), ((WX1 - 0.25, 30), (WX1 - 0.25, 34.5)), ((28.5, BY1 - 0.25), (37.2, BY1 - 0.25)),
-          ((41.8, BY1 - 0.25), (44.5, BY1 - 0.25)), ((BX1 - 0.25, 8.5), (BX1 - 0.25, 24.2)), ((BX1 - 0.25, 27.8), (BX1 - 0.25, 29.5)),
-          ((20.2, BY0 + 0.25), (24.8, BY0 + 0.25)), ((30.2, BY0 + 0.25), (39.3, BY0 + 0.25)), ((37.25, 8.5), (37.25, 22.2))]
+    sw = [((BX0 + 0.25, 14.2), (BX0 + 0.25, 26.4)), ((BX0 + 0.25, 30.6), (BX0 + 0.25, 34.5)), ((16.6, WY1 - 0.25), (21.4, WY1 - 0.25)),
+          ((26.6, WY1 - 0.25), (28, WY1 - 0.25)), ((WX1 - 0.25, 30), (WX1 - 0.25, 34.5)), ((28.5, BY1 - 0.25), (38.4, BY1 - 0.25)),
+          ((BX1 - 0.25, 8.5), (BX1 - 0.25, 23.4)), ((BX1 - 0.25, 27.6), (BX1 - 0.25, 29.5)),
+          ((17.6, BY0 + 0.25), (21.4, BY0 + 0.25)), ((30.6, BY0 + 0.25), (38.9, BY0 + 0.25)), ((37.25, 8.5), (37.25, 21.7))]
     for a, b in sw:
         line(ax, [a, b], lw=2.6, color=ACCENT, z=9)
     txt(ax, 48.2, 16, "SW", size=5.0, color=ACCENT, weight="bold")
-    txt(ax, 6.6, 31, "SW", size=5.0, color=ACCENT, weight="bold")
-    txt(ax, 22.5, 36.8, "SW", size=5.0, color=ACCENT, weight="bold")
+    txt(ax, 6.6, 20, "SW", size=5.0, color=ACCENT, weight="bold")
+    txt(ax, 19, 36.8, "SW", size=5.0, color=ACCENT, weight="bold")
     txt(ax, 34.8, 9.6, "SW", size=4.6, color=ACCENT, weight="bold", box=True, z=10)
-    txt(ax, 22.5, 9.6, "SW (short pier)", size=4.4, color=ACCENT, weight="bold", box=True, z=10)
-    save(fig, "S-103", pdf)
+    txt(ax, 19.5, 9.6, "SW (short pier)", size=4.4, color=ACCENT, weight="bold", box=True, z=10)
+    save(fig, "S-104", pdf)
 
 
 def sheet_s301(pdf):
