@@ -529,7 +529,6 @@ def sheet_g001(pdf):
 # ----------------------------------------------------------------------------
 OK = ("OK", {"weight": "bold"})
 VAR = ("VARIANCE", {"weight": "bold", "color": ACCENT})
-CONF = ("CONFIRM", {"weight": "bold", "color": BLUE})
 
 
 def sheet_g002(pdf):
@@ -742,28 +741,29 @@ def variance_plan(fig, left, bottom, fpi=20):
     # 10 ft line: the fallback
     a10, b10 = on_line(10.0, m.xw_o(36.0)), on_line(10.0, m.XE)
     line(ax, [a10, b10], color=BLUE, lw=0.6, ls=(0, (1.5, 2)), z=11)
-    c = on_line(20.0, 27.5)
-    txt(ax, c[0] + px * 1.3, c[1] + py * 1.3, "20 ft: REAR SETBACK IN THE CODE", size=5.0, color=ACCENT, rot=rot, z=12, weight="bold")
-    c = on_line(10.0, 29.5)
-    txt(ax, c[0] + px * 1.25, c[1] + py * 1.25, "10 ft line: the fallback", size=5.0, color=BLUE, rot=rot, z=12)
-    c = on_line(15.0, 27.0)
-    txt(ax, c[0] - px * 0.2, c[1] - py * 0.2, f"PROPOSED BUILDING · {m.FOOTPRINT:,.0f} SF", size=6.2, weight="bold", rot=rot, z=12)
+    c = on_line(20.0, 22.0)
+    txt(ax, c[0] + px * 1.2, c[1] + py * 1.2, "20 ft: rear setback in the code", size=5.0, color=ACCENT, rot=rot, z=12, weight="bold")
+    c = on_line(10.0, 26.0)
+    txt(ax, c[0] + px * 1.2, c[1] + py * 1.2, "10 ft: the fallback", size=5.0, color=BLUE, rot=rot, z=12)
+    c = on_line(14.3, 30.5)
+    txt(ax, c[0], c[1], f"PROPOSED BUILDING · {m.FOOTPRINT:,.0f} SF", size=6.2, weight="bold", rot=rot, z=12)
     ec = env.centroid
     txt(ax, ec.x + 1.5, ec.y - 1.2, f"BUILDABLE BY RIGHT\n{env.area:,.0f} SF", size=5.6, color=ACCENT, weight="bold", z=12)
     # proposed setbacks
     dim(ax, (31.0, 0.0), (31.0, m.YF), 0, f"{ftin(m.YF)}", size=5.2, color=BLUE, ext=False, side=-1)
-    dim(ax, (m.XE, 21.5), (50.0, 21.5), 0, f"{ftin(f['d_side'])}", size=5.2, color=BLUE, ext=False)
-    yw = 31.0
+    dim(ax, (m.XE, 15.5), (50.0, 15.5), 0, f"{ftin(f['d_side'])}", size=5.2, color=BLUE, ext=False)
+    yw = 33.0
     dim(ax, (west_x(yw), yw), (m.xw_o(yw), yw - (m.xw_o(yw) - west_x(yw)) * math.tan(WEST_LEAN)), 0, f"{ftin(f['d_west'])}",
         size=5.2, color=BLUE, ext=False)
     # rear neighbour: house to line, line to proposed wall, on one string square to the rear line
     (hx, hy), (lx, ly) = f["n386"]["pts"]
     wx, wy = lx - px * f["d_rear"], ly - py * f["d_rear"]
-    dim(ax, (lx, ly), (hx, hy), 0, f"±{f['n386']['to_line']:.0f}'", size=5.6, color=BLUE, ext=False, side=-1)
+    dim(ax, (lx, ly), (hx, hy), 0, f"±{f['n386']['to_line']:.0f}'", size=5.6, color=BLUE, ext=False, side=1)
     dim(ax, (wx, wy), (lx, ly), 0, "", size=5.2, color=BLUE, ext=False)
-    leader(ax, ((wx + lx) / 2, (wy + ly) / 2), (-6.0, 53.5), f"{ftin(f['d_rear'])} requested\n(20 ft in the code)", size=5.2,
+    leader(ax, ((wx + lx) / 2, (wy + ly) / 2), (-5.0, 62.5), f"{ftin(f['d_rear'])} requested\n(20 ft in the code)", size=5.4,
            color=BLUE, ha="right", weight="bold")
-    txt(ax, hx + 12.5, hy - 5.4, f"±{f['n386']['to_bldg']:.0f} ft building to building", size=5.4, color=BLUE, z=12, box=True)
+    leader(ax, (lx + px * 5.0 + 0.5, ly + py * 5.0), (23.5, 53.0), f"±{f['n386']['to_bldg']:.0f} ft between the buildings",
+           size=5.4, color=BLUE)
     # labels of the neighbours
     c = f["n386"]["bldg"].centroid
     txt(ax, c.x + 1, 73.0, "386 FOREST AVE\nrear neighbour, uphill\n(owned by the seller's affiliate)", size=5.4, color=INK, z=9)
@@ -786,11 +786,11 @@ def variance_plan(fig, left, bottom, fpi=20):
     txt(ax, c[0] + px * 1.5, c[1] + py * 1.5, "6 ft privacy fence offered", size=5.0, color=INK, rot=rot, z=12)
     txt(ax, (m.OPEN[0] + m.OPEN[1]) / 2, 4.2, f"driveway {ftin(m.APRON_W_ROW)}\n{len(m.CARS)} cars park inside", size=5.0, color=INK, z=12)
     dim(ax, LOT_SE, LOT_SW, 3.4, "50'-0\" LOT FRONT", size=5.4, color=ACCENT)
-    dim(ax, LOT_NE, LOT_SE, 2.6, "34'-0\"", size=5.4, color=ACCENT)
-    dim(ax, LOT_SW, LOT_NW, 2.6, "48'-0\"", size=5.4, color=ACCENT, side=-1)
+    txt(ax, 47.6, 26.5, "34'-0\"", size=5.2, color=ACCENT, rot=90, z=12)
+    txt(ax, west_x(7.5) - 1.5, 7.5, "48'-0\"", size=5.2, color=ACCENT, rot=90 - math.degrees(WEST_LEAN), z=12)
     txt(ax, 58.0, -14.0, "B A I R D   S T R E E T", size=7.0, weight="bold", color=GREY)
     txt(ax, 58.0, -17.0, "one lane, ±14 ft of pavement", size=5.2, color=GREY)
-    north_arrow(ax, 80.0, 71.0, 4.0, 7)
+    north_arrow(ax, -26.0, 70.0, 4.0, 7)
     scale_bar(ax, -32.0, -18.5, 30, 10, 0.9, size=5.2)
     return ax
 
@@ -812,14 +812,15 @@ def existing_inset(fig, left, bottom, fpi=30):
     return ax
 
 
-def variance_section(fig, left, bottom, xs=30.0, fpi=20):
+def variance_section(fig, left, bottom, xs=30.0, fpi=16):
     """Massing section through the lot and the rear neighbour's yard at plan station X = xs, looking west."""
     f = facts()
-    Y0, Y1, Z0, Z1 = -18.0, 67.0, 907.0, 956.0
+    Y0, Y1, Z0, Z1 = -18.0, 70.0, 906.0, 957.0
     ax = plan_axes(fig, left, bottom, (Y0, Y1), (Z0, Z1), fpi)
     ys = np.arange(Y0, Y1 + 0.25, 0.5)
     g = np.array([elev(xs, y) for y in ys])
-    ax.fill_between(ys, Z0, g, color="#efe9e1", zorder=1, lw=0)
+    soil = "#efe9e1"
+    ax.fill_between(ys, Z0, g, color=soil, zorder=1, lw=0)
     yf, yr, ygi, ygo = m.YF, m.yr_o(xs), m.Y_GR_I, m.Y_GR_O
     und_a = m.EL_A - m.TRUSS_A - 0.0625
     T = f["eave"]
@@ -827,7 +828,7 @@ def variance_section(fig, left, bottom, xs=30.0, fpi=20):
     rect(ax, yf, m.EL_GAR - 0.5, yr, m.EL_PLATE, fc=PAPER, ec="none", z=2)                 # the building, cut
     rect(ax, yf, m.EL_GAR - 0.5, ygi, m.EL_GAR, fc=grey, ec=INK, lw=0.4, z=4)              # garage slab
     rect(ax, ygi, m.EL_FTG_TOP, ygo, und_a, fc=grey, ec=INK, lw=0.4, z=4)                  # rear retaining wall
-    poly(ax, [(ygo, m.EL_GAR - 0.5), (yr, m.EL_GAR - 0.5), (yr, m.EL_A - 5 / 12), (ygo, m.EL_A - 5 / 12)], fc="#efe9e1", ec="none", z=3)
+    poly(ax, [(ygo, m.EL_GAR - 0.5), (yr, m.EL_GAR - 0.5), (yr, m.EL_A - 5 / 12), (ygo, m.EL_A - 5 / 12)], fc=soil, ec="none", z=3)
     rect(ax, ygo, m.EL_A - 5 / 12, yr, m.EL_A, fc=grey, ec=INK, lw=0.4, z=4)               # Unit A slab on grade
     rect(ax, yr - 8 / 12, m.EL_A - 3.6, yr, m.EL_A + 0.67, fc=grey, ec=INK, lw=0.4, z=4)   # rear stem wall (prelim.)
     rect(ax, yf - 4.0, und_a, ygo, m.EL_A, fc="#e6e8eb", ec=INK, lw=0.4, z=4)              # Unit A floor trusses + porch
@@ -842,49 +843,54 @@ def variance_section(fig, left, bottom, xs=30.0, fpi=20):
     line(ax, list(zip(ys, g)), color=EARTH, lw=0.9, ls=(0, (4, 2)), z=7)                   # existing ground
     # lot lines and the code line
     yl = rear_y(xs)
+    zd = Z1 - 4.6                                                                          # level of the dimension string
     for y_, lab in ((0.0, "FRONT LOT LINE"), (yl, "REAR LOT LINE")):
-        line(ax, [(y_, Z0 + 1.0), (y_, Z1 - 3.2)], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=8)
-        txt(ax, y_, Z1 - 2.2, lab, size=5.0, color=ACCENT, weight="bold")
+        line(ax, [(y_, Z0 + 1.0), (y_, Z1 - 2.4)], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=8)
+        txt(ax, y_, Z1 - 1.4, lab, size=5.2, color=ACCENT, weight="bold")
     y20 = yl - 20.0 / _CR
-    line(ax, [(y20, m.EL_A), (y20, Z1 - 6.6)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=8)
-    txt(ax, y20, Z1 - 5.7, "20 ft code line", size=4.8, color=ACCENT)
+    line(ax, [(y20, m.EL_A), (y20, zd + 1.2)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=8)
+    txt(ax, y20, zd + 2.2, "20 ft code line", size=5.0, color=ACCENT)
     # neighbour's wall
     hit = LineString([(xs, yl + 1), (xs, 140)]).intersection(f["n386"]["bldg"])
     ywall = hit.bounds[1]
     gw = elev(xs, ywall - 0.5)
-    line(ax, [(ywall, gw), (ywall, gw + 17.0)], color=GREY, lw=1.0, ls=(0, (5, 2)), z=8)
-    txt(ax, ywall - 0.8, gw + 19.6, "386 FOREST AVE\nhouse wall\n(height not measured)", size=4.8, color=GREY, ha="center")
+    line(ax, [(ywall, gw), (ywall, zd + 0.6)], color=GREY, lw=1.0, ls=(0, (5, 2)), z=8)
+    txt(ax, ywall - 1.0, f["eave_edge"] + 2.6, "386 FOREST AVE house wall\n(height not measured)", size=5.0, color=GREY, ha="right")
+    # dimension string: front setback, rear setback, neighbour's yard
+    for y_ in (yf, yr):
+        line(ax, [(y_, T + 1.0), (y_, zd + 0.6)], color=BLUE, lw=0.3, z=8)
+    dim(ax, (0.0, zd), (yf, zd), 0, ftin(f["d_front"]), size=5.0, color=BLUE, ext=False)
+    dim(ax, (yr, zd), (yl, zd), 0, ftin(f["d_rear"]), size=5.0, color=BLUE, ext=False)
+    dim(ax, (yl, zd), (ywall, zd), 0, f"±{(ywall - yl) * _CR:.0f}' on this cut", size=5.0, color=BLUE, ext=False)
     # levels
-    for el, lab in ((m.EL_GAR, "OPEN GARAGE"), (m.EL_A, "UNIT A"), (m.EL_B, "UNIT B")):
-        txt(ax, yf + 1.4, el + 1.5, f"{lab}  EL {el:.1f}", size=5.0, ha="left", z=9, weight="bold")
-    txt(ax, yf - 13.0, m.street_el(xs) if hasattr(m, "street_el") else street_el(xs) - 2.6, "BAIRD ST", size=5.0, color=GREY)
-    txt(ax, m.ridge_y(xs), m.ridge_el(xs) + 1.5, f"ridge EL {m.ridge_el(xs):.1f}", size=5.0, z=9)
-    # heights seen from the neighbour's side
-    ge = elev(xs, yl)
-    dim(ax, (yl + 4.0, ge), (yl + 4.0, f["eave_edge"]), 0, f"{f['eave_edge'] - ge:.0f}' at the line", size=5.0, color=BLUE,
-        ext=False, side=-1)
-    line(ax, [(ey, f["eave_edge"]), (ywall, f["eave_edge"])], color=BLUE, lw=0.3, ls=(0, (2, 2)), z=8)
-    dim(ax, (ywall - 2.2, gw), (ywall - 2.2, f["eave_edge"]), 0, f"{f['eave_edge'] - gw:.0f}' at the house", size=5.0,
-        color=BLUE, ext=False, side=1)
+    for el, lab, y_ in ((m.EL_GAR, "OPEN GARAGE", yf + 1.6), (m.EL_A, "UNIT A", y20 + 1.0), (m.EL_B, "UNIT B", y20 + 1.0)):
+        txt(ax, y_, el + 1.6, f"{lab}  EL {el:.1f}", size=5.0, ha="left", z=9, weight="bold")
+    txt(ax, -12.5, elev(xs, -12.5) + 1.5, "BAIRD ST", size=5.0, color=GREY)
+    txt(ax, m.ridge_y(xs) + 1.6, m.ridge_el(xs) + 0.9, f"ridge EL {m.ridge_el(xs):.1f}", size=5.0, z=9, ha="left")
+    leader(ax, ((ygo + yr) / 2, m.EL_A - 2.6), (yr + 3.0, 917.5), "rear wedge of the building:\nslab on grade, not dug out", size=5.0)
+    # height seen from the neighbour's house
+    line(ax, [(ey, f["eave_edge"]), (ywall + 3.4, f["eave_edge"])], color=BLUE, lw=0.3, ls=(0, (2, 2)), z=8)
+    dim(ax, (ywall + 2.6, gw), (ywall + 2.6, f["eave_edge"]), 0, f"{f['eave_edge'] - gw:.0f}' to the eave", size=5.0,
+        color=BLUE, ext=False, side=-1)
     # noon sun, midwinter and equinox (estimate)
-    for decl, lab, col in ((-23.44, "noon sun, 21 Dec", "#b07a00"), (0.0, "noon, 21 Mar / 21 Sep", "#b07a00")):
+    sun = "#a06a00"
+    for decl, lab in ((-23.44, "noon shadow\n21 Dec"), (0.0, "noon shadow\nequinox")):
         alt, tips = noon_shadow(decl)
         tip = min((t_ for t_ in tips if t_[6] == "eave"), key=lambda t_: abs(t_[1] - xs))
         zt = elev(tip[1], tip[2])
-        up = (tip[4] - 9.0, tip[5] + 9.0 * (tip[5] - zt) / max(tip[2] - tip[4], 0.1))
-        line(ax, [(tip[2], zt), (tip[4], tip[5])], color=col, lw=0.6, ls=(0, (6, 2)), z=9)
-        ax.plot([tip[2]], [zt], marker="v", ms=3.2, color=col, zorder=10)
-        txt(ax, tip[2] + 0.5, zt - 1.6, lab, size=4.8, color=col, ha="center", z=10)
-    txt(ax, Y0 + 0.5, g[0] - 3.4, "existing ground (LiDAR), dashed", size=4.8, color=EARTH, ha="left")
+        line(ax, [(tip[2], zt), (tip[4], tip[5])], color=sun, lw=0.6, ls=(0, (6, 2)), z=9)
+        ax.plot([tip[2]], [zt], marker="v", ms=3.2, color=sun, zorder=10)
+        txt(ax, tip[2], zt - 3.0, lab, size=5.0, color=sun, ha="center", z=10)
+    txt(ax, yl + 1.5, Z0 + 1.4, "existing ground (state LiDAR), dashed", size=5.0, color=EARTH, ha="left")
     return ax
 
 
 def sheet_g003(pdf):
     f = facts()
     e20, e10, e5 = (f["env"][d].area for d in (20.0, 10.0, 5.0))
-    a_dec, s_dec = shadow_reach(-23.44)
-    a_eq, s_eq = shadow_reach(0.0)
-    n386, w442, e441 = f["n386"], f["w442"], f["e441"]
+    s_dec = shadow_reach(-23.44)[1]
+    s_eq = shadow_reach(0.0)[1]
+    n386, w442 = f["n386"], f["w442"]
     notes = tb_notes([
         ("Process", [
             "· The applicant need not own the lot yet: the owner can authorise the application in writing "
@@ -904,27 +910,20 @@ def sheet_g003(pdf):
             "replace them. Section numbers are from the city's 2019 code edition.",
         ]),
     ])
-    fig, bg = new_sheet("G-003", index.TITLE["G-003"], "1\" = 20'-0\"", notes)
+    fig, bg = new_sheet("G-003", index.TITLE["G-003"], "As noted", notes)
     # ---- left: drawings ----
     xl = LEFT - 0.02
     bg.text(xl, TOP - 0.28, "THE LOT, THE SETBACKS AND THE NEIGHBOURS", fontsize=8.6, fontweight="bold", va="center")
     bg.text(xl, TOP - 0.46, "1\" = 20'-0\" · red tint = all that the R-2 setbacks leave to build on · heavy outline = "
-            "proposed building · grey = neighbours' buildings (county GIS)", fontsize=5.4, color=GREY, va="center")
+            "proposed building · grey = neighbours' buildings (county GIS)", fontsize=5.6, color=GREY, va="center")
     variance_plan(fig, xl, TOP - 0.6 - 5.1)
-    ysec = TOP - 0.6 - 5.1 - 0.32
-    bg.text(xl, ysec, f"SECTION THROUGH THE LOT AND THE REAR YARD", fontsize=8.0, fontweight="bold", va="center")
-    bg.text(xl, ysec - 0.17, "1\" = 20'-0\" · cut 30 ft east of the west front corner, looking west · sun lines are an estimate",
-            fontsize=5.4, color=GREY, va="center")
-    variance_section(fig, xl, ysec - 0.3 - 2.45)
-    xi = xl + 4.25 + 0.2
-    bg.text(xi, ysec, "TODAY: THE 1929 HOUSE", fontsize=8.0, fontweight="bold", va="center")
-    bg.text(xi, ysec - 0.17, "1\" = 30'-0\" · same setback lines", fontsize=5.4, color=GREY, va="center")
-    existing_inset(fig, xi - 0.05, ysec - 0.3 - 1.95)
-    cap = Flow(bg, xi, ysec - 0.3 - 1.95 - 0.06, 1.95, fs=5.6, name="G-003 inset caption")
-    cap.p(f"About {f['ex_rear']:.0f} ft from the rear line where 20 is required and {f['ex_front']:.0f} ft from the "
-          "front line where 10 is required. It already breaks both rules.")
+    ysec = TOP - 0.6 - 5.1 - 0.3
+    bg.text(xl, ysec, "SECTION THROUGH THE LOT AND THE REAR NEIGHBOUR'S YARD", fontsize=8.0, fontweight="bold", va="center")
+    bg.text(xl, ysec - 0.17, "1/16\" = 1'-0\" · cut 30 ft east of the west front lot corner, looking west · "
+            "shadow lines are an estimate, not a sun study", fontsize=5.4, color=GREY, va="center")
+    variance_section(fig, xl, ysec - 0.28 - 3.19)
     # legend under the section
-    ly = MARGIN + 0.42
+    ly = MARGIN + 0.36
     lx = xl + 0.05
     for i, (kind, lab) in enumerate((("lot", "Lot line (tax map)"), ("sb", "R-2 minimum setback lines"),
                                      ("tint", "Buildable by right"), ("out", "Proposed building"))):
@@ -944,9 +943,9 @@ def sheet_g003(pdf):
     cw = (RIGHT - x1 - gap) / 2
     x2 = x1 + cw + gap
     ytop = TOP - 0.2
-    fs = 6.2
+    fs = 7.0
     # the request
-    rq = Flow(bg, x1 + 0.1, ytop - 0.1, cw - 0.2, fs=6.6, name="G-003 request")
+    rq = Flow(bg, x1 + 0.1, ytop - 0.1, cw - 0.2, fs=7.0, name="G-003 request")
     rq.head("The request", color=ACCENT, rule=False)
     rq.p("Relief from Section 1337.04(A)(4), minimum rear setback in the R-2 district: from 20 ft to 5 ft, "
          "for a new two-family dwelling at 387 Baird Street.", weight="bold", after=0.05)
@@ -957,33 +956,49 @@ def sheet_g003(pdf):
     a = Flow(bg, x1, yb - 0.2, cw, fs=fs, name="G-003 column A")
     a.head("What each rear setback leaves", sub="Area inside the setback lines, per floor", rule=False)
     side20 = math.sqrt(e20)
-    y = wtable(bg, x1, a.y, [0.78, 0.6, cw - 1.38], [
+    y = wtable(bg, x1, a.y, [0.85, 0.6, cw - 1.45], [
         ("Rear setback", "Area", "What can be built"),
         ("20 ft (the code)", f"{e20:,.0f} sf", f"A building about {side20:.0f} x {side20:.0f} ft. No two-family dwelling fits."),
         ("10 ft", f"{e10:,.0f} sf", "The fallback: two 2-bedroom flats."),
         (("5 ft (requested)", {"weight": "bold"}), (f"{e5:,.0f} sf", {"weight": "bold"}),
          f"This design: {m.FOOTPRINT:,.0f} sf footprint, walls {m.MARGIN_IN:.0f} in. inside the lines. Two 3-bedroom flats."),
-    ], fs=5.9)
+    ], fs=6.4)
     a.y = y - 0.2
     a.head("Findings the Board must make", sub="West Virginia Code 8A-7-11. Attorney to confirm the wording.")
-    a.p("No harm to public health, safety or welfare, or to the rights of adjacent owners.", lead="1.", indent=0.16, weight="bold", after=0.02)
+    a.p("No harm to public health, safety or welfare, or to the rights of adjacent owners.", lead="1.", indent=0.18, weight="bold", after=0.02)
     a.p(f"The full 5 ft side yards are kept. Five feet is also the distance at which the building code stops asking "
         f"for fire-rated walls. The rear neighbour's house is about {n386['to_line']:.0f} ft beyond the line, so the two "
         f"buildings stand about {n386['to_bldg']:.0f} ft apart. Their yard is uphill: the ground at their house is about "
         f"{f['g_house'] - m.EL_A:.0f} ft above the first flat's floor, so from there the new building stands about "
         f"{f['eave_edge'] - f['g_house']:.0f} ft to the eave. Gutters and drains carry roof and hillside water to the "
-        f"street, not to a neighbour. All {len(m.CARS)} required parking spaces are on the lot.", indent=0.16)
-    a.p("Special conditions of the property, not created by the applicant.", lead="2.", indent=0.16, weight="bold", after=0.02)
-    a.p(f"The lot is about {round(f['lot'], -1):,.0f} sf where the district minimum is 5,000. It is only 34 ft deep on the "
+        f"street, not to a neighbour. All {len(m.CARS)} required parking spaces are on the lot.", indent=0.18)
+    a.p("Special conditions of the property, not created by the applicant.", lead="2.", indent=0.18, weight="bold", after=0.02)
+    a.p(f"The lot is about {round(f['lot'], -1):,.0f} sf by tax-map dimensions ({LOT_AREA_DEED:,.0f} by deed) where the "
+        f"district minimum is 5,000. It is only 34 ft deep on the "
         f"east side, against {m.SB_FRONT + m.SB_REAR_CODE:.0f} ft of combined front and rear setbacks. The rear line runs "
-        "diagonally. The lot was platted long before the zoning code.", indent=0.16)
-    a.p("Unnecessary hardship; reasonable use of the land.", lead="3.", indent=0.16, weight="bold", after=0.02)
+        "diagonally. The lot was platted long before the zoning code.", indent=0.18)
+    a.p("Unnecessary hardship; reasonable use of the land.", lead="3.", indent=0.18, weight="bold", after=0.02)
     a.p(f"The code setbacks leave {e20:,.0f} sf, a building about {side20:.0f} x {side20:.0f} ft. The district permits a "
-        "two-family dwelling here, but none can be built on what the setbacks leave.", indent=0.16)
-    a.p("The spirit of the ordinance is kept.", lead="4.", indent=0.16, weight="bold", after=0.02)
+        "two-family dwelling here, but none can be built on what the setbacks leave.", indent=0.18)
+    a.p("The spirit of the ordinance is kept.", lead="4.", indent=0.18, weight="bold", after=0.02)
     a.p(f"The use is permitted. Coverage is {f['coverage']:.0f} % (50 allowed), height {f['h_mean']:.0f} ft (35 allowed), "
         f"parking is met. The request follows the pattern of the block: every neighbouring building sits within "
-        f"about 1 ft of a lot line, and 442 Baird covers about {round(w442['cover'], -1):.0f} % of its lot.", indent=0.16)
+        f"about 1 ft of a lot line, and 442 Baird covers about {round(w442['cover'], -1):.0f} % of its lot.", indent=0.18)
+    a.gap(0.12)
+    a.head("The block today", sub="County GIS parcels and building outlines, good to about 3 to 5 ft", rule=False)
+
+    def near(v):
+        return "under 1 ft" if v < 1.0 else f"about {v:.0f} ft"
+    blk = [("Lot", "Building covers", "Nearest lot line")]
+    for lab, name in (("29-85", "442 Baird St"), ("29-83", "441 Baird St"), ("29-87", "386 Forest Ave")):
+        par = _parcel(lab)
+        bl = [b_ for b_ in FOOTPRINTS if par.buffer(3).contains(b_.representative_point())]
+        blk.append((name, f"about {100 * sum(b_.area for b_ in bl) / par.area:.0f} %",
+                    near(min(b_.exterior.distance(par.exterior) for b_ in bl))))
+    blk.append(("387 Baird St, today", f"about {100 * EXISTING.area / f['lot']:.0f} %", near(f["ex_front"])))
+    blk.append((("387 Baird St, proposed", {"weight": "bold"}), (f"{f['coverage']:.0f} %", {"weight": "bold"}),
+                (f"{ftin(min(f['d_side'], f['d_west'], f['d_rear']))}", {"weight": "bold"})))
+    a.y = wtable(bg, x1, a.y, [1.45, 1.0, cw - 2.45], blk, fs=6.4)
     ya = a.end()
     b = Flow(bg, x2, ytop, cw, fs=fs, name="G-003 column B")
     b.head("Likely questions")
@@ -1017,6 +1032,20 @@ def sheet_g003(pdf):
         b.p(q, weight="bold", after=0.02)
         b.p(ans, after=0.1)
     yb2 = b.end()
+    # today's house, at the foot of column B
+    cap = wrap(f"The 1929 house stands about {f['ex_rear']:.0f} ft from the rear line where 20 is required, and about "
+               f"{f['ex_front']:.0f} ft from the front line where 10 is required. It already breaks both rules.", cw, 6.2)
+    yi0 = MARGIN + 0.3 + len(cap) * 0.118                       # bottom of the inset drawing
+    for i, ln in enumerate(cap):
+        bg.text(x2, yi0 - 0.07 - i * 0.118, ln, fontsize=6.2, va="center")
+    existing_inset(fig, x2 + (cw - 2.0) / 2, yi0 + 0.04)
+    yh = yi0 + 0.04 + 1.94 + 0.3
+    bg.plot([x2, x2 + cw], [yh + 0.14, yh + 0.14], color=INK, lw=0.6)
+    bg.text(x2, yh, "TODAY: THE 1929 HOUSE", fontsize=8.0, fontweight="bold", va="center")
+    bg.text(x2, yh - 0.17, "1\" = 30'-0\" · same lot, same code setback lines · house outline from county GIS",
+            fontsize=5.4, color=GREY, va="center")
+    if yb2 < yh + 0.3:
+        print(f"   !! G-003 questions run {yh + 0.3 - yb2:.2f} in. into the inset")
     if min(ya, yb2) < MARGIN + 0.2:
         print(f"   !! G-003 text is {MARGIN + 0.2 - min(ya, yb2):.2f} in. too long")
     finish(fig, "G-003", pdf)
@@ -1026,7 +1055,6 @@ def sheet_g003(pdf):
 # G-004  Trade packages
 # ----------------------------------------------------------------------------
 def scopes():
-    f = facts()
     return {
         "Surveyor": "Boundary and topographic survey. Stakes the lot lines, building corners and floor levels. "
                     "Confirms the fall at the drain outlet.",

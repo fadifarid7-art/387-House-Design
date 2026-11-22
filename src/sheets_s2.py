@@ -753,8 +753,7 @@ def sheet_s203(pdf):
             "Hurricane tie at every truss, both walls.",
             "Permanent bracing exactly as shown on",
             "the sealed truss drawings (BCSI).",
-            "Gable-end trusses braced back to the",
-            "roof and ceiling planes.",
+            "Brace gable-end trusses to the roof plane.",
             "Attic access 22 x 30 in. in the hall.",
         ]),
         ("Not in the attic", [
@@ -796,7 +795,7 @@ def sheet_s203(pdf):
     r_e = (m.XE + RAKE, m.ridge_y(m.XE + RAKE))
     line(ax, [RIDGE_WR, r_e], lw=1.8, color=INK, z=9)
     rang = math.degrees(math.atan2(r_e[1] - RIDGE_WR[1], r_e[0] - RIDGE_WR[0]))
-    txt(ax, 27.0, m.ridge_y(27.0) + 0.75, f"RIDGE · skewed {abs(rang):.1f}° in plan · rises {ftin8(S24 * s_abs / 2 * P)} per truss going west", size=5.0, weight="bold", rot=rang, box=True, z=12)
+    txt(ax, 31.0, m.ridge_y(31.0) + 0.75, f"RIDGE · skewed {abs(rang):.1f}° in plan · rises {ftin8(S24 * s_abs / 2 * P)} per truss going west", size=5.0, weight="bold", rot=rang, box=True, z=12)
     lead(ax, (m.XE, m.ridge_y(m.XE)), (m.XE + 1.6, m.ridge_y(m.XE) + 1.6), f"RIDGE EL {m.ridge_el(m.XE):.2f}\nat the east wall face,\n{ftin(depth_oo(m.XE) / 2)} from the front wall", size=4.6, weight="bold")
     lead(ax, RIDGE_W, (RIDGE_W[0] - 1.6, RIDGE_W[1] + 1.2), f"RIDGE EL {m.ridge_el(RIDGE_W[0]):.2f}\nat the west wall face,\n{ftin(RIDGE_W[1] - m.YF)} from the front wall", size=4.6, weight="bold", ha="right")
     # slope arrows
@@ -811,7 +810,7 @@ def sheet_s203(pdf):
     acc = (20.95, 23.9, 22.72, 26.4)
     rect(ax, *acc[:2], *acc[2:], fc=PAPER, ec=ACCENT, lw=0.8, z=9)
     line(ax, [acc[:2], acc[2:]], lw=0.4, color=ACCENT, z=9.5)
-    lead(ax, (acc[2], 25.1), (24.0, 22.0), "ATTIC ACCESS 22 x 30 in.\nin the hall ceiling, between\ntrusses, gasketed + R-49 lid", size=4.4, color=ACCENT, dot=False)
+    lead(ax, (acc[2], 24.3), (23.6, 19.6), "ATTIC ACCESS 22 x 30 in.\nin the hall ceiling, between\ntrusses, gasketed + R-49 lid", size=4.4, color=ACCENT, dot=False)
     # labels
     txt(ax, 27.2, 13.6, f"T1 - T{len(ROOF_FULL)} · COMMON ROOF TRUSSES @ 24 in. O.C. · 4:12 · 12 in. RAISED HEEL", size=5.4, weight="bold", box=True, z=12)
     txt(ax, 27.2, 12.55, "bear on the front and rear walls (tan) · red dot = hurricane tie at every truss, each wall", size=4.6, box=True, z=12)
@@ -829,7 +828,7 @@ def sheet_s203(pdf):
     west((m.xw_o(31.0) + 0.06, 31.0), 33.4, f"GW: GABLE-END TRUSS along\nthe leaning west wall,\n{ftin(m.WEST_WALL_LEN)} span, top chords\n{12 * P * CW:.2f}:12 front and\n{12 * P * (CW + s_abs * math.sin(WEST_LEAN)):.2f}:12 rear along its length")
     c1 = ROOF_CLIP[0]
     west((c1, 15.5), 17.2, f"C1, C2: common-truss\nprofile cut off at the west\ngable, hung from GW\n({ftin(y_on(m.xw_o, ROOF_CLIP[0]) - m.YF)} and {ftin(y_on(m.xw_o, ROOF_CLIP[-1]) - m.YF)} from\nthe front wall)")
-    west((rake_w(26.0), 26.0), 26.0, "8 in. RAKE, square\nto the wall")
+    west((rake_w(21.6), 21.6), 21.6, "8 in. RAKE, square\nto the wall")
     # dimensions
     yd = EAVE_F - 2.3
     dim(ax, (ROOF_FULL[-1], yd), (ROOF_FULL[0], yd), 0, f"{len(ROOF_FULL) - 1} SPACES @ 24 in. = {ftin(ROOF_FULL[0] - ROOF_FULL[-1])}", size=4.8, ext=False)
@@ -847,15 +846,6 @@ def sheet_s203(pdf):
         xm = x_ + 1.0
         dimb(ax, (xm, m.YF), (xm, m.yr_o(xm)), 0, "", size=4.5, ext=False, side=-1)
         txt(ax, xm, m.YF + 5.6 if x_ < 40 else m.YF + 13.0, f"T{ROOF_FULL.index(x_) + 1}: {ftin(depth_oo(x_))}", size=4.5, rot=90, box=True, z=12)
-    # eave levels
-    txt(ax, 33.0, 42.9, "LEVELS (top of truss, add sheathing and shingles)", size=5.2, weight="bold", ha="left")
-    for i, (s, e) in enumerate(((f"Ridge, west wall face / east wall face", f"EL {m.ridge_el(RIDGE_W[0]):.2f} / {m.ridge_el(m.XE):.2f}"),
-                                ("Heel: top of truss at the outside face of both walls", f"EL {EL_HEEL:.2f}"),
-                                ("Rear eave (level, parallel to the rear wall)", f"EL {EL_EAVE_R:.2f}"),
-                                ("Front eave, 4'-0\" out (level)", f"EL {EL_EAVE_F:.2f}"),
-                                ("Top of wall plates, Unit B", f"EL {m.EL_PLATE:.2f}"))):
-        txt(ax, 33.0, 42.0 - i * 0.8, s, size=4.7, ha="left")
-        txt(ax, 50.6, 42.0 - i * 0.8, e, size=4.7, ha="right", weight="bold")
     # ---- strip: truss schedule
     y = SHEET_H - MARGIN - 0.3
     y = strip_head(bg, y, "Roof truss schedule (preliminary)")
@@ -894,8 +884,300 @@ def sheet_s203(pdf):
         "Sheathing lies flat; both eaves are level; no hips,",
         "valleys or girder trusses are needed.",
     ], fs=5.5)
+    y -= 0.1
+    y = strip_head(bg, y, "Levels (top of truss; add sheathing + shingles)")
+    for s_, e in (("Ridge at the west / east wall face", f"EL {m.ridge_el(RIDGE_W[0]):.2f} / {m.ridge_el(m.XE):.2f}"),
+                  ("Heel: top of truss at the outside face of both walls", f"EL {EL_HEEL:.2f}"),
+                  ("Rear eave (level, parallel to the rear wall)", f"EL {EL_EAVE_R:.2f}"),
+                  ("Front eave, 4'-0\" out (level)", f"EL {EL_EAVE_F:.2f}"),
+                  ("Top of wall plates, Unit B", f"EL {m.EL_PLATE:.2f}")):
+        bg.text(STRIP_X, y, s_, fontsize=5.5, va="top")
+        bg.text(STRIP_X + STRIP_W - 0.05, y, e, fontsize=5.5, va="top", ha="right", fontweight="bold")
+        y -= 0.155
     why_roof_key(fig, bg, STRIP_X, 0.5)
     save(fig, "S-203", pdf)
 
 
-SHEETS = [("S-201", sheet_s201), ("S-202", sheet_s202), ("S-203", sheet_s203)]
+# ----------------------------------------------------------------------------
+# S-204  Wall framing, shear walls and porch
+# ----------------------------------------------------------------------------
+def _open_list(wall):
+    o = [(s0, s1, tag, note) for (tag, w_, s0, s1, note) in m.WINDOWS if w_ == wall]
+    if wall == "S":
+        o += [(d["s0"], d["s1"], d["tag"], d["note"]) for d in m.DOORS if d["wall"] == "h" and abs(d["at"][0] - m.YF) < 1e-6]
+    return sorted(o)
+
+
+def wall_pt(wall, s, off=0.0):
+    """Point on the outside face of an exterior wall at station s, moved `off` ft outward (negative = inward)."""
+    if wall == "S":
+        return (s, m.YF - off)
+    if wall == "E":
+        return (m.XE + off, s)
+    if wall == "N":
+        return (s + off * math.sin(SKEW), m.yr_o(s) + off * math.cos(SKEW))
+    return (m.xw_o(s) - off * CW, s + off * math.sin(WEST_LEAN))
+
+
+WALL_SPAN = {"S": (m.xw_o(m.YF), m.XE), "E": (m.YF, m.Y_GR_O), "N": (m.OUT_U[3][0], m.XE), "W": (m.YF, m.OUT_U[3][1])}
+WALL_FAC = {"S": 1.0, "E": 1.0, "N": 1 / CR, "W": 1 / CW}
+WALL_NAME = {"S": "Front", "E": "East", "N": "Rear", "W": "West"}
+
+
+def shear_segments():
+    res = []
+    for w in "SENW":
+        lo, hi = WALL_SPAN[w]
+        a, k = lo, 0
+        for s0, s1, tag, _ in _open_list(w) + [(hi, hi, None, None)]:
+            if s0 - a > 0.5:
+                k += 1
+                L = (s0 - a) * WALL_FAC[w]
+                res.append(dict(wall=w, mark=f"{w}{k}", s0=a, s1=s0, L=L, ratio=WALL_H_B / L))
+            a = s1
+    return res
+
+
+def header_for(width):
+    """Preliminary header by opening width: (mark, Unit A size, Unit B size)."""
+    if width <= 3.01:
+        return ("H1", "(2) 2x10, 2 trimmers", "(2) 2x8, 1 trimmer")
+    return ("H2", "(2) 1 3/4 x 9 1/4 LVL, 2 trimmers", "(2) 2x10, 2 trimmers")
+
+
+def porch_posts():
+    """Guard post centres along the porch front edge: equal bays of 5 ft or less."""
+    L = m.PORCH[2] - m.PORCH[0] - 2 * 0.15
+    n = math.ceil(L / 5.0)
+    return [m.PORCH[0] + 0.15 + i * L / n for i in range(n + 1)], L / n
+
+
+def porch_plan(fig, bg, left, bottom):
+    f = 4.0
+    vx, vy = (9.6, 47.4), (4.5, 12.0)
+    ax = plan_axes(fig, left, bottom, vx, vy, f)
+    x0, y0, x1, y1 = m.PORCH
+    rect(ax, m.xw_o(m.YF), m.YF, m.XE, m.YFI, fc=BG_WALL, ec=BG_EDGE, lw=0.5, z=3)
+    rect(ax, m.xw_o(m.YF), m.YFI, m.XE, vy[1], fc="#f6f7f8", ec="none", z=2)
+    for s0, s1, tag, _ in _open_list("S"):
+        rect(ax, s0, m.YF - 0.01, s1, m.YFI + 0.01, fc=PAPER, ec=BG_EDGE, lw=0.4, z=4)
+        txt(ax, (s0 + s1) / 2, m.YFI + 0.55, "PORCH DOOR D14" if tag == "D14" else f"WINDOW {tag}", size=4.2, color=GREY)
+    rect(ax, x0, y0, x1, y1, fc="#fbf8f1", ec="none", z=2)
+    for y in np.arange(y0 + 5.5 * IN, y1 - 0.05, 5.625 * IN):
+        line(ax, [(x0, y), (x1, y)], lw=0.2, color=LIGHT, z=3)
+    xs = sorted([t["x"] for t in trusses_a() if t["mark"] in ("A1", "A4")])
+    for x in xs:
+        line(ax, [(x, y0 + 2 * RIM), (x, m.YFI + 0.9)], lw=0.7, color=TR, z=6)
+    for x in (X_RIM_E,):
+        line(ax, [(x, y0), (x, m.YFI + 0.9)], lw=1.4, color=TR, z=6)
+    line(ax, [(x0, y0 + RIM / 2), (x1, y0 + RIM / 2)], lw=1.2, color=TR, z=6)
+    line(ax, [(x0, y0 + RIM * 1.5), (x1, y0 + RIM * 1.5)], lw=1.2, color=TR, z=6)
+    line(ax, [(m.COL_X[0], m.B1_Y), (m.COL_X[2], m.B1_Y)], lw=1.6, color=STEEL, ls=(0, (6, 2)), z=5)
+    line(ax, [(x0, m.YF + m.EXT / 2), (x1, m.YF + m.EXT / 2)], lw=0.5, color=TR, ls=(0, (2, 1.5)), z=6.5)
+    posts, bay = porch_posts()
+    ps = 3.5 * IN
+    for px in posts:
+        rect(ax, px - ps / 2, y0 - ps + 0.02, px + ps / 2, y0 + 0.02, fc=INK, ec=INK, lw=0.3, z=8)
+    for px in (x0 + 0.15, x1 - 0.15):
+        rect(ax, px - ps / 2, y1 - ps - 0.05, px + ps / 2, y1 - 0.05, fc=INK, ec=INK, lw=0.3, z=8)
+    line(ax, [(x0 + 0.15, y1 - 0.2), (x0 + 0.15, y0 - ps / 2), (x1 - 0.15, y0 - ps / 2), (x1 - 0.15, y1 - 0.2)], lw=0.5, color=INK, ls=(0, (1, 1)), z=7)
+    # dims
+    yd = y0 - 0.75
+    for a, b in zip(posts[:-1], posts[1:]):
+        dim(ax, (a, yd), (b, yd), 0, ftin8(bay) if a == posts[0] else "", size=4.4, ext=False)
+    txt(ax, (posts[1] + posts[-1]) / 2, yd + 0.34, f"GUARD POSTS: {len(posts) - 1} EQUAL BAYS OF {ftin8(bay)} (5'-0\" MAX.)", size=4.5)
+    dim(ax, (x0, yd - 0.72), (x1, yd - 0.72), 0, f"{ftin(x1 - x0)} PORCH, OUT TO OUT OF RIMS", size=4.6, ext=False)
+    dim(ax, (x0, y0), (x0, y1), 0.8, "4'-0\"", size=4.6)
+    k = len(xs) // 2
+    dim(ax, (xs[k], m.YFI + 0.62), (xs[k + 1], m.YFI + 0.62), 0, "16\"", size=4.2, ext=False)
+    # labels
+    lead(ax, (15.2, y0 + RIM), (10.0, 8.9), "DOUBLED RIM\n(2) 1 1/2 x 11 7/8\nLVL, PT or wrapped", size=4.3, color=TR, ha="left", va="center") if False else None
+    txt(ax, 19.6, 8.2, "5/4 x 6 COMPOSITE OR PT DECKING, BOARDS EAST-WEST ACROSS THE TRUSS TAILS, 1/8 in. GAPS", size=4.5, box=True, z=9)
+    txt(ax, 19.6, 7.35, "truss tails at 16 in. o.c. = floor trusses run out 4'-0\" (FT-A1, FT-A4); top chord stepped down for the deck", size=4.2, color=TR, box=True, z=9)
+    lead(ax, (m.COL_X[1] + 3.0, m.B1_Y), (34.2, 9.3), "B1 BELOW (dashed blue): full-depth blocking between trusses over it", size=4.2, color=STEEL)
+    lead(ax, (posts[2], y0 - ps / 2), (posts[2] + 0.5, 5.05), "4x4 PT GUARD POST, 36 in. MIN. ABOVE THE DECK, (2) 1/2 in. THROUGH-BOLTS TO THE DOUBLED RIM + BLOCKING. 200 lb AT THE TOP, ANY DIRECTION.", size=4.2) if False else None
+    txt(ax, x1 + 0.3, 9.0, "END TRUSS\n= porch end,\nguard returns\nto the wall", size=4.0, color=TR, ha="left")
+    txt(ax, x0 - 0.9, 6.4, "DOUBLED RIM,\nguard posts\nbolted to it", size=4.0, color=TR, ha="right")
+    line(ax, [(x0 - 0.85, 6.3), (x0 + 0.3, y0 + RIM)], lw=0.3, color=TR, z=9)
+    bg.text(left, bottom + (vy[1] - vy[0]) / f + 0.07, "PORCH FRAMING PLAN (UNIT A SHOWN, UNIT B THE SAME ON ITS OWN TRUSSES)   1/4\" = 1'-0\"", fontsize=7.0, fontweight="bold", va="bottom")
+    return ax
+
+
+def sheet_s204(pdf):
+    segs = shear_segments()
+    ang = corner_angles()                       # SW, SE, NE, NW
+    notes = [
+        ("Wall framing", [
+            "Exterior walls: 2x6 at 16 in. o.c., 7/16",
+            "in. OSB, double top plate (A-501).",
+            "Front and rear walls are bearing: they",
+            "carry the roof and the Unit B floor.",
+            "East and west walls carry themselves",
+            "(west: also the trimmed truss ends).",
+            "All interior partitions are non-bearing.",
+            "Stair walls: 2x4 + 5/8 Type X, 1-hour.",
+        ]),
+        ("Shear walls (red)", [
+            "Full-height wall between openings, both",
+            "storeys alike. Lengths are from the",
+            "model. Prelim.: 8d at 4 in. edges, 12 in.",
+            "field, all edges blocked; hold-down at",
+            "each segment end; strap Unit B studs to",
+            "Unit A studs across the floor.",
+        ]),
+        ("Open garage front", [
+            "At garage level the front line has only",
+            "the concrete return (west) and the lobby",
+            "wall (east). Engineer to verify them or",
+            "make B1 and its post a moment frame.",
+        ]),
+        PRELIM,
+    ]
+    fig, bg = sheet("S-204", "Wall framing, shear walls and porch", "3/16\" = 1'-0\"; porch 1/4\"", notes)
+    view = ((0.5, 51.0), (4.3, 45.3))
+    PB = 2.82
+    ax = plan_axes(fig, PLAN_L, PB, view[0], view[1], FPI)
+    txt(ax, 27.0, 44.3, "WALL FRAMING AND SHEAR WALL PLAN", size=10.5, weight="bold", ha="left")
+    txt(ax, 27.0, 43.3, "Typical flat (Units A and B alike) · 3/16\" = 1'-0\" · preliminary", size=6.2, color=GREY, ha="left")
+    north_arrow(ax, 48.6, 39.6, 1.5, 6.5)
+    porch(ax, bg=True)
+    unit_shell(ax, Style("bg"), "A")
+    # bearing walls tinted
+    BEAR = "#e2c98f"
+    for w, (lo, hi) in (("S", WALL_SPAN["S"]), ("N", WALL_SPAN["N"])):
+        a = lo
+        for s0, s1, tag, _ in _open_list(w) + [(hi, hi, None, None)]:
+            if s0 - a > 0.05:
+                q = m.win_quad(w, a, s0)
+                poly(ax, q, fc=BEAR, ec=BG_EDGE, lw=0.4, z=5.6)
+            a = s1
+    # headers
+    hrows = [("MARK", "OPENING", "WIDTH", "UNIT A HEADER", "UNIT B HEADER")]
+    for w in "SNW":
+        for s0, s1, tag, note in _open_list(w):
+            width = (s1 - s0)
+            mk, ha_, hb_ = header_for(width)
+            q = m.win_quad(w, s0, s1)
+            c0 = ((q[0][0] + q[3][0]) / 2, (q[0][1] + q[3][1]) / 2)
+            c1 = ((q[1][0] + q[2][0]) / 2, (q[1][1] + q[2][1]) / 2)
+            line(ax, [c0, c1], lw=2.4, color=STEEL, z=9)
+            px, py = wall_pt(w, (s0 + s1) / 2, -1.55)
+            mark(ax, px, py, mk, color=STEEL, size=4.4)
+            hrows.append((mk, f"{tag} {WALL_NAME[w].lower()}: {note.split(',')[0].replace(' escape window', '')}", ftin(width), ha_, hb_))
+    # shear segments
+    OFF = {"S": 5.0, "E": 1.7, "N": 1.6, "W": 1.6}
+    srows = [("MARK", "WALL", "LENGTH", "h / L", "USE")]
+    for sg in segs:
+        w = sg["wall"]
+        ok = sg["ratio"] <= 3.5
+        full = sg["ratio"] <= 2.0
+        p0, p1 = wall_pt(w, sg["s0"], 0.3), wall_pt(w, sg["s1"], 0.3)
+        line(ax, [p0, p1], lw=2.6 if ok else 1.2, color=ACCENT, z=9, ls="-" if ok else (0, (1.5, 1.5)))
+        if ok:
+            for p in (p0, p1):
+                rect(ax, p[0] - 0.24, p[1] - 0.24, p[0] + 0.24, p[1] + 0.24, fc=INK, ec=INK, lw=0.3, z=10)
+        f0, f1 = wall_pt(w, sg["s0"]), wall_pt(w, sg["s1"])
+        off = OFF[w] if w in "NW" else -OFF[w]
+        dim(ax, f0, f1, off, f"SW-{sg['mark']}  {ftin(sg['L'])}", size=4.6, color=ACCENT, side=1 if w in "NW" else -1)
+        srows.append((f"SW-{sg['mark']}", WALL_NAME[w], ftin(sg["L"]), f"{sg['ratio']:.1f}",
+                      "full" if full else ("reduced (narrow)" if ok else "too narrow: not counted")))
+    # corner angles
+    names = ("SW", "SE", "NE", "NW")
+    for i, (cx, cy) in enumerate(m.OUT_U):
+        a_prev, a_next = m.OUT_U[i - 1], m.OUT_U[(i + 1) % 4]
+        t1 = math.degrees(math.atan2(a_prev[1] - cy, a_prev[0] - cx)) % 360
+        t2 = math.degrees(math.atan2(a_next[1] - cy, a_next[0] - cx)) % 360
+        lo_, hi_ = (t2, t1) if (t1 - t2) % 360 < 180 else (t1, t2)
+        ax.add_patch(Arc((cx, cy), 5.0, 5.0, theta1=lo_, theta2=hi_, lw=0.8, color=INK, zorder=11))
+        mid = math.radians(lo_ + ((hi_ - lo_) % 360) / 2)
+        txt(ax, cx + 3.5 * math.cos(mid), cy + 3.5 * math.sin(mid), f"{ang[i]:.1f}°", size=5.6, weight="bold", box=True, z=12)
+    # wall notes
+    txt(ax, 25.0, m.YFI + 3.3, "FRONT WALL: BEARING · carries roof, Unit B floor and both porch cantilevers · sits over beam B1", size=4.7, weight="bold", box=True, z=12)
+    px, py = wall_pt("N", 25.0, -3.4)
+    txt(ax, px, py, "REAR WALL: BEARING · carries roof and Unit B floor · on the stem wall (S-101)", size=4.7, weight="bold", box=True, z=12, rot=m.REAR_ANGLE)
+    txt(ax, m.XEI - 0.9, 27.0, "EAST WALL: NON-BEARING", size=4.4, rot=90, box=True, z=12) if False else None
+    lead(ax, (m.XE - 0.27, 16.5), (m.XE + 3.4, 12.4), "EAST WALL:\nnon-bearing gable\nwall, no openings,\non the concrete\nwall below", size=4.4, va="center")
+    lead(ax, wall_pt("W", 26.0, -0.27), (2.2, 29.6), "WEST WALL:\nnon-bearing gable wall\n(carries the trimmed\nfloor truss ends)", size=4.4, ha="left", va="center") if False else None
+    px, py = wall_pt("W", 23.0, -0.27)
+    line(ax, [(px, py), (px - 4.2, py + 3.0)], lw=0.3, z=10)
+    txt(ax, px - 4.3, py + 3.0, "WEST WALL: non-bearing\ngable wall (carries the\ntrimmed truss ends)", size=4.4, ha="right", box=True, z=12)
+    txt(ax, 30.0, 23.3, "ALL INTERIOR PARTITIONS NON-BEARING\n2x4 @ 16 in. · plumbing walls 2x6", size=4.6, box=True, z=12)
+    lead(ax, (m.SHAFT_X0 - 0.2, 18.0), (33.4, 19.6), "STAIR WALLS: 2x4 + 5/8 X each\nside, 1-hour, non-bearing here", size=4.4, color=ACCENT, ha="right")
+    # legend
+    lx, ly = 30.6, 41.6
+    items = [("bear", "Bearing wall, 2x6 @ 16 in. (front and rear)"), ("sw", "Shear wall segment, full height, both storeys"),
+             ("hd", "Hold-down at the end of a segment (engineer)"), ("hdr", "Header over an opening (H1, H2: schedule)"),
+             ("nb", "Non-bearing exterior wall, 2x6 @ 16 in.")]
+    for i, (k, s) in enumerate(items):
+        y = ly - i * 0.85
+        if k == "bear":
+            rect(ax, lx, y - 0.2, lx + 1.6, y + 0.2, fc=BEAR, ec=BG_EDGE, lw=0.4, z=9)
+        elif k == "nb":
+            rect(ax, lx, y - 0.2, lx + 1.6, y + 0.2, fc=BG_WALL, ec=BG_EDGE, lw=0.4, z=9)
+        elif k == "sw":
+            line(ax, [(lx, y), (lx + 1.6, y)], lw=2.6, color=ACCENT, z=9)
+        elif k == "hd":
+            rect(ax, lx + 0.56, y - 0.24, lx + 1.04, y + 0.24, fc=INK, ec=INK, z=9)
+        else:
+            line(ax, [(lx, y), (lx + 1.6, y)], lw=2.4, color=STEEL, z=9)
+        txt(ax, lx + 2.1, y, s, size=4.7, ha="left")
+    porch_plan(fig, bg, PLAN_L + 0.1, 0.5)
+    # ---- strip
+    y = SHEET_H - MARGIN - 0.3
+    y = strip_head(bg, y, "Shear wall segments (preliminary)")
+    y = table(bg, STRIP_X, y, [0.52, 0.48, 0.55, 0.42, STRIP_W - 1.97], srows, fs=4.9, rh=0.152)
+    y -= 0.07
+    y = strip_lines(bg, y, [
+        f"h = {ftin(WALL_H_B)} framed wall height. Lengths are between the",
+        "edges of the openings in the model, measured along",
+        "the wall. Full: h/L 2.0 or less. Reduced: up to 3.5.",
+        "The east wall and the garage-level walls on three",
+        "sides (concrete) are the stiff lines; the front is not.",
+    ], fs=5.4)
+    y -= 0.08
+    y = strip_head(bg, y, "Header schedule (preliminary, by width)")
+    y = table(bg, STRIP_X, y, [0.3, 0.98, 0.36, 0.96, STRIP_W - 2.6], hrows, fs=4.3, rh=0.152)
+    y -= 0.07
+    y = strip_lines(bg, y, [
+        "Unit A headers carry the Unit B floor and porch; the",
+        "roof comes down the trimmers beside the opening",
+        "above (openings stack). Unit B headers carry the roof.",
+        "Front-wall trimmers land on the trusses over B1.",
+    ], fs=5.4)
+    y -= 0.08
+    y = strip_head(bg, y, "Corners that are not square")
+    y = strip_lines(bg, y, [
+        f"Inside angles: SW {ang[0]:.1f}°, SE {ang[1]:.1f}°, NE {ang[2]:.1f}°, NW {ang[3]:.1f}°.",
+        f"The rear wall runs {abs(m.REAR_ANGLE):.1f}° off the street line; the west",
+        f"wall leans {math.degrees(WEST_LEAN):.1f}° off square.",
+        "Snap the four wall lines on the deck from the model",
+        "corners, then build each wall straight on its line.",
+        f"Plates: at each skew corner one wall runs through; cut",
+        f"the other wall's plates to the corner angle (rear wall",
+        f"ends {abs(m.REAR_ANGLE):.1f}° off square, west wall ends {math.degrees(WEST_LEAN):.1f}°); lap the",
+        "double top plates over the joint. Corner studs: rip",
+        "one stud to the bevel so sheathing and drywall both",
+        "have nailing. Studs stay plumb and square to the plate.",
+    ], fs=5.4)
+    y -= 0.08
+    y = strip_head(bg, y, "Hold-downs and straps")
+    y = strip_lines(bg, y, [
+        "Unit B to Unit A: strap studs across the 24 in. floor at",
+        "each segment end. Unit A to structure: front wall to B1",
+        "(welded tab) or to the concrete return and lobby wall;",
+        "east and west walls to the concrete walls; rear wall",
+        "to the stem wall. Sizes by the engineer.",
+    ], fs=5.4)
+    y -= 0.08
+    y = strip_head(bg, y, "Porches: no posts")
+    y = strip_lines(bg, y, [
+        "Both porches hang on the 4'-0\" truss cantilevers.",
+        "No posts between the porches and none down to the",
+        "apron. Guard 36 in. min. above the deck, 4x4 PT posts",
+        "through-bolted to the doubled rim with blocking, for",
+        "200 lb at the top any way. Details: A-402, S-301.",
+    ], fs=5.4)
+    save(fig, "S-204", pdf)
+
+
+SHEETS = [("S-201", sheet_s201), ("S-202", sheet_s202), ("S-203", sheet_s203), ("S-204", sheet_s204)]

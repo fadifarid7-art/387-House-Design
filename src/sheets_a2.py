@@ -253,9 +253,11 @@ def wall_windows(ax, wall_, hfun, light=False, tags=True, floors=(m.EL_A, m.EL_B
         hc = hfun((s0 + s1) / 2)
         d = abs(hfun(s1) - hfun(s0)) / 2 if light else w / 2
         for fl in floors:
+            if not (ax.get_ylim()[0] < fl + sill + hgt and fl + sill < ax.get_ylim()[1]):
+                continue
             window(ax, hc - d, hc + d, fl + sill, fl + sill + hgt, m.WINDOW_TYPES[tag],
                    fc="#e9eef2" if light else GLASS, ec=GREY if light else INK, lw=0.4 if light else 0.6)
-            if tags and not light:
+            if tags and not light and fl + sill - 1.5 * K(ax) > ax.get_ylim()[0] and fl + sill < ax.get_ylim()[1]:
                 k = K(ax)
                 poly(ax, [(hc - 0.75 * k, fl + sill - 0.85 * k), (hc, fl + sill - 0.3 * k), (hc + 0.75 * k, fl + sill - 0.85 * k),
                           (hc, fl + sill - 1.4 * k)], fc=PAPER, ec=INK, lw=0.35, z=10)
@@ -395,33 +397,31 @@ def front_labels(ax, xl, yl):
                        (m.EL_RIDGE_HI, "RIDGE (WEST)", f"EL {m.EL_RIDGE_HI:.2f}")):
         lvl(ax, 4.75, el, nm, ha="right", size=4.3, el_txt=et, line_to=X0 if el < m.EL_PLATE else 5.3)
     txt(ax, (m.OPEN[0] + m.OPEN[1]) / 2, m.EL_GAR - 1.0, f"GARAGE SLAB AND ENTRY LANDING  EL {m.EL_GAR:.1f}", size=4.6, weight="bold", z=12)
-    note(ax, (XE + OH_S, m.ridge_el(XE)), (XE + 1.4, 950.6), f"RIDGE (EAST) EL {m.EL_RIDGE_LO:.1f}", size=4.2, ha="center")
+    note(ax, (XE + OH_S, m.ridge_el(XE)), (XE - 3.0, 951.0), f"RIDGE (EAST) EL {m.EL_RIDGE_LO:.1f}", size=4.2, ha="right")
     # zoning height
     line(ax, [(X0 - 1, ag + 35), (XE + 2.5, ag + 35)], color=ACCENT, lw=0.7, ls=(0, (4, 3)), z=12)
     txt(ax, (X0 + XE) / 2, ag + 35.75, f"35 FT ZONING HEIGHT LIMIT = EL {ag + 35:.1f}  (average existing grade at the four corners EL {ag:.1f} + 35 ft)",
         size=4.4, color=ACCENT)
     line(ax, [(X0 - 2.4, ag), (X0 + 3, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
-    dim(ax, (XE + 2.0, ag), (XE + 2.0, m.EL_RIDGE_HI), 0, f"{ftin(m.EL_RIDGE_HI - ag)} TO RIDGE", ext=False, size=4.2, color=ACCENT, side=-1)
-    dim(ax, (XE + 2.0, m.EL_RIDGE_HI), (XE + 2.0, ag + 35), 0, f"{ftin(ag + 35 - m.EL_RIDGE_HI)} SPARE", ext=False, size=4.2, color=ACCENT, side=-1)
-    line(ax, [(XE - 4, ag), (XE + 2.6, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
-    txt(ax, XE + 2.7, ag - 0.75, f"AVG. GRADE\nEL {ag:.1f}", size=3.9, color=ACCENT, ha="center", va="top", z=12)
+    dim(ax, (XE + 3.7, ag), (XE + 3.7, m.EL_RIDGE_HI), 0, f"{ftin(m.EL_RIDGE_HI - ag)} AVG. GRADE TO RIDGE", ext=False, size=4.0, color=ACCENT, side=-1)
+    dim(ax, (XE + 3.7, m.EL_RIDGE_HI), (XE + 3.7, ag + 35), 0, f"{ftin(ag + 35 - m.EL_RIDGE_HI)} SPARE", ext=False, size=4.0, color=ACCENT, side=-1)
+    line(ax, [(XE - 4, ag), (XE + 4.2, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
+    txt(ax, XE + 0.3, ag - 0.6, f"AVG. GRADE EL {ag:.1f}", size=3.7, color=ACCENT, ha="left", z=12)
     # widths
     dim(ax, (X0, 953.2), (XE, 953.2), 0, f"FACADE {ftin(m.FACADE_W)}", ext=False, size=4.6)
     dim(ax, (0, 953.2), (X0, 953.2), 0, ftin(X0), ext=False, size=4.2, color=ACCENT)
     dim(ax, (XE, 953.2), (50, 953.2), 0, ftin(50 - XE), ext=False, size=4.2, color=ACCENT)
-    txt(ax, X0 / 2, 954.5, "5'-2\" square\nto the line", size=3.6, color=ACCENT)
     # heights on the east side of the facade
-    xd = 47.3
+    xd = 46.3
     dim(ax, (xd, m.EL_GAR), (xd, m.EL_A), 0, fi(m.EL_A - m.EL_GAR), ext=False, size=4.2, side=-1)
     dim(ax, (xd, m.EL_A), (xd, m.EL_B), 0, fi(m.EL_B - m.EL_A), ext=False, size=4.2, side=-1)
     dim(ax, (xd, m.EL_B), (xd, m.EL_PLATE), 0, fi(m.EL_PLATE - m.EL_B, 8), ext=False, size=4.2, side=-1)
     for el in (m.EL_GAR, m.EL_A, m.EL_B, m.EL_PLATE):
         line(ax, [(XE + 0.2, el), (xd + 0.5, el)], lw=0.25, color=GREY, z=8)
     # call-outs
-    note(ax, (20.0, Z_B1_BOT + 0.5), (15.5, 918.9), "STEEL BEAM B1 (W14x34 prelim.)\ndropped under the trusses", size=4.0, ha="center")
-    txt(ax, 22.6, 916.9, "OPEN GARAGE, NO DOORS", size=4.4, weight="bold", z=9)
-    txt(ax, 33.3, 918.9, f"{ftin(m.OPEN_W)} x {fi(m.OPEN_CLEAR_H)}\nCLEAR OPENING", size=4.0, z=9)
-    note(ax, (m.COL_X[1], 919.2), (30.3, 921.3), "HSS 6x6\nPOST", size=3.8, ha="left")
+    txt(ax, 20.0, Z_B1_BOT + 0.58, "STEEL BEAM B1, DROPPED UNDER THE FLOOR TRUSSES", size=3.6, color=PAPER, z=9)
+    txt(ax, 19.6, 920.9, f"OPEN GARAGE, NO DOORS · {ftin(m.OPEN_W)} x {ftin(m.OPEN_CLEAR_H)} CLEAR", size=4.2, weight="bold", z=9)
+    note(ax, (m.COL_X[1], 919.2), (29.6, 918.6), "HSS 6x6\nPOST", size=3.8, ha="left")
     txt(ax, (m.ENTRY[0] + m.ENTRY[1]) / 2, m.EL_GAR + 2.0, "STREET\nDOOR", size=3.6, z=9)
     note(ax, (m.TRASH[0], m.EL_GAR + 4.2), (41.0, 911.9), "TRASH SCREEN IN FRONT OF THE\nLOBBY WALL (dotted, see C-107)", size=3.8, ha="center")
     note(ax, (9.0, 923.0), (2.0, 918.0), "CONCRETE\nRETURN PIER\n(buried below\nthe front yard)", size=3.8, ha="center")
@@ -433,7 +433,7 @@ def front_labels(ax, xl, yl):
     txt(ax, 34.5, m.EL_B - 1.1, "UNIT B PORCH, CANTILEVERED 4'-0\", 36 in. GUARD", size=3.8, z=11)
     txt(ax, 27.0, Z_EAVE_F - FASCIA / 2, "FASCIA + GUTTER: ROOF OVERHANGS THE FRONT WALL 4'-0\"", size=3.5, z=11)
     txt(ax, 27.0, 946.2, "ASPHALT SHINGLES, 4:12", size=4.2, z=11)
-    txt(ax, 16.6, 940.6, "FIBRE-CEMENT OR VINYL LAP SIDING", size=4.0, z=9, box=True)
+    txt(ax, 17.0, 940.6, "FIBRE-CEMENT OR VINYL LAP SIDING", size=3.8, z=9, box=True)
     txt(ax, 34.0, 930.2, "D14 PORCH DOOR\n3'-0\" x 6'-8\"", size=3.6, z=9, box=True)
 
 
@@ -501,31 +501,27 @@ def rear_labels(ax, xl, yl, wins, ct, ll):
     for a in st[1:-1]:
         line(ax, [(a, zb), (a, zb + 1.2)], lw=0.25, color=GREY, z=8)
     # sill heights against the ground
-    for w in cs:
-        tag, hc, wd, z0, z1 = [q for q in wins if abs(q[1] - w[1]) < 1e-6 and q[3] < m.EL_B][0]
-        x = m.XE - hc / CT * 1.0 if False else None
     w5 = [q for q in wins if q[0] == "W5" and q[3] < m.EL_B][0]
     w1 = [q for q in wins if q[0] == "W1" and q[3] < m.EL_B][0]
-    note(ax, (w5[1], w5[3]), (27.2, 932.9), f"W5 SILL EL {w5[3]:.1f}: 54 in. above the Unit A\nfloor, clear of the stem wall and ground", size=3.8, ha="right")
-    note(ax, (w1[1] + 0.8, w1[3] + 2), (8.8, 931.2), f"W1 ESCAPE WINDOW\nSILL EL {w1[3]:.1f}", size=3.8, ha="left")
+    note(ax, (w5[1] - 1.5, w5[3] + 0.1), (29.0, 934.1), f"W5 SILL EL {w5[3]:.1f}: 54 in. above the Unit A\nfloor, clear of the stem wall and ground", size=3.8, ha="right")
+    note(ax, (w1[1] + 1.17, w1[3] + 2), (12.3, 931.6), f"W1 ESCAPE WINDOW\nSILL EL {w1[3]:.1f}", size=3.8, ha="left")
     note(ax, (24.0, np.interp(24.0, [c[0] for c in ct], [c[1] for c in ct]) - 0.25), (16.5, 923.2),
          "CONCRETE STEM WALL carried to 8 in.\nabove finish grade, siding starts there", size=3.8, ha="center")
-    note(ax, (31.5, np.interp(31.5, [c[0] for c in ll], [c[1] for c in ll])), (28.0, 937.2),
-         "EXISTING GROUND AT THE REAR LOT LINE\n(5'-2\" in front of this wall; 6 ft fence on the line not drawn)", size=3.8, ha="center", color=ACCENT)
+    note(ax, (20.5, np.interp(20.5, [c[0] for c in ll], [c[1] for c in ll])), (14.0, 937.6),
+         "EXISTING GROUND AT THE REAR LOT LINE (dotted red)\n5'-2\" in front of this wall; 6 ft fence on the line not drawn", size=3.8, ha="center", color=ACCENT)
     txt(ax, 13.0, 918.6, "dashed brown: existing ground at the wall · solid: finish grade, cut 6 in. for the swale that falls east",
         size=3.7, color=EARTH, z=12)
     txt(ax, 18.3, 916.6, "dashed grey: bottom of the stem-wall footing, 36 in. min. below finish grade (S-101)", size=3.7, color=GREY, z=12)
     txt(ax, L - 0.4, m.EL_A - 0.55, "UNIT A FLOOR EL 925.5 (below ground here)", size=3.6, color=GREY, ha="right", z=12, box=True)
     # the neighbour's view of the building
     yard = 931.0
-    line(ax, [(L - 17, yard), (L + 3.2, yard)], lw=0.5, color=GREY, ls=(0, (6, 2)), z=12)
-    txt(ax, L - 16.8, yard + 0.55, "386 FOREST AVE YARD ±EL 931 (10 ft beyond the line, west half)", size=3.7, color=GREY, ha="left", z=12)
-    dim(ax, (L - 5.5, yard), (L - 5.5, m.EL_PLATE), 0, f"{ftin(m.EL_PLATE - yard)} EAVE", ext=False, size=4.0, side=-1)
-    line(ax, [(L - 6.2, m.EL_PLATE), (L - 4.8, m.EL_PLATE)], lw=0.3, z=8)
+    line(ax, [(L - 2.6, yard), (L + 3.2, yard)], lw=0.5, color=GREY, ls=(0, (6, 2)), z=12)
+    dim(ax, (L - 1.5, yard), (L - 1.5, m.EL_PLATE), 0, f"{ftin(m.EL_PLATE - yard)}", ext=False, size=4.0)
+    note(ax, (L - 1.5, 937.6), (29.0, 937.6), f"EAVE {ftin(m.EL_PLATE - yard)} ABOVE THE YARD OF 386 FOREST AVE\n(±EL 931, 10 ft beyond the lot line at the west half)", size=3.8, ha="right", dot=False)
     txt(ax, 6.5, Z_EAVE_R - FASCIA / 2, "12 in. EAVE, 1-HOUR SOFFIT, GUTTER", size=3.5, z=11)
     txt(ax, 17.0, 947.0, "ASPHALT SHINGLES, 4:12", size=4.2, z=11)
-    txt(ax, 3.0, 936.9, "EAST\n(441 Baird\nside)", size=4.0, color=GREY)
-    txt(ax, L - 3.0, 940.5, "WEST\n(442 Baird\nside)", size=4.0, color=GREY)
+    txt(ax, 4.2, 941.6, "< EAST (441 Baird side)", size=4.0, color=GREY)
+    txt(ax, 24.5, 941.6, "WEST (442 Baird side) >", size=4.0, color=GREY)
     note(ax, (-3.0, 930.5), (-3.2, 956.6), "EAST WALL AND PORCH ENDS\nseen at an angle beyond the corner", size=3.7, ha="center", color=GREY)
     he = -(50 - m.XE) / CT
     lot_line(ax, he, yl[0] + 0.6, 918.0)
@@ -537,45 +533,36 @@ def sheet_a201(pdf):
     ag = m.avg_grade()
     notes = [
         ("1 Front (south) elevation", [
-            "Seen from Baird Street. 442 Baird (uphill)",
-            "is on the left, 441 Baird on the right.",
-            f"Garage: one opening {ftin(m.OPEN_W)} wide, {fi(m.OPEN_CLEAR_H)} clear",
-            "under steel beam B1, no doors. It is",
-            f"{m.GARAGE_PCT:.0f} % of the {ftin(m.FACADE_W)} facade (65 % max).",
-            "West of the opening the front yard stays at",
-            "natural grade, so the concrete pier and the",
-            "west wall are buried below about EL 922.",
+            "From Baird Street. 442 Baird (uphill) is on",
+            f"the left. Garage opening {ftin(m.OPEN_W)} x {ftin(m.OPEN_CLEAR_H)}",
+            f"clear, no doors: {m.GARAGE_PCT:.0f} % of the {ftin(m.FACADE_W)} facade",
+            "(65 % max). The front yard west of the apron",
+            "stays at natural grade, so the west pier and",
+            "wall are buried below about EL 922.",
         ]),
         ("2 Rear (north) elevation", [
-            "Seen from 386 Forest Ave. The rear wall is",
-            f"skewed {abs(m.REAR_ANGLE):.1f}° in plan and is drawn at its",
-            f"true length, {ftin(m.REAR_WALL_LEN)}. Existing ground at the",
-            f"wall runs from EL {elev(m.XE, NE[1]):.1f} (east) to {elev(*NW):.1f}",
-            f"(west), up to {elev(*NW) - m.EL_A:.1f} ft above the Unit A floor.",
-            f"From the neighbour's yard (±EL 931) the eave",
-            f"is {ftin(m.EL_PLATE - 931)} up and the ridge {ftin(m.EL_RIDGE_HI - 931)}.",
+            "From 386 Forest Ave. The wall is skewed",
+            f"{abs(m.REAR_ANGLE):.1f}° in plan and drawn at its true length.",
+            f"Existing ground at the wall: EL {elev(m.XE, NE[1]):.1f} (east)",
+            f"to {elev(*NW):.1f} (west), up to {elev(*NW) - m.EL_A:.1f} ft above the",
+            "Unit A floor. From the neighbour's yard",
+            f"(±EL 931) the eave is {ftin(m.EL_PLATE - 931)} up and the",
+            f"ridge {ftin(m.EL_RIDGE_HI - 931)}.",
         ]),
         ("Heights", [
-            f"Garage slab {m.EL_GAR:.1f} · Unit A {m.EL_A:.1f} · Unit B {m.EL_B:.1f}",
-            f"Top plate {m.EL_PLATE:.2f} · eave (truss top) {EAVE:.2f}",
+            f"Slab {m.EL_GAR:.1f} · Unit A {m.EL_A:.1f} · Unit B {m.EL_B:.1f}",
+            f"Top plate {m.EL_PLATE:.2f} · truss top at eave {EAVE:.2f}",
             f"Ridge {m.EL_RIDGE_LO:.2f} (east) to {m.EL_RIDGE_HI:.2f} (west)",
-            f"Average existing grade, 4 corners: EL {ag:.1f}",
-            f"Height to the ridge {ftin(m.EL_RIDGE_HI - ag)}; limit 35'-0\".",
-        ]),
-        ("Exterior materials (rental grade)", [
-            "Walls: fibre-cement or vinyl lap siding on",
-            "2x6 framing. Base: exposed concrete.",
-            "Roof: asphalt shingles, 4:12, gutters front",
-            "and rear. Windows: vinyl. Guards: 36 in.,",
-            "balusters under 4 in. apart.",
+            f"Average existing grade at 4 corners {ag:.1f}",
+            f"Height to the ridge {ftin(m.EL_RIDGE_HI - ag)} (35 ft limit)",
         ]),
         ("Confirm before pricing", [
-            "Ground lines are from 1 m state LiDAR, not",
-            "a survey: every grade here is ±0.5 ft.",
-            "Window W3 sill, fascia depth, site wall",
-            "tops and the trash screen are assumed.",
-            "Wall caps for fans, dryer and range hood",
-            "are on M-102 and M-103.",
+            "Ground is 1 m state LiDAR, not a survey:",
+            "every grade here is ±0.5 ft.",
+            "Assumed here: W3 sill, 6 in. fascia, site",
+            "wall tops, trash screen height.",
+            "Side walls are 5'-2\" square to the side lot",
+            "lines. Wall caps for fans: M-102, M-103.",
         ]),
     ]
     fig, bg = new_sheet("A-201", TITLE["A-201"], "As noted", notes)
@@ -628,9 +615,8 @@ def garage_front_labels(ax, xl, yl):
     for a in st:
         line(ax, [(a, zb), (a, g - 0.15)], lw=0.25, color=GREY, z=9)
     dim(ax, (m.OPEN[0], zb - 1.0), (m.OPEN[1], zb - 1.0), 0, f"GARAGE OPENING {ftin(m.OPEN_W)}", ext=False, size=5.2)
-    txt(ax, (m.COL_X[1] + m.OPEN[0]) / 2, zb + 0.75, "to the post centre", size=4.0, color=GREY, z=12)
     xh = 34.9
-    dim(ax, (xh, g), (xh, Z_B1_BOT), 0, f"{fi(m.OPEN_CLEAR_H)} CLEAR", ext=False, size=4.8)
+    dim(ax, (xh, g), (xh, Z_B1_BOT), 0, f"{ftin(m.OPEN_CLEAR_H)} CLEAR", ext=False, size=4.8)
     dim(ax, (xh, Z_B1_BOT), (xh, m.EL_B1_TOP), 0, "14\"", ext=False, size=4.4)
     dim(ax, (xh, m.EL_B1_TOP), (xh, m.EL_A), 0, "20 3/4\"", ext=False, size=4.4)
     dim(ax, (XE + 1.9, g), (XE + 1.9, m.EL_A), 0, fi(m.EL_A - g), ext=False, size=4.8, side=-1)
@@ -650,7 +636,7 @@ def garage_front_labels(ax, xl, yl):
     txt(ax, (m.ENTRY[0] + m.ENTRY[1]) / 2, g + 1.9, "STREET\nDOOR\n3'-0\" x\n6'-8\"", size=4.2, z=9)
     note(ax, (37.6, g + 4.0), (37.9, g + 8.2), "8 in. concrete or grouted-block lobby wall", size=4.2, ha="left")
     txt(ax, 24.3, m.EL_A - 0.85, "UNIT A PORCH FASCIA (20 in. floor trusses cantilever 4'-0\" over B1, see A-402)", size=4.2, z=11)
-    note(ax, (30.0, g), (22.0, g - 0.75), "Trench drain across the opening, slab falls 1/8 in./ft to it", size=4.2, ha="left", color=BLUE)
+    txt(ax, 24.3, g - 0.42, "TRENCH DRAIN ACROSS THE OPENING · SLAB FALLS 1/8 in./ft TO IT · DIMENSIONS ARE TO THE POST CENTRE", size=3.9, color=BLUE, z=12)
 
 
 # ---SHEETS---
