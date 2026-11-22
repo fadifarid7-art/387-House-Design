@@ -938,7 +938,7 @@ def sheet_e105(pdf):
     bw = (XST - 0.3, 15.6)
     lowv(ax, bw, "DB")
     arrow(ax, (bw[0] + 0.5, bw[1]), (bw[0] + 1.9, bw[1]), color=DAT)
-    tag(ax, 33.2, 14.3, "BELL WIRE 18/2 DOWN THE\nSTAIR WALL TO THIS FLAT'S\nBUTTON AT THE STREET DOOR", DAT, size=4.2, weight="normal")
+    tag(ax, 33.9, 17.6, "BELL WIRE 18/2 DOWN THE\nSTAIR WALL TO THIS FLAT'S\nBUTTON AT THE STREET DOOR", DAT, size=4.2, weight="normal")
 
     # garage-level strip
     gl = 0.55 + (47.5 - 3.0) / FPI + 0.25

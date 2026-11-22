@@ -576,8 +576,7 @@ def unit_plumbing(ax, unit):
         ax.add_patch(Circle(p, u(ax, 0.028), fc=PAPER, ec=VENT, lw=0.8, zorder=12))
 
     def sz(x, y, s, color=SAN, rot=0, size=4.2):
-        txt(ax, x, y, s, size=size, color=color, weight="bold", rot=rot, z=14,
-            bbox=dict(fc=PAPER, ec="none", pad=0.3))
+        txt(ax, x, y, s, size=size, color=color, weight="bold", rot=rot, z=14, box=True)
 
     # ---------------- bath 1 -> stack 1 ----------------
     wc1 = (m.WCS[0][0], m.WCS[0][1] - 1.0)
@@ -798,7 +797,6 @@ def unit_sheet(pdf, number, unit):
     g = unit_plumbing(ax, unit)
     s1, s2, s3 = m.STACK_1, m.STACK_2, m.STACK_3
     vtr = ", VTR" if not A else ""
-    wbox = dict(fc=PAPER, ec="none", pad=0.3)
 
     # ---------------- labels on the plan ----------------
     note(ax, 13.3, 29.2, f"STACK 1, 3 in.{vtr}\nin the 2x6 wall", to=(s1[0], s1[1] + 0.15), color=SAN, size=4.6, weight="bold", frm=(15.2, 28.7))
@@ -813,20 +811,20 @@ def unit_sheet(pdf, number, unit):
     note(ax, 12.9, 18.9, "IM: recessed ice-maker box behind\nthe refrigerator, 1/2 in. cold\nwith a stop", to=(g["im"][0] - 0.3, g["im"][1]), color=CW, size=4.4, frm=(18.1, 18.3))
     note(ax, 28.3, 23.2, "WATER HEATER, 80 gal, 4.5 kW, on a 26 in. pan.\nExpansion tank on the cold inlet. T&P relief to the pan.\nCold + hot PEX MANIFOLDS on the closet wall above\nthe heater, 5'-6\" up, a labelled valve on every line",
          to=(MAN_X + 0.05, MAN_Y[0] + 0.5), color=CW, size=4.4, frm=(28.2, 23.9))
-    txt(ax, 32.3, YC + 0.3, "3/4\" C  +  1/2\" H  to bath 3", size=4.2, color=CW, weight="bold", z=14, bbox=wbox)
-    txt(ax, 16.4, YC + 0.32, "3/4\" C  +  1/2\" H  to bath 1", size=4.2, color=CW, weight="bold", z=14, bbox=wbox)
-    txt(ax, 32.3, g["yp"] + 0.3, "1 in. PAN DRAIN in the floor trusses to the utility-room floor drain", size=4.0, color=SAN, weight="bold", z=14, bbox=wbox)
-    txt(ax, g["xk"] + 0.78, 21.9, "1/2\" C + H", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=wbox)
-    txt(ax, g["wb"][0] - 0.5, 23.2, "1/2\" C + H", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=wbox)
-    txt(ax, g["xwc"] + 0.4, 33.6, "1/2\" C", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=wbox)
-    txt(ax, g["im"][0], 21.0, "1/2\" C", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=wbox)
+    txt(ax, 32.3, YC + 0.3, "3/4\" C  +  1/2\" H  to bath 3", size=4.2, color=CW, weight="bold", z=14, box=True)
+    txt(ax, 16.4, YC + 0.32, "3/4\" C  +  1/2\" H  to bath 1", size=4.2, color=CW, weight="bold", z=14, box=True)
+    txt(ax, 32.3, g["yp"] + 0.3, "1 in. PAN DRAIN in the floor trusses to the utility-room floor drain", size=4.0, color=SAN, weight="bold", z=14, box=True)
+    txt(ax, g["xk"] + 0.78, 21.9, "1/2\" C + H", size=3.8, color=CW, weight="bold", rot=90, z=14, box=True)
+    txt(ax, g["wb"][0] - 0.5, 23.2, "1/2\" C + H", size=3.8, color=CW, weight="bold", rot=90, z=14, box=True)
+    txt(ax, g["xwc"] + 0.4, 33.6, "1/2\" C", size=3.8, color=CW, weight="bold", rot=90, z=14, box=True)
+    txt(ax, g["im"][0], 21.0, "1/2\" C", size=3.8, color=CW, weight="bold", rot=90, z=14, box=True)
     lab(ax, g["tx1"], m.Y4 + 0.62, "AP 1", APC, size=4.4)
     note(ax, 35.4, 31.55, "AP 3", to=(m.X_ST - 0.25, 30.75), color=APC, size=4.4, weight="bold", ha="right", frm=(35.5, 31.5))
     note(ax, 27.0, 33.1, "BATH 2 WATER: 3/4\" C + 1/2\" H from the manifolds,\nOVERHEAD in the 7'-0\" soffit (dotted), dropping in\nthe walls" + (". NEVER under the slab" if A else ", same as Unit A below"),
          to=(22.3, g["yoc"]), color=CW, size=4.4, frm=(26.9, 32.6))
     if A:
         txt(ax, (RISER_X + RISE_A[0]) / 2, RISE_A[1] - 0.32, "3/4\" COLD RISER in the floor trusses, from Unit A's shutoff + PRV in the utility room below", size=4.0, color=CW,
-            weight="bold", z=14, bbox=wbox)
+            weight="bold", z=14, box=True)
         note(ax, 28.3, 38.3, "SLAB ON GRADE (shaded), EL 925.5. Bath 2's toilet, tub and lavatory drains and the\n3 in. from stack 2 are under it: IN, TESTED AND INSPECTED BEFORE THE SLAB IS POURED.",
              to=(24.6, 34.6), color=EARTH, size=4.6, weight="bold", frm=(28.2, 37.7))
         txt(ax, 33.4, m.Y_GR_O + 0.3, "EDGE OF THE SLAB ON GRADE  (garage rear wall below)", size=3.9, color=EARTH, z=7)
@@ -838,7 +836,7 @@ def unit_sheet(pdf, number, unit):
              to=(RISE_A[0] + 0.2, RISE_A[1] + 0.1), color=CW, size=4.4, frm=(46.1, 26.4))
         note(ax, 46.2, 28.4, "Pan drain DOWN to the\nfloor drain (air gap)", to=(g["pend"][0] + 0.25, g["pend"][1] + 0.1), color=SAN, size=4.4, frm=(46.1, 28.3))
     else:
-        txt(ax, 32.3, RISE_B[1] + 0.32, "3/4\" COLD RISER in the floor trusses to the heater", size=4.0, color=CW, weight="bold", z=14, bbox=wbox)
+        txt(ax, 32.3, RISE_B[1] + 0.32, "3/4\" COLD RISER in the floor trusses to the heater", size=4.0, color=CW, weight="bold", z=14, box=True)
         note(ax, 45.6, 33.6, "COLD RISER UP this pipe space from\nUnit B's shutoff + PRV in the utility\nroom, on the room side of the wall\ninsulation. Pan drain goes DOWN it\nto the utility-room floor drain",
              to=(RISE_B[0] + 0.2, RISE_B[1] + 0.1), color=CW, size=4.4, frm=(45.5, 33.0))
         note(ax, 27.0, 39.0, "VTR: each stack continues 3 in. through the roof, 12 in. above it, on the rear slope.\nUnit A's 2 in. vent risers come up beside each stack and join it 42 in. above this floor.",
