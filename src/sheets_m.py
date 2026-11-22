@@ -389,7 +389,7 @@ def unit_tags(ax, u):
     tag(ax, (TR_CX + TR_W / 2 + m.AHU[0]) / 2, AH_CY, "20 x 8", SUP, size=4.2, box=False, rot=90)
     tag(ax, 17.9, Y_BR1, f'{rd(CFM[BR1])}" RD', SUP, size=4.2, box=False)
     tag(ax, 18.3, Y_B1 + 0.48, f'{rd(CFM[BA1])}" RD', SUP, size=4.0, box=False)
-    tag(ax, 23.55, Y_E, "12x8", SUP, size=4.0, box=False)
+    tag(ax, 24.75, Y_E, "12 x 8", SUP, size=4.0, box=False)
     tag(ax, 28.9, Y_E, "12 x 6", SUP, size=4.2, box=False)
     tag(ax, 34.3, Y_E + 0.42, f'{rd(CFM[BA3])}" RD', SUP, size=4.0, box=False)
     tag(ax, TR_CX + 1.05, 31.0, f'{rd(CFM[BA2])}" RD', SUP, size=4.0, box=True)
@@ -401,6 +401,9 @@ def unit_tags(ax, u):
     for dn in ("D5", "D6", "D7"):
         x0, y0, x1, y1 = m.door_cut(D[dn])
         (hx, hy), a_, s_ = m.door_hinge(D[dn])
+        if dn == "D5":
+            tag(ax, x1 + 0.4, y0 - 0.4, "UC", RET, size=4.0, box=False)
+            continue
         tag(ax, (x0 + x1) / 2 - s_[0] * 0.75, (y0 + y1) / 2 - s_[1] * 0.75, "UC", RET, size=4.0, box=False)
     # exhaust
     tag(ax, EF1[0] + 0.2, EF1[1] + 0.85, "EF-1", EXH, size=4.2)
@@ -427,22 +430,22 @@ def unit_tags(ax, u):
     z = dict(color=ZONE_E, size=4.0, box=False)
     tag(ax, m.B1_X0 + 1.0, m.Y3 - 0.45, "CLG 7'-0\"", **z)
     tag(ax, m.X_H0 + 1.6, m.B2_Y1 - 0.2, "CLG 7'-0\"", **z)
-    tag(ax, EF3[0], m.B3_Y1 - 0.6, "CLG 7'-0\"", **z)
+    tag(ax, EF3[0], m.Y_ST + 0.45, "CLG 7'-0\"", **z)
     lead(ax, (m.X_ST - SOF_W + 0.3, SOF_Y1 - 0.5), (33.3, 28.2), "SOFFIT, UNDERSIDE 7'-0\"", ZONE_E, size=4.0, weight="bold", ha="center")
     lead(ax, (KSOF[2] - 0.2, KSOF[1] + 0.9), (23.9, 11.6), "SOFFIT OVER WALL\nCABINETS, 7'-0\"", ZONE_E, size=4.0, weight="bold")
     # dimensions
     dim(ax, (m.X_ST - SOF_W, m.Y2), (m.X_ST - SOF_W, SOF_Y1), 0.75, size=4.6)
     dim(ax, (DV_X, DV_Y0), (DV_X, m.yr_o(DV_X)), -1.3, size=4.6)
     # keynotes on the plan
-    for n, (x, y) in {1: (27.4, 27.95), 2: (27.4, 29.3), 3: (20.5, 25.75), 4: (15.6, 23.25), 5: (24.6, 23.55), 6: (29.6, 23.75),
-                      7: (17.9, T1_Y - 1.2), 8: (25.0, 33.4), 9: (23.0, 15.9), 10: (28.0, 33.2), 12: (27.4, 22.95), 13: (18.2, 26.05)}.items():
+    for n, (x, y) in {1: (27.4, 27.95), 2: (27.4, 29.3), 3: (20.5, 25.75), 4: (15.6, 23.25), 5: (24.6, 23.55), 6: (30.0, 23.7),
+                      7: (17.9, T1_Y - 1.2), 8: (25.0, 33.4), 9: (23.0, 15.9), 10: (28.0, 33.2), 12: (28.2, 23.7), 13: (18.2, 26.05)}.items():
         keynote(ax, x, y, n)
     keynote(ax, 3.9, LS_Y[u] - 0.9 if u == "A" else LS_Y[u] - 5.9, 11)
     if u == "B":
         line(ax, [(4.4, LS_Y[u] - 5.5), (m.xw_o(LS_Y[u]) - 0.45, LS_Y[u] - 0.1)], color=REF, lw=0.35, z=13)
     line(ax, [(26.8, 27.9), (m.AHU[2], AH_CY + 0.75)], lw=0.35, z=13)
     line(ax, [(26.8, 29.2), (23.25, AH_CY + 0.7)], lw=0.35, z=13)
-    line(ax, [(26.8, 22.95), (m.AHU[2] - 0.3, m.WD_Y1 - 0.1)], color=CND, lw=0.35, z=13)
+    line(ax, [(27.6, 23.8), (m.AHU[2] - 0.3, m.WD_Y1 - 0.2)], color=CND, lw=0.35, z=13)
     line(ax, [(18.8, 26.15), (TSTAT[0] + 0.1, TSTAT[1])], color=HEAT, lw=0.35, z=13)
 
 
@@ -584,7 +587,7 @@ def unit_mech_sheet(pdf, number, u):
     unit_tags(ax, u)
     # keynote list, two columns above the rear wall
     items = wrap_list(unit_keynotes(u), 78)
-    cols = [(17.6, 52.35, items[:7]), (41.6, 52.35, items[7:])]
+    cols = [(17.6, 52.35, items[:6]), (41.6, 52.35, items[6:])]
     for x, y, part in cols:
         for n, lines in part:
             keynote(ax, x, y - 0.02, n, r=0.44)

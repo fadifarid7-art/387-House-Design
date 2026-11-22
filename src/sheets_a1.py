@@ -198,7 +198,7 @@ def sheet_a101(pdf):
         ("Open garage", [
             f"Slab EL {m.EL_GAR:.1f}, broom finish, sealed (S-103).",
             f"Open front {ftin(m.OPEN_W)} wide. NO doors, NO operators.",
-            f"Clear {clr(m.OPEN_CLEAR_H)} under beam B1, {clr(m.CLG_GAR)} to ceiling.",
+            f"Clear {ftin(m.OPEN_CLEAR_H)} under beam B1, {clr(m.CLG_GAR)} to ceiling.",
             f"Opening = {m.GARAGE_PCT:.0f} % of the {ftin(m.FACADE_W)} front (65 max).",
             f"3 design cars {ftin(m.CAR_W)} x {ftin(m.CAR_L)}. Stalls are",
             "painted lines only. One steel post, on a line.",
@@ -299,7 +299,7 @@ def sheet_a101(pdf):
     # ---- notes on the plan ----
     T = dict(size=4.5)
     txt(ax, 24.0, 27.25, f"CEILING {clr(m.CLG_GAR)} CLEAR", size=4.6, weight="bold", box=True)
-    leader(ax, (16.5, m.B1_Y), (13.4, m.YF + 1.3), f"STEEL BEAM B1 OVER (S-104): {clr(m.OPEN_CLEAR_H)} CLEAR UNDER IT", size=4.4, color=BLUE,
+    leader(ax, (16.5, m.B1_Y), (13.4, m.YF + 1.3), f"STEEL BEAM B1 OVER (S-104): {ftin(m.OPEN_CLEAR_H)} CLEAR UNDER IT", size=4.4, color=BLUE,
            ha="left", arrow=False)
     leader(ax, (m.COL_X[1] + 0.25, m.YF + 0.33), (29.6, m.YF + 1.3), "STEEL POST (S-104)", size=4.4, color=BLUE, arrow=False)
     leader(ax, (m.xw_gi(27.0), 27.0), (2.8, 30.6), "BIKE HOOKS ON THIS WALL,\nAT THE BACK", ha="right", **T)
@@ -556,9 +556,11 @@ def unit_sheet(pdf, number, unit):
     amps = m.PANEL_A_AMPS if A else m.PANEL_B_AMPS
     yb = block(bg, xl, yb - 0.16, "This flat's own equipment", [
         f"Electric meter and {amps} A panel (hall wall).",
-        "Water meter and 1 in. service. 80 gal electric",
-        "water heater on a drain pan in the mechanical",
-        "closet off the hall, beside the air handler.",
+        "Water meter and 1 in. service (shut-off in the",
+        "garage-level utility room).",
+        f"Mechanical closet off the hall, {fi(m.HALL_Y1 - m.AH_Y0)} x {fi(m.X_C1 - m.X_C0)},",
+        "pair of 2'-0\" doors D12 + D13: air handler and",
+        "80 gal electric water heater on a 26 in. pan.",
         "2-ton heat pump on the west side yard,",
         "ducted air handler (M-10" + ("2" if A else "3") + ").",
         "Stacked washer / dryer, 27 x 31 in.",
@@ -844,18 +846,17 @@ def sheet_a105(pdf):
             "Ice barrier (self-adhered) from each eave",
             "edge to 24 in. inside the wall line.",
             "Metal drip edge on eaves and rakes.",
-            "Pipe flashing at the 3 plumbing vents.",
+            "Pipe flashing at the 3 vents (VTR 1-3,",
+            "above the plumbing stacks, P-201).",
             "Step flashing: none (no wall above roof).",
-            f"Area on the slope: about {a_front + a_rear:,.0f} sf",
-            f"= {squares:.1f} squares, before waste.",
+            f"About {squares:.1f} squares on the slope + waste.",
         ]),
         ("Venting and fire rating", [
-            "Ridge vent full length. Front soffit",
-            "vented. Rear soffit SOLID, no vents, with",
-            "a 1-hour underside: it is within 5 ft of",
-            "the lot line (IRC R302.1).",
-            f"Side rakes are {fi(side_gap)} from the side lot",
-            "lines: same rule, to be confirmed.",
+            "Attic vents: ridge vent full length and",
+            "the front soffit only.",
+            "Rear eave and both side rakes are within",
+            "5 ft of a lot line: SOLID soffit, no vents,",
+            "1-hour underside (IRC Table R302.1(1)).",
         ]),
         ("Gutters", [
             "Gutter on the front and rear eaves, a",
@@ -890,14 +891,12 @@ def sheet_a105(pdf):
     ds = [(sw[0] + 0.5, sw[1] - off), (se[0] - 0.5, se[1] - off), (ne[0] - 0.5, ne[1] + 0.4), (nw[0] + 0.75, nw[1] + 0.05)]
     for (dx, dy) in ds:
         ax.add_patch(plt.Circle((dx, dy), 0.38, fc=PAPER, ec=BLUE, lw=0.9, zorder=7))
-        txt(ax, dx, dy, "DS", size=3.4, color=BLUE, z=9, weight="bold")
+        txt(ax, dx, dy, "DS", size=4.2, color=BLUE, z=9, weight="bold")
     # plumbing vents and attic access
     for i, (vx, vy) in enumerate((m.STACK_1, m.STACK_2, m.STACK_3)):
         ax.add_patch(plt.Circle((vx, vy), 0.3, fc=PAPER, ec=INK, lw=0.8, zorder=7))
         ax.add_patch(plt.Circle((vx, vy), 0.1, fc=INK, ec=INK, lw=0.4, zorder=7.1))
-    leader(ax, (m.STACK_1[0] - 0.25, m.STACK_1[1] - 0.2), (13.6, 24.0), "VENT THROUGH ROOF\nstack 1 (bath 1)", size=4.4, ha="center", va="top")
-    leader(ax, (m.STACK_2[0] + 0.2, m.STACK_2[1] - 0.25), (23.4, 33.6), "VENT THROUGH ROOF\nstack 2 (bath 2)", size=4.4, ha="center", va="top")
-    leader(ax, (m.STACK_3[0] - 0.25, m.STACK_3[1] - 0.2), (34.8, 29.3), "VENT THROUGH ROOF\nstack 3 (bath 3)", size=4.4, ha="center", va="top")
+        txt(ax, vx + 0.5, vy - 0.1, f"VTR {i + 1}", size=4.6, weight="bold", ha="left")
     hx = m.X_H0 + (m.X_H1 - m.X_H0 - 22 * IN) / 2
     rect(ax, hx, 24.75, hx + 22 * IN, 24.75 + 30 * IN, fc="none", ec=GREY, lw=0.6, ls=(0, (3, 2)), z=6)
     leader(ax, (hx + 22 * IN, 25.4), (24.8, 20.6), "ATTIC ACCESS 22 x 30 in.\nin Unit B's hall ceiling (below)", size=4.4, color=GREY, va="top", ha="left")
@@ -913,12 +912,12 @@ def sheet_a105(pdf):
         txt(ax, xa + 0.3, yr + (d0 + d1) / 2, "4:12\nDOWN", size=5.0, weight="bold", ha="left")
     txt(ax, 27.0, m.ridge_y(27.0) + 5.3, f"along the trusses; {g_rear * 12:.1f}:12 square to the rear eave", size=4.2, color=GREY,
         rot=-math.degrees(T_R))
-    txt(ax, 27.3, 12.4, "ROOF TRUSSES AT 24 in. O.C., SPAN NORTH-SOUTH (grey lines; layout S-203)", size=4.4, color=GREY, box=True)
+    txt(ax, 25.0, 15.0, "ROOF TRUSSES AT 24 in. O.C., SPAN NORTH-SOUTH (grey lines; layout S-203)", size=4.4, color=GREY, box=True)
     # ridge elevations
     ang = math.degrees(math.atan2(re_[1] - rw[1], re_[0] - rw[0]))
     txt(ax, 27.0, m.ridge_y(27.0) + 0.75, "RIDGE, WITH CONTINUOUS RIDGE VENT", size=5.0, weight="bold", rot=ang)
     for xs, el, lab, pos, ha in ((m.XE, m.EL_RIDGE_LO, "RIDGE LOW END\nat the east wall", (51.0, 22.2), "left"),
-                                 (x_hi, m.EL_RIDGE_HI, "RIDGE HIGH END\nabove the north-west corner", (-1.0, 28.6), "right")):
+                                 (x_hi, m.EL_RIDGE_HI, "RIDGE HIGH END\n(over the NW corner)", (11.5, 21.3), "left")):
         ax.add_patch(plt.Circle((xs, m.ridge_y(xs)), 0.3, fc=ACCENT, ec=ACCENT, zorder=8))
         leader(ax, (xs, m.ridge_y(xs)), pos, f"EL {el:.2f}\n{lab}", size=4.8, color=ACCENT, ha=ha, weight="bold")
 
@@ -942,11 +941,11 @@ def sheet_a105(pdf):
     txt(ax, m.XE - 4.1, 13.9, f"TRUSS SPAN\n{fi(m.yr_o(m.XE - 1.6) - m.YF)}\nhere", size=4.4, weight="bold")
     txt(ax, x_hi + 2.6, 13.9, f"TRUSS SPAN\n{fi(m.yr_o(x_hi) - m.YF)}\nhere", size=4.4, weight="bold")
     # ice barrier widths
-    D(ax, (21.0, g["yf"]), (21.0, yi_f), 0, fi(yi_f - g["yf"]) + " ICE BARRIER", ext=False, size=4.4, color=BLUE)
-    c = (22.0, m.yr_i(22.0) - ICE_IN / math.cos(T_R))
+    D(ax, (33.5, g["yf"]), (33.5, yi_f), 0, fi(yi_f - g["yf"]) + " ICE BARRIER", ext=False, size=4.4, color=BLUE)
+    c = (25.5, m.yr_i(25.5) - ICE_IN / math.cos(T_R))
     wr = OH_REAR + m.EXT + ICE_IN
     D(ax, c, (c[0] + N_R[0] * wr, c[1] + N_R[1] * wr), 0, fi(wr), ext=False, size=4.4, color=BLUE, side=-1)
-    txt(ax, 26.6, m.yr_i(26.6) - ICE_IN / math.cos(T_R) - 0.45, "ICE BARRIER TO THIS LINE (24 in. inside the wall)", size=4.2, color=BLUE,
+    txt(ax, 32.0, m.yr_i(32.0) - ICE_IN / math.cos(T_R) - 0.45, "ICE BARRIER TO THIS LINE (24 in. inside the wall)", size=4.2, color=BLUE,
         rot=-math.degrees(T_R))
     # notes with leaders
     T = dict(size=4.5)
@@ -955,7 +954,8 @@ def sheet_a105(pdf):
            "GUTTER, REAR EAVE · REAR SOFFIT SOLID, NO VENTS,\n1-HOUR UNDERSIDE (within 5 ft of the lot line)", color=BLUE, ha="left", **T)
     leader(ax, (ds[0][0] + 0.2, ds[0][1] - 0.35), (8.0, 2.4), "DOWNSPOUT AT EACH CORNER (4),\nTO THE SITE DRAINS (C-105)", color=BLUE, **T)
     leader(ax, (m.XE - 0.2, 26.0), (51.0, 27.2), "WALL LINE BELOW\n(dashed)", color=GREY, **T)
-    leader(ax, (g["xe"], 17.0), (51.0, 17.0), f"RAKE, {inch(OH_RAKE)} OVERHANG,\ndrip edge, {fi(side_gap)} from\nthe side lot line", arrow=False, **T)
+    leader(ax, (g["xe"], 12.5), (51.0, 12.5), f"RAKE, {inch(OH_RAKE)} OVERHANG,\n1-HOUR UNDERSIDE,\nno vents, {fi(side_gap)} from\nthe side lot line", arrow=False, **T)
+    leader(ax, (m.xw_o(33.0) - OH_RAKE, 33.0), (2.6, 36.2), f"WEST RAKE, {inch(OH_RAKE)} OVERHANG,\n1-HOUR UNDERSIDE, no vents", ha="right", **T)
     txt(ax, 25.0, 8.2, "FRONT OVERHANG COVERS UNIT B'S PORCH", size=4.6, weight="bold", box=True)
     # roof edge to lot line (fire separation of the overhangs), in red
     R = dict(color=ACCENT, size=4.8)
@@ -997,10 +997,10 @@ def sheet_a105(pdf):
         "4. The west rake leans with the lot line:",
         "   rake trim follows the wall, not the",
         "   trusses (S-203).",
-        "5. Rear and side overhangs are close to the",
-        "   lot lines: no vents in them, fire-rated",
-        "   underside as noted. Confirm side rakes",
-        "   with the building official.",
+        "5. Rear eave and side rakes are within 5 ft",
+        "   of the lot lines: no vents in them and a",
+        "   1-hour underside (5/8 in. Type X or as",
+        "   detailed on A-501).",
         "6. No roof-mounted equipment. Nothing but",
         "   the 3 plumbing vents and the ridge vent",
         "   penetrates the roof.",
@@ -1068,13 +1068,14 @@ def bath_view(fig, bg, i, left, bottom, xlim, ylim):
         yn = by1 + (m.WET if i == 0 else m.PART)                         # far face of the wall behind the toilet
         lx = lav[2]
         labs = [fi(lx - bx0) + (" VANITY" if i == 0 else " LAV"), fi(cx - lx), fi(tub[0] - cx), fi(bx1 - tub[0]) + " TUB"]
-        chain(ax, [(bx0, yn), (lx, yn), (cx, yn), (tub[0], yn), (bx1, yn)], 0.38, labels=labs, **S)
+        n = 5 if i == 0 else 4                                           # bath 3: the skewed rear wall closes the pipe space
+        chain(ax, [(bx0, yn), (lx, yn), (cx, yn), (tub[0], yn), (bx1, yn)][:n], 0.38, labels=labs[:n - 1], **S)
     # toilet: clear in front, 15 in. each side
     front_to = lav[3] if i == 1 else by0
     xf = cx + 0.62 if i != 1 else lav[2] - 0.3
     D(ax, (xf, front_to), (xf, yf), 0, f"{fi(yf - front_to)} CLEAR", ext=False, size=4.6, color=BLUE, side=-1 if i != 1 else 1)
-    txt(ax, cx - 0.4, yf - 1.75 + 0.14, "15\" + 15\" x 21\" MIN. CLEAR", size=3.9, color=BLUE, z=9.5, box=True)
-    txt(ax, cx + 0.07, cy + 0.2, "CL", size=3.8, color=BLUE, ha="left", z=9.5)
+    txt(ax, cx - 0.4, yf - 1.75 + 0.14, "30 x 21 in. MIN. CLEAR", size=4.2, color=BLUE, z=9.5, box=True)
+    txt(ax, cx + 0.07, cy + 0.2, "CL", size=4.2, color=BLUE, ha="left", z=9.5)
     # tub alcove
     xc = (tub[0] + tub[2]) / 2
     D(ax, (xc + 0.35, tub[1]), (xc + 0.35, tub[3]), 0, fi(tub[3] - tub[1]) + " ALCOVE, FINISHED WALL TO WALL", ext=False, size=4.6,
@@ -1190,7 +1191,7 @@ def sheet_a401(pdf):
     txt(ax, (m.ISL_DW[0] + m.ISL_DW[2]) / 2, (m.ISL_DW[1] + m.ISL_DW[3]) / 2, "DISHWASHER\n24 in.", size=4.4, z=9.5)
     txt(ax, (m.ISLAND[0] + m.ISLAND[2]) / 2, m.ISLAND[3] - 0.38, "SINK BASE 33 in.", size=4.2, z=9.5)
     txt(ax, m.ISLAND[2] + 0.5, m.ISLAND[1] + 3.3, "12 in. SEATING OVERHANG", size=4.2, rot=90, z=9.5)
-    txt(ax, m.STOOLS[1][0], m.STOOLS[1][1], "STOOL", size=3.6, color=GREY, z=9.5)
+    txt(ax, m.STOOLS[1][0], m.STOOLS[1][1], "STOOL", size=4.2, color=GREY, z=9.5)
     # notes in the view
     txt(ax, 20.2, 19.75, "DOOR D2 TO BEDROOM 1", size=4.4, color=GREY, rot=90)
     txt(ax, 28.2, 11.05, "PORCH DOOR D14", size=4.4, color=GREY)
@@ -1234,6 +1235,8 @@ def sheet_a401(pdf):
         "and the pipe space behind bath 3.",
         "Vanity tops: laminate with drop-in bowl.",
         "Floors LVP; tub surrounds fibreglass, no tile.",
+        "Bath 2: the rear wall is skewed. Fur a square",
+        "end wall across the north end of the tub.",
         "Bath 2 in Unit A sits on the slab on grade:",
         "its drains go in before the slab (P-101).",
     ], fs=5.6, lh=0.138)

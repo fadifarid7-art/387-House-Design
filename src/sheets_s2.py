@@ -25,12 +25,15 @@ CW, TW = math.cos(WEST_LEAN), math.tan(WEST_LEAN)
 SKEW = math.atan(abs(REAR_SLOPE))            # rear wall skew in plan (radians)
 CR = math.cos(SKEW)
 S16, S12, S24 = 16 * IN, 1.0, 2.0
-BRG = 5.5 * IN                                # truss bearing ledge on the concrete walls (2x6 PT sill)
+BRG = 5.5 * IN                                # truss bearing on the PT 2x6 sill
+LEDGE = 6 * IN                                # truss ledge on the concrete walls (S-101 / S-102)
 RIM = 1.5 * IN
 YS_P = m.PORCH[1]                             # outer edge of the porch cantilever
 YN_A = m.Y_GR_I + BRG                         # north end of the Unit A trusses (on the ledge)
-EL_BRG_A = m.EL_B1_TOP                        # underside of the Unit A trusses = top of B1 = top of ledge
 EL_TOP_A = m.EL_A - 0.75 * IN                 # top of the Unit A trusses
+EL_BRG_A = EL_TOP_A - m.TRUSS_A               # underside of the Unit A trusses (top of the nailer on B1 / sill on the ledges)
+NAILER = EL_BRG_A - m.EL_B1_TOP               # 1 1/2 in. wood nailer on B1 (model)
+EL_TOC_A = EL_BRG_A - 1.5 * IN                # top of concrete at the truss ledges, under a 1 1/2 in. PT sill
 EL_TOP_B = m.EL_B - 0.75 * IN
 EL_BRG_B = EL_TOP_B - m.TRUSS_B               # underside of the Unit B trusses = top of Unit A wall plates
 LAND_Y = m.SHAFT_U[2] + 3.25                  # north edge of the stair landing at each floor
@@ -87,10 +90,6 @@ def sheet(number, title, scale_txt, notes):
     if h > 5.72:
         print(f"WARNING {number}: title-block notes are {h:.2f} in. tall (limit 5.72)")
     fig, bg = new_sheet(number, title, scale_txt, notes)
-    if len(title) > 27:                          # long titles run past the title block at the stock size
-        for t in bg.texts:
-            if t.get_text() == title.upper():
-                t.set_fontsize(9.6 * 27 / len(title))
     return fig, bg
 
 
@@ -197,6 +196,21 @@ X_GT = m.X_ST + 1.75 * IN             # Unit B girder truss beside the stair ope
 Y_HDR_S = LAND_Y - 1.75 * IN          # header at the landing edge
 Y_HDR_N = m.SHAFT_U[3] + m.RATED / 2  # header / rim over the stair north wall
 X_PE = m.PORCH[0] + 1.0 * IN          # porch-end truss
+
+
+def wh_pair(xs):
+    """The two trusses either side of the water heater centre (to be doubled)."""
+    x = m.WH_UNIT[0]
+    return max(v for v in xs if v <= x), min(v for v in xs if v > x)
+
+
+def draw_wh(ax, pair, y0, y1, label_at, mark_):
+    for x in pair:
+        line(ax, [(x, y0), (x, y1)], lw=1.7, color=TR, z=7.6)
+    ax.add_patch(plt.Circle(m.WH_UNIT, m.WH_PAN_R, fc=PAPER, ec=ACCENT, lw=0.9, zorder=9.2))
+    txt(ax, m.WH_UNIT[0], m.WH_UNIT[1], "WH", size=4.0, color=ACCENT, weight="bold", z=12)
+    lead(ax, (m.WH_UNIT[0] + m.WH_PAN_R * 0.7, m.WH_UNIT[1] - m.WH_PAN_R * 0.7), label_at,
+         f"80 gal WATER HEATER above (about 900 lb full):\nDOUBLE the two {mark_} trusses under it (heavy lines)\n+ solid blocking at 16 in. under the pan", size=4.3, color=ACCENT, dot=False)
 
 
 def trusses_a():
@@ -339,10 +353,10 @@ def sheet_s201(pdf):
             "North of the garage rear wall Unit A is a",
             "slab on grade at the same level (S-103).",
             "20 in. open-web trusses at 16 in. o.c. run",
-            f"north-south, bear at EL {EL_BRG_A:.2f} on steel",
-            "beam B1 and on a 5 1/2 in. ledge on the",
-            "concrete rear wall, and cantilever 4'-0\"",
-            "past the front wall to carry the porch.",
+            f"north-south, bear at EL {EL_BRG_A:.2f} on the nailer",
+            "of steel beam B1 and on the sill of a 6 in.",
+            "ledge on the concrete rear wall, and run",
+            "4'-0\" past the front wall as the porch.",
         ]),
         ("Deck, rims, blocking", [
             "3/4 in. T&G subfloor, glued and nailed.",
@@ -361,7 +375,7 @@ def sheet_s201(pdf):
     ]
     fig, bg = sheet("S-201", "Unit A floor framing", "3/16\" = 1'-0\"", notes)
     ax = plan_view(fig, bg, "Unit A floor framing plan",
-                   f"Top of subfloor EL {m.EL_A:.1f} · truss bearing EL {EL_BRG_A:.2f} · garage walls below grey · trusses brown · steel blue · preliminary")
+                   f"Top of subfloor EL {m.EL_A:.1f} · truss bearing EL {EL_BRG_A:.2f} · top of steel and ledges EL {m.EL_B1_TOP:.2f} · garage walls below grey · trusses brown · steel blue · preliminary")
     lower_plan(ax, "bg", cars=False)
     # Unit A outline above, slab-on-grade part
     poly(ax, m.SOG, fc="#f6f1e7", ec=INK, lw=0.6, z=5.5, hatch="..")
@@ -375,6 +389,7 @@ def sheet_s201(pdf):
     rect(ax, m.PORCH[0], YS_P, m.PORCH[2], m.YF, fc="#fbf8f1", ec="none", z=2.5)
     for t in T:
         line(ax, [(t["x"], t["y0"]), (t["x"], t["y1"])], lw=0.55, color=TR, z=7)
+    draw_wh(ax, wh_pair([t["x"] for t in a1]), YS_P + RIM, YN_A, (26.6, 22.9), "FT-A1")
     aw = m.EXT / 2 / CW
     line(ax, [(m.xw_o(m.YF) + aw, m.YF), (m.xw_o(m.Y_GR_O) + aw, m.Y_GR_O)], lw=1.3, color=TR, z=7.5)          # west rim on the leaning wall
     line(ax, [(X_RIM_E, YS_P), (X_RIM_E, m.Y_GR_O)], lw=1.3, color=TR, z=7.5)                                   # east rim / end truss
@@ -407,7 +422,7 @@ def sheet_s201(pdf):
     txt(ax, 24.0, (by0 + by1) / 2 + 0.55, "SERVICE CORRIDOR IN THE TRUSS SPACE (3'-0\" band, above the R-30)", size=4.9, color=SVC, weight="bold", box=True, z=12)
     txt(ax, 24.0, (by0 + by1) / 2 - 0.5, "truss supplier: line up the web openings here, 7 in. clear min. · PEX, drains, refrigerant, feeders",
         size=4.4, color=SVC, box=True, z=12)
-    txt(ax, xc, m.B1_Y + 1.05, f"B1  W14x34 (PRELIM.) DROPPED BELOW THE TRUSSES · TOP OF STEEL EL {m.EL_B1_TOP:.2f} · SEE S-104",
+    txt(ax, xc, m.B1_Y + 1.05, f"B1  W14x34 (PRELIM.) DROPPED BELOW THE TRUSSES · TOP OF STEEL EL {m.EL_B1_TOP:.2f} + 1 1/2 in. NAILER · SEE S-104",
         size=4.8, color=STEEL, weight="bold", box=True, z=12)
     txt(ax, 24.0, 8.15, "4'-0\" PORCH CANTILEVER · doubled rim · top chord steps down outside the wall (A-402)",
         size=4.5, color=TR, box=True, z=12)
@@ -427,7 +442,7 @@ def sheet_s201(pdf):
     lead(ax, (ST_BAY[-1], 26.3), (xe, 25.0), f"FT-A5 ({len(a5)}) over the\nutility room, {ftin(a5[0]['y1'] - a5[0]['y0'])}", size=4.4, color=TR)
     lead(ax, m.STACK_3, (xe, 32.2), "STACK 3 lands on the\noutside face of the\ngarage wall: sleeve it\nthrough the upstand\nabove bearing level,\nthen down inside the\nutility room (P-101)", size=4.4, color=SVC)
     lead(ax, m.STACK_1, (17.3, 23.7), "STACK 1 offsets in the truss\nspace to chase C1", size=4.4, color=SVC)
-    lead(ax, (X_LOBBY, 21.6), (32.6, 22.3), "RIM-L ON THE LOBBY\nWALL: carries the stair\nwall, fire-blocks the\ntruss space", size=4.3, color=TR, ha="center")
+    lead(ax, (X_LOBBY, 15.6), (33.0, 15.4), "RIM-L ON THE LOBBY\nWALL: carries the stair\nwall, fire-blocks the\ntruss space", size=4.3, color=TR, ha="center")
     # ---- dimensions
     yd = YS_P - 1.45
     dim(ax, (m.xw_o(m.YF), yd), (m.PORCH[0], yd), 0, None, size=4.8, ext=False)
@@ -443,22 +458,24 @@ def sheet_s201(pdf):
     dim(ax, (ST_BAY[-1], yd3), (m.XE, yd3), 0, ftin(m.XE - ST_BAY[-1]), size=4.6, ext=False)
     txt(ax, ST_BAY[0] - 0.5, yd3, "STAIR BAY (FT-A4, FT-A5) SET-OUT FROM THE EAST FACE", size=4.4, ha="right")
     xd = (a1[-3]["x"] + a1[-4]["x"]) / 2
-    dimb(ax, (xd, m.B1_Y), (xd, m.Y_GR_I + BRG / 2), 0, f"{ftin(span_a)} SPAN, centre of B1 to centre of ledge", size=4.7, ext=False, side=-1)
+    dimb(ax, (xd, m.B1_Y), (xd, m.Y_GR_I + BRG / 2), 0, f"{ftin(span_a)} SPAN, centre of B1 to centre of sill", size=4.7, ext=False, side=-1)
     dimb(ax, (xd, YS_P), (xd, m.B1_Y), 0, ftin(cant), size=4.5, ext=False, side=-1)
     dimb(ax, (35.0, m.YF), (35.0, YS_P), 0, "4'-0\"", size=4.5, ext=False, side=1)
     # bearing key in the empty corner
     txt(ax, 30.0, 42.4, "LEVELS", size=5.8, weight="bold", ha="left")
     for i, (s, e) in enumerate((("Top of subfloor = top of slab on grade", m.EL_A), ("Top of trusses", EL_TOP_A),
-                                ("Truss bearing: top of B1 and wall ledges", EL_BRG_A), ("Underside of B1", m.EL_B1_TOP - m.B1_DEPTH),
+                                ("Truss bearing: top of nailer (B1) and sills", EL_BRG_A), ("Top of steel B1 = top of concrete ledges", m.EL_B1_TOP),
+                                ("Underside of B1", m.EL_B1_TOP - m.B1_DEPTH),
                                 ("Garage slab", m.EL_GAR))):
         txt(ax, 30.0, 41.4 - i * 0.82, s, size=4.9, ha="left")
         txt(ax, 46.4, 41.4 - i * 0.82, f"EL {e:.2f}", size=4.9, ha="right", weight="bold")
-    txt(ax, 30.0, 37.3, "If a 2x nailer or sill plate goes under the trusses, the steel\nand the ledges go 1 1/2 in. lower: engineer to decide.", size=4.5, ha="left", color=GREY, va="top")
+    txt(ax, 30.0, 36.5, "", size=4.5)
     # ---- strip: schedule and key
     y = SHEET_H - MARGIN - 0.3
     y = strip_head(bg, y, "Unit A floor truss schedule (preliminary)")
     rows = [("MARK", "QTY", "LENGTH", "WHERE / BEARING")]
     rows += [("FT-A1", len(a1), ftin(a1[0]["y1"] - a1[0]["y0"]), "Garage: B1 to rear ledge + porch"),
+             ("FT-A1", "+2", ftin(a1[0]["y1"] - a1[0]["y0"]), "2nd ply under the water heater"),
              ("FT-A2", len(a2), ftin(a2[0]["y1"] - a2[0]["y0"]), "West end: concrete return to ledge"),
              ("FT-A3", len(a3), ftin(a3[0]["y1"] - a3[0]["y0"]), "Trimmed at the leaning west wall"),
              ("FT-A4", len(a4), ftin(a4[0]["y1"] - a4[0]["y0"]), "Stair landing + porch"),
@@ -559,6 +576,8 @@ def sheet_s202(pdf):
     poly(ax, zone, fc="#f3e7cf", ec="none", z=4.4, alpha=0.75)
     for t in T:
         line(ax, [(t["x"], t["y0"]), (t["x"], t["y1"])], lw=0.55, color=TR, z=7)
+    whp = wh_pair([t["x"] for t in g["B1"]])
+    draw_wh(ax, whp, YS_P + RIM, m.yr_o(whp[0]) - 0.2, (27.3, 26.3), "FT-B1")
     aw = m.EXT / 2 / CW
     line(ax, [(m.xw_o(m.YF) + aw, m.YF), (m.OUT_U[3][0] + aw, m.OUT_U[3][1] - 0.2)], lw=1.3, color=TR, z=7.5)   # west rim
     line(ax, [(X_RIM_E, YS_P), (X_RIM_E, m.yr_o(X_RIM_E))], lw=1.3, color=TR, z=7.5)                            # east end truss
@@ -648,6 +667,7 @@ def sheet_s202(pdf):
     cuts = [0, (n + 2) // 3, (2 * n + 2) // 3, n]
     for i in range(3):
         rows.append(row(f"FT-B1{'abc'[i]}", b1[cuts[i]:cuts[i + 1]]))
+    rows.append(("FT-B1", "+2", _rng([m.XE - x for x in whp]), "2nd ply", "under the water heater", ""))
     rows.append(row("FT-B2", b2))
     rows.append(row("FT-B3", g["B3"]))
     rows.append(row("FT-B4", b4, span=False))
@@ -750,7 +770,7 @@ def sheet_s203(pdf):
             "is skewed in plan and climbs westward.",
             "Front: 4'-0\" cantilevered tails over the",
             "porch with a level soffit return.",
-            "Rear: 12 in. overhang. Rakes: 8 in.",
+            "Rear: 12 in. Rakes: 8 in. (1-hour under).",
         ]),
         ("Sheathing and ties", [
             "7/16 in. OSB with H-clips, 8d at 6 in.",
@@ -760,10 +780,10 @@ def sheet_s203(pdf):
             "the sealed truss drawings (BCSI).",
             "Brace gable-end trusses to the roof plane.",
             "Attic access 22 x 30 in. in the hall.",
+            "Attic vents: front soffit and ridge only.",
         ]),
         ("Not in the attic", [
-            "No ducts, no air handler, no water pipe.",
-            "Bottom chords carry the ceiling and R-49.",
+            "No ducts, air handler or water pipe.",
         ]),
         PRELIM,
     ]
@@ -821,10 +841,10 @@ def sheet_s203(pdf):
     txt(ax, 27.2, 12.55, "bear on the front and rear walls (tan) · red dot = hurricane tie at every truss, each wall", size=4.6, box=True, z=12)
     txt(ax, 26.0, 8.15, "4'-0\" FRONT OVERHANG OVER THE UNIT B PORCH · cantilevered truss tails (dashed) · level soffit return to the wall",
         size=4.5, color=TR, box=True, z=12)
-    lead(ax, (30.0, eave_r(30.0)), (31.0, 39.2), f"REAR EAVE: 12 in. overhang measured square to the wall\n({ftin8(OH_REAR / CR)} along the truss) · 1-hour soffit, see A-501 and S-301", size=4.5, color=TR)
+    lead(ax, (30.0, eave_r(30.0)), (31.0, 39.2), f"REAR EAVE: 12 in. overhang measured square to the wall\n({ftin8(OH_REAR / CR)} along the truss) · 1-hour soffit, no vents: see A-501 and S-301", size=4.5, color=TR)
     xe = m.XE + 1.5
     lead(ax, (m.XE - 0.06, 14.0), (xe, 13.2), f"GE: GABLE-END TRUSS on\nthe east wall, {ftin(depth_oo(m.XE))} span,\nstudded at 16 in. for\nsheathing and siding", size=4.4, color=TR)
-    lead(ax, (m.XE + RAKE, 26.5), (xe, 27.5), "8 in. RAKE: 2x4 ladder\nat 24 in. on the gable truss", size=4.4, color=TR)
+    lead(ax, (m.XE + RAKE, 26.5), (xe, 27.5), "8 in. RAKE: 2x4 ladder at\n24 in. on the gable truss,\n1-hour underside (A-501)", size=4.4, color=TR)
     gy = 20.0
 
     def west(p, y, s, color=TR):
@@ -833,7 +853,7 @@ def sheet_s203(pdf):
     west((m.xw_o(31.0) + 0.06, 31.0), 33.4, f"GW: GABLE-END TRUSS along\nthe leaning west wall,\n{ftin(m.WEST_WALL_LEN)} span, top chords\n{12 * P * CW:.2f}:12 front and\n{12 * P * (CW + s_abs * math.sin(WEST_LEAN)):.2f}:12 rear along its length")
     c1 = ROOF_CLIP[0]
     west((c1, 15.5), 17.2, f"C1, C2: common-truss\nprofile cut off at the west\ngable, hung from GW\n({ftin(y_on(m.xw_o, ROOF_CLIP[0]) - m.YF)} and {ftin(y_on(m.xw_o, ROOF_CLIP[-1]) - m.YF)} from\nthe front wall)")
-    west((rake_w(21.6), 21.6), 21.6, "8 in. RAKE, square\nto the wall")
+    west((rake_w(21.6), 21.6), 21.6, "8 in. RAKE, square to the\nwall, 1-hour underside")
     # dimensions
     yd = EAVE_F - 2.3
     dim(ax, (ROOF_FULL[-1], yd), (ROOF_FULL[0], yd), 0, f"{len(ROOF_FULL) - 1} SPACES @ 24 in. = {ftin(ROOF_FULL[0] - ROOF_FULL[-1])}", size=4.8, ext=False)

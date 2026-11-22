@@ -239,7 +239,7 @@ def facts():
     f["lot"] = LOT_AREA_CALC
     f["avg"] = m.avg_grade()
     f["eave"] = m.EL_PLATE + m.HEEL                                   # top of roof at the wall line
-    f["h_mean"] = (f["eave"] + m.EL_RIDGE_HI) / 2 - f["avg"]          # zoning height: mean roof height, highest ridge
+    f["h_mean"] = m.zoning_height()                                   # mean roof height above average grade
     f["h_ridge"] = m.EL_RIDGE_HI - f["avg"]
     f["below"] = 100 * (f["avg"] - m.EL_GAR) / (m.EL_A - m.EL_GAR)    # share of the garage storey below average grade
     f["a_above"] = m.EL_A - f["avg"]
@@ -402,7 +402,8 @@ def sheet_g001(pdf):
         ("Owner's fixed requirements", [
             "· All electric. No gas.",
             "· Two electric meters only, one per flat. Common loads are on Unit A's panel.",
-            "· Everything separate per flat: panel, water meter, water heater, heat pump, air handler, washer and dryer.",
+            "· Everything separate per flat: panel, water meter, heat pump, air handler, washer and dryer, and an 80 gal "
+            "water heater in the flat's own mechanical closet.",
             "· Ducted central air. No mini-splits.",
             "· No sump pump: foundation water leaves by gravity.",
             "· No water pipe in the open garage.",
@@ -468,8 +469,9 @@ def sheet_g001(pdf):
                       f"60 in. tubs, living room and kitchen with island. Ceiling {ftin_dn(m.CLG_A)} (A), {ftin_dn(m.CLG_B)} (B)."),
         ("Bedrooms", "\n".join(br)),
         ("Parking", f"{len(m.CARS)} cars in the open garage ({len(m.CARS)} required). Opening "
-                    f"{ftin(m.OPEN_W)} wide, {ftin_dn(m.OPEN_CLEAR_H)} clear, no doors."),
-        ("Services", "All electric. One meter, panel, heat pump, water heater, washer and dryer per flat."),
+                    f"{ftin(m.OPEN_W)} wide, {ftin(m.OPEN_CLEAR_H)} clear under the beam, no doors."),
+        ("Services", "All electric. One meter, panel, heat pump, washer and dryer per flat, and a water heater "
+                     "in each flat's mechanical closet off the hall."),
         ("Variance", ("One only: rear setback 20 ft to 5 ft (G-003). Everything else meets the R-2 rules as drawn.",
                       {"color": ACCENT, "weight": "bold"})),
     ]
@@ -581,7 +583,7 @@ def sheet_g002(pdf):
                                                       {"weight": "bold", "color": ACCENT}), VAR),
         ("Lot coverage", "50 % max.", f"{f['coverage']:.1f} %: {m.FOOTPRINT:,.0f} sf on {f['lot']:,.0f} sf", OK),
         ("Height", "35 ft max.",
-         f"{f['h_mean']:.1f} ft: mean roof height EL {(f['eave'] + m.EL_RIDGE_HI) / 2:.1f} above average grade "
+         f"{f['h_mean']:.1f} ft: mean roof height EL {f['avg'] + f['h_mean']:.1f} above average grade "
          f"EL {f['avg']:.1f}. Highest ridge {f['h_ridge']:.1f} ft.", OK),
         ("Storeys", "2.5 max.", "2 storeys over a basement garage (see the building code table)", OK),
         ("Parking", "1.5 spaces per unit = 3", f"{len(m.CARS)} in the open garage, each {ftin(m.CAR_W)} x {ftin(m.CAR_L)} design car", OK),
@@ -618,11 +620,13 @@ def sheet_g002(pdf):
         f"the side lot lines, about {f['cut_side']:.0f} ft from the garage walls. Shoring is designed by an engineer "
         "and no cut is left unsupported. Call 811 before digging.",
         "Fire-rated construction must stay whole: the 1-hour floor between the flats, the 1-hour stair walls, "
-        "the 5/8 in. Type X garage ceiling and the 1-hour soffits near the lot lines. Any trade that cuts "
+        "the 5/8 in. Type X garage ceiling and the 1-hour underside of the rear eave and side rakes. Any trade that cuts "
         "through one seals the hole with a listed fire-stop system.",
         "Owner's fixed requirements for every trade: all electric, no gas. No sump pump. No water pipe in the "
-        "open garage. Two electric meters only. Everything separate per flat. Ducted central air, no "
-        "mini-splits. No garage doors, door operators, cameras or heat cable.",
+        "open garage: the heated utility room at garage level is only where the two water services come in. "
+        "Each water heater stands in its own flat's mechanical closet. Two electric meters only. Everything "
+        "separate per flat. Ducted central air, no mini-splits. No garage doors, door operators, cameras or "
+        "heat cable.",
         "Before starting, each trade reads the sheets everyone gets (G-004) and the sheets of the trades it "
         f"touches. Shared points (plumbing stacks and chases, beam B1, duct soffits at {ftin(m.CLG_SOFFIT)}, panels "
         "and meters) are set once in the model and repeated on each trade's sheet.",
@@ -665,8 +669,8 @@ def sheet_g002(pdf):
          "5/8 in. Type X on the whole garage ceiling"),
         ("R302.1 walls near lot lines",
          "Walls under 5 ft from a lot line: 1-hour. Projections 2 to 5 ft from the line: 1-hour underside",
-         f"Every wall is {ftin(f['d_side'])} or more from a lot line: no wall rating, windows not limited. Rear eave "
-         "and side rakes come inside 5 ft: 1-hour underside."),
+         f"Every wall is {ftin(f['d_side'])} or more from a lot line: no wall rating, windows not limited. The rear "
+         "eave (12 in.) and both side rakes (8 in.) come inside 5 ft: 1-hour underside on all three."),
         ("R310 escape windows", "Every bedroom: 5.7 sf clear opening, sill 44 in. max.",
          f"{nesc} per flat, one in each bedroom: W1 casement, {m.WINDOW_TYPES['W1'].split(',')[0].replace(' vinyl casement', '')}, sill 30 in."),
         ("R311 stairs and exit", "Riser 7 3/4 in. max., tread 10 in. min., 36 in. wide, 6'-8\" headroom",
@@ -701,9 +705,8 @@ def sheet_g002(pdf):
         ("Utility locations and depths.", "Sewer main in Baird St, water main and meter pits, power pole and "
                                           "service route. None is known yet."),
         ("Fall at the drain outlet.",
-         f"The gravity outlet (invert EL {m.EL_DRAIN_OUT:.1f}) has only about 6 in. to spare above the street edge "
-         f"(about EL {f['street_out']:.1f} by LiDAR). If the survey does not confirm it, the garage floor rises. "
-         "A pump is not an option."),
+         f"The outlet invert (EL {m.EL_DRAIN_OUT:.1f}) is only about 6 to 8 in. above the street edge: the survey "
+         "must confirm it. If it does not, the garage floor rises. A pump is not an option."),
         ("Code editions and local amendments.", "With Morgantown Code Enforcement, including any sprinkler "
                                                 "amendment for two-family dwellings and the blower-door limit."),
         ("Basement ruling.", "That the zoning code counts the garage level as a basement, as the building code does."),
@@ -1061,7 +1064,8 @@ def scopes():
         "Demolition": "Removes the 1929 house and its foundation after the utilities are disconnected. Not before "
                       "the variance is granted.",
         "Excavation and shoring": f"Engineered shoring; cuts the hill for the garage down to footing level "
-                                  f"(top of footing EL {m.EL_FTG_TOP:.1f}); rear swale; backfill.",
+                                  f"(bottom of footing EL {m.EL_FTG_TOP - m.FTG_T:.1f}, {(m.EL_GAR - m.EL_FTG_TOP + m.FTG_T) * 12:.0f} in. below "
+                                  "the garage slab); rear swale; backfill.",
         "Concrete: footings and retaining walls": "Footings, the three 12 in. garage retaining walls and the return "
                                                   "pier, the 8 in. lobby and utility walls, stem walls for the rear slab.",
         "Waterproofing and foundation drains": "Membrane and drainage board on the three buried walls; French drain "
@@ -1074,9 +1078,10 @@ def scopes():
         "Roofing and gutters": "Asphalt shingles, underlayment, flashing, gutters and downspouts.",
         "Windows and exterior doors": f"Vinyl windows ({len(m.WINDOWS)} per flat, {sum(1 for t in m.WINDOWS if t[0] == 'W1')} "
                                       "of them escape windows), porch doors, street door.",
-        "Siding and exterior trim": "Fibre-cement or vinyl siding, trim, and the 1-hour soffits near the lot lines.",
+        "Siding and exterior trim": "Fibre-cement or vinyl siding, trim, and the 1-hour underside of the rear eave "
+                                    "and side rakes.",
         "Plumbing": "Drain under the garage slab, three stacks, water lines kept inside the heated building, "
-                    "two 80 gal electric water heaters, fixtures, cleanouts.",
+                    "an 80 gal electric water heater in each flat's mechanical closet, fixtures, cleanouts.",
         "Heating and cooling": f"One ducted heat pump and air handler per flat, ducts in the {ftin(m.CLG_SOFFIT)} soffits, "
                                "bath fans, range hood and dryer vents.",
         "Electrical": f"Two-meter service, {m.PANEL_A_AMPS} A and {m.PANEL_B_AMPS} A panels, wiring, automatic garage and "
@@ -1086,7 +1091,7 @@ def scopes():
         "Drywall and fire-rated assemblies": "5/8 in. Type X garage ceiling, 1-hour floor between the flats, 1-hour "
                                              "stair walls and chases, all other gypsum board.",
         "Cabinets and countertops": "Kitchen cabinets and island, laminate counters, bath vanities, in both flats.",
-        "Interior doors, trim and closets": f"{len(m.DOORS) - 2} interior doors per flat, casing and base, closet "
+        "Interior doors, trim and closets": f"{len(m.DOORS) - 2} interior door leaves per flat, casing and base, closet "
                                             "shelves and rods.",
         "Flooring, tile and paint": "LVP floors, bath floors, paint.",
         "Stairs and railings": f"Common stair ({m.STAIR_LO['risers']} risers garage to Unit A, {m.STAIR_UP['risers']} "

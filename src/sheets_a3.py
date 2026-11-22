@@ -258,7 +258,7 @@ def wtag(ax, x, y, t):
 
 # where each partition's tag sits on the key plan: partition index -> (x, y) ft
 TAG_AT = {0: (15.0, 20.2), 1: (31.0, 20.2), 2: (14.0, 28.1), 3: (18.0, 13.6), 4: (18.0, 36.0), 5: (13.9, 22.6),
-          11: (28.1, 24.6), 12: (29.2, 29.3), 14: (35.5, 15.5), 15: (41.0, 22.9), 17: (22.6, 38.7)}
+          10: (28.1, 24.6), 11: (29.2, 29.3), 13: (35.5, 15.5), 14: (41.0, 22.9), 16: (22.6, 38.7)}
 
 
 def key_plan_walls(fig, left, bottom):
@@ -307,10 +307,11 @@ def sheet_a501(pdf):
         ("Where the ratings are", [
             "W4 stair walls and F2 floor between the\n"
             "flats: 1 hour. F1 garage ceiling: 5/8 in.\n"
-            "Type X (IRC R302.6). Rear soffit: 1 hour\n"
-            f"from below. The {inch(RAKE)} side rakes are also\n"
-            f"under 5 ft from a lot line ({ftin(rake_face)}): same\n"
-            "soffit board there, architect to confirm.",
+            "Type X (IRC R302.6). Roof edges: the rear\n"
+            f"eave ({ftin(eave_face)} from the lot line) and the\n"
+            f"{inch(RAKE)} side rakes ({ftin(rake_face)}) are both under 5 ft:\n"
+            "1-hour underside on all three, no vents.\n"
+            "Attic vents: front soffit and ridge only.",
         ]),
         ("Fire-stopping", [
             "Every pipe, duct, cable and box through a\n"
@@ -616,8 +617,9 @@ def roof_eave(fig, left, bottom, w_in, h_in, eave_face):
     upi = 12.0
     ax = dax(fig, left, bottom, w_in, h_in, upi=upi, x0=-21.0, y0=-12.6)
     top = -12.6 + h_in * upi
-    dtitle(ax, -21.0, top, "R1", "Roof and rear eave", "Section at the rear wall · 1\" = 1'-0\"", WCOL["R1"])
+    dtitle(ax, -21.0, top, "R1", "Roof, rear eave and rakes", "Section at the rear wall · 1\" = 1'-0\"", WCOL["R1"])
     p = m.ROOF_PITCH
+    rake_face = m.SB_SIDE + m.M - RAKE / 12
     heel = m.HEEL * 12
     osb_t = m.EXT * 12 - 6.0
     xi = m.EXT * 12
@@ -674,8 +676,8 @@ def roof_eave(fig, left, bottom, w_in, h_in, eave_face):
         ((xo - 2.5, ye - 0.6), "Drip edge, fascia, gutter (A-105)"),
     ], fs=5.1, gap=0.5, ha="right", land=0.8)
     callouts(ax, -20.8, ys - 4.2, [
-        ((-6.5, ys - 0.31), "REAR SOFFIT: 5/8 in. Type X exterior\ngypsum soffit board, NO vents. 1 hour\nfrom below, IRC Table R302.1(1):\n"
-                            f"eave edge is {ftin(eave_face)} from the lot line"),
+        ((-6.5, ys - 0.31), "REAR EAVE AND SIDE RAKES: 5/8 in.\nType X exterior gypsum soffit board,\nNO vents. 1 hour from below, IRC\nTable R302.1(1): rear eave edge is\n"
+                            f"{ftin(eave_face)}, {inch(RAKE)} rakes {ftin(rake_face)} from the lot line"),
     ], fs=5.1, land=0.0)
     callouts(ax, 8.6, -2.0, [
         ((11.0, -0.31), "5/8 in. gypsum ceiling, taped\n(air barrier); seal top plates"),
@@ -722,7 +724,10 @@ def door_rows():
             hw = "Privacy lever" if ("bedroom" in low or "bath" in low) else "Passage lever"
             if "grille" in low:
                 door_ += ", return grille"
-        rows.append([tag, loc, f"{w} x {h}", "Bifold" if d["kind"] == "bifold" else "Swing", door_, hw])
+            if "pair" in low:
+                hw = "Pull, ball catch"
+        typ = "Bifold" if d["kind"] == "bifold" else ("Pair leaf" if "pair" in low else "Swing")
+        rows.append([tag, loc, f"{w} x {h}", typ, door_, hw])
     rows.append(["G1", "Street door to the stair", f"{ftin(m.ENTRY[1] - m.ENTRY[0])} x {h}", "Swing",
                  "Insulated steel, steel frame", "Closer, keyed lock"])
     rows.append(["G2", "Utility room (garage level)", f"{ftin(round((m.UTIL_DOOR[1] - m.UTIL_DOOR[0]) * 12) / 12)} x {h}", "Swing",
@@ -799,9 +804,6 @@ def sheet_a601(pdf):
         ]),
     ]
     fig, bg = new_sheet("A-601", TITLE["A-601"], "3/16\" = 1'-0\"", notes)
-    for t in bg.texts:                       # the title is longer than the title block at the standard size
-        if t.get_text() == TITLE["A-601"].upper():
-            t.set_fontsize(8.8)
 
     # ---------------- key plan ----------------
     vx, vy = (5.0, 46.0), (5.8, 42.3)
@@ -836,7 +838,8 @@ def sheet_a601(pdf):
              title="DOOR SCHEDULE", sub=f"all doors {ftin(DOOR_H)} high")
     yb = note_lines(bg, TX, yb - 0.06, [
         f"D1 to D{len(m.DOORS)} occur in each flat ({2 * len(m.DOORS)} doors in all). G1 and G2 occur once, at the garage level (A-101).",
-        "Transfer grilles over the bedroom doors and the return grille at D12 are on M-102 and M-103.",
+        "D12 + D13 are the two leaves of one 4'-0\" pair on the mechanical closet (air handler and water heater): both must open",
+        "fully for service. Return grille in leaf D12 and transfer grilles over the bedroom doors: M-102, M-103.",
     ], fs=5.4)
     yb = tbl(fig, bg, TX, yb - 0.3, [0.34, 0.54, 0.4, 0.8, 0.74, 0.62, 1.76], window_rows(), fs=6.0, rh=0.176,
              title="WINDOW SCHEDULE", sub="frame sizes; rough openings by the window maker")
@@ -876,7 +879,7 @@ def fixture_rows():
         ("Tub / shower", nt, f"{S['Bathtub'].split(',')[0]}, one-piece fibreglass tub/shower unit"),
         ("Toilet", nw, S["Toilet"][0].upper() + S["Toilet"][1:]),
         ("Lavatory", nl, S["Vanity"]),
-        ("Water heater", 1, S["Water heater"]),
+        ("Water heater", 1, S["Water heater"].replace(" of its own flat", "")),
         ("Air handler", 1, f"{S['Air handler'][0].upper()}{S['Air handler'][1:]}"),
         ("Heat pump", 1, f"Outdoor unit, side discharge, {hp}, on a pad in the west side yard"),
     ]
@@ -890,8 +893,8 @@ def finish_rows():
         ["Living / kitchen", "LVP", "Vinyl, 4 in.", g, gc, "Laminate counters"],
         ["Hall", "LVP", "Vinyl, 4 in.", g, gc, "Duct soffit at 7'-0\""],
         ["Bedrooms 1, 2, 3", "LVP", "Vinyl, 4 in.", g, gc, ""],
-        ["Closets, linen", "LVP", "Vinyl, 4 in.", g, gc, "Shelf and rod; shelves"],
-        ["W/D and air handler", "LVP", "Vinyl, 4 in.", "MR gypsum, painted", gc, ""],
+        ["Closets", "LVP", "Vinyl, 4 in.", g, gc, "Shelf and rod"],
+        ["W/D, mechanical closet", "LVP", "Vinyl, 4 in.", "MR gypsum, painted", gc, "Water heater on a pan"],
         ["Baths 1, 2, 3", "Sheet vinyl or LVP", "Vinyl, caulked", "MR gypsum, semi-gloss", "MR gypsum, semi-gloss", "Fibreglass tub unit"],
         ["Common stair", "Vinyl treads and landings", "Vinyl, 4 in.", "5/8 Type X, painted", "5/8 Type X, painted", "See A-402"],
         ["Open garage", "Concrete, broom finish, sealed", "None", "Bare concrete", "5/8 Type X, painted", "Stall lines, numbers"],
