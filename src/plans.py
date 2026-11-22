@@ -196,7 +196,7 @@ def lower_plan(ax, mode="arch", cars=True, labels=True):
     door(ax, (m.ENTRY[0], m.YF + m.CMU), 3.0, 0, 90, color=st.edge)
     opening(ax, m.GAR_X1 - 0.02, m.UTIL_DOOR[0], m.SHAFT_X0 + 0.02, m.UTIL_DOOR[1])
     door(ax, (m.SHAFT_X0, m.UTIL_DOOR[1]), 2.667, 270, 90, color=st.edge)
-    u_stair(ax, m.SHAFT_L, st, treads=m.STAIR_LO["treads_per_flight"], dn=False, land=3.25)
+    u_stair(ax, m.SHAFT_L, st, treads=m.STAIR_LO["treads_per_flight"], dn=False, land=m.SHAFT_U[2] + 3.25 - m.SHAFT_L[2])
     for (wx, wy) in m.WH:
         ax.add_patch(plt.Circle((wx, wy), m.WH_R, fc=PAPER, ec=st.furn, lw=0.6, zorder=6))
     if cars:

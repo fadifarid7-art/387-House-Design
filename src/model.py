@@ -269,7 +269,7 @@ DOORS = [
 
 # windows on the exterior walls: (tag, wall, s0, s1, note). Stations: x for S/N walls, y for E/W walls.
 WINDOWS = [
-    ("W1", "S", 10.2, 10.2 + 2.333, "Bedroom 1 escape window"),
+    ("W1", "S", 12.3, 12.3 + 2.333, "Bedroom 1 escape window"),
     ("W2", "S", 21.5, 26.5, "Living room"),
     ("W3", "S", 39.6, 42.6, "Stair"),
     ("W4", "W", 14.5, 17.0, "Bedroom 1"),
