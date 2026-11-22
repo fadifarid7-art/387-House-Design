@@ -230,7 +230,12 @@ def new_sheet(number, title, scale_txt, notes=None):
             fontsize=5.6, color=ACCENT, ha="center", va="center", linespacing=1.25)
     bg.plot([x0, SHEET_W - MARGIN], [by + 1.40, by + 1.40], color=INK, lw=0.6)
     bg.text(tx, by + 1.22, "SHEET TITLE", fontsize=5.6, color=GREY, va="center")
-    bg.text(tx, by + 0.98, title.upper(), fontsize=9.6, fontweight="bold", color=INK, va="center")
+    import textwrap
+    tl = title.upper().split("\n") if "\n" in title else textwrap.wrap(title.upper(), 27)
+    tl = tl[:2] if len(tl) <= 2 else [tl[0], " ".join(tl[1:])]
+    tfs = min(9.6 if len(tl) == 1 else 8.4, 9.6 * 27 / max(len(t) for t in tl))
+    for i, t in enumerate(tl):
+        bg.text(tx, by + (0.98 if len(tl) == 1 else 1.05 - 0.16 * i), t, fontsize=tfs, fontweight="bold", color=INK, va="center")
     bg.text(tx, by + 0.72, f"SCALE  {scale_txt}", fontsize=6.6, color=INK, va="center")
     bg.text(tx, by + 0.54, "(when printed at 11 x 17 in, 100 %)", fontsize=5.6, color=GREY, va="center")
     bg.text(tx, by + 0.30, ISSUE, fontsize=6.2, color=GREY, va="center")

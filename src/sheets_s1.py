@@ -768,7 +768,7 @@ def key_plan(fig, left, bottom):
     txt(ax, 42.6, 20.0, "EAST WALL", size=4.6, rot=90, weight="bold")
     txt(ax, 24.0, 6.6, "trench drain", size=4.2, color="#0e8f9c")
     cut_mark(ax, (m.XE - 5.5, 16.0), (m.XE + 4.4, 16.0), "C")
-    north_arrow(ax, 1.5, -3.2, 2.2, 6)
+    north_arrow(ax, -3.2, -5.6, 1.9, 6)
     return ax
 
 
@@ -869,6 +869,7 @@ def sheet_s102(pdf):
 def trench_detail(fig, left, bottom):
     """Section through the slab edge at the garage opening, looking west. x = distance north of the building face."""
     ax = plan_axes(fig, left, bottom, (-2.4, 2.7), (-1.75, 0.95), 4 / 3.0)
+    ax.set_xlim(-2.4, 2.7)
     xs = Y_SLAB_S - m.YF
     xt = Y_TD - m.YF
     xn = xs + THICK_W
@@ -880,21 +881,21 @@ def trench_detail(fig, left, bottom):
     rect(ax, xt - 0.21, -0.06, xt + 0.21, 0.0, fc=INK, ec=INK, z=7)
     rect(ax, -2.4, -0.5, xs - 0.04, -0.02, fc="#d9dde2", ec=GREY, lw=0.6, z=4)
     rect(ax, -2.4, -0.83, xs, -0.5, fc=STONE, ec="none", z=2, hatch="ooo")
-    line(ax, [(xn + 0.2, -0.22), (2.6, -0.2)], lw=0.8, color=RED, z=8)
+    line(ax, [(xn + 0.2, -0.3), (2.6, -0.27)], lw=0.8, color=RED, z=8)
     rebar_dots(ax, [(xs + 0.3, -0.75), (xn - 0.3, -0.75), (xs + 0.3, -0.25)], 0.035)
-    line(ax, [(0, 0.1), (0, 0.9)], lw=0.5, color=GREY, ls=(0, (4, 2)), z=6)
+    line(ax, [(0, 0.26), (0, 0.9)], lw=0.5, color=GREY, ls=(0, (4, 2)), z=6)
     txt(ax, 0.06, 0.82, "FACE OF BUILDING ABOVE", size=4.4, color=GREY, ha="left")
-    txt(ax, -1.75, -0.26, "APRON\n(C-107)", size=4.4, color=GREY, z=9)
-    txt(ax, 2.05, -0.12, "GARAGE SLAB", size=4.4, z=9)
+    txt(ax, -1.95, -0.26, "APRON\n(C-107)", size=4.4, color=GREY, z=9)
+    txt(ax, 1.75, -0.11, "GARAGE SLAB", size=4.4, z=9)
     dim(ax, (xs, -1.5), (xn, -1.5), -0.14, ftin(THICK_W), ext=False, size=4.6, side=-1)
-    dim(ax, (xn + 0.95, -SLAB_G + 0.03), (xn + 0.95, 0.03), 0, "6\"", ext=False, size=4.6)
-    dim(ax, (xs - 0.55, -THICK_D), (xs - 0.55, 0), 0, "12\"", ext=False, size=4.6)
-    dim(ax, (xt, 0.3), (0, 0.3), 0, "7\"", ext=False, size=4.6)
+    dim(ax, (2.5, -SLAB_G + 0.04), (2.5, 0.04), 0, "6\"", ext=False, size=4.6)
+    dim(ax, (xs - 0.22, -THICK_D), (xs - 0.22, 0), 0, "12\"", ext=False, size=4.6)
+    dim(ax, (xt, 0.42), (0, 0.42), 0, "7\"", ext=False, size=4.6)
     lead(ax, (xt, -0.3), (-2.3, 0.62), "TRENCH DRAIN: 4 in. presloped channel,\nvehicle-rated grate, outlet to the\ngravity outlet (C-105)", size=4.4)
     lead(ax, (xs, -0.3), (-2.3, -1.2), "ISOLATION JOINT\nTO THE APRON", size=4.4, ha="left")
     lead(ax, (xn - 0.3, -0.75), (1.0, -1.45), "THICKENED EDGE, 2 #4\ncontinuous (prelim.)", size=4.4)
-    lead(ax, (2.2, -0.75), (1.0, 0.5), "6 in. COMPACTED STONE", size=4.4, va="bottom")
-    eltag(ax, xt + 0.35, 0.02, f"EL {EL_TD:.2f}", size=4.4, w=0.0)
+    txt(ax, 2.05, -0.75, "6 in. STONE", size=4.4, box=True, z=9)
+    txt(ax, xt + 0.32, 0.14, f"TOP EL {EL_TD:.2f}", size=4.4, ha="left")
     return ax
 
 
@@ -906,8 +907,8 @@ def sog_section(fig, left, bottom, X0=22.0):
     gnd = elev(X0, yo + 0.5)
     top = stem_top(X0, yo + 0.5)
     fb = stem_bot(X0, yo + 0.5)
-    ylo, yhi = 922.3, 928.9
-    x0v, x1v = 28.3, yo + 2.3
+    ylo, yhi = 922.2, 928.9
+    x0v, x1v = 28.6, yo + 2.6
     ax = plan_axes(fig, left, bottom, (x0v, x1v), (ylo, yhi), 8 / 3.0)
     yg, yb = m.Y_GR_I, m.Y_GR_O
     yl = yg + 0.5                                      # garage-side face of the upstand
@@ -942,19 +943,18 @@ def sog_section(fig, left, bottom, X0=22.0):
     # bath 2 drain through the upstand
     line(ax, [(yb + 4.6, sub + 0.1), (yl + 0.02, EL_TOC + 0.55), (yl - 0.5, EL_TOC + 0.52)], lw=1.4, color="#2e7d32", ls=(0, (4, 1.5)), z=7)
     # labels
-    eltag(ax, yb + 1.7, m.EL_A + 0.02, f"UNIT A SLAB EL {m.EL_A:.2f}", size=4.6, w=0.0)
-    dim(ax, (yb, ylo + 0.45), (yb + BACKFILL, ylo + 0.45), 0, f"{ftin(BACKFILL)} ON WALL BACKFILL", ext=False, size=4.6)
-    dim(ax, (yo + 1.15, gnd), (yo + 1.15, top), 0, "8\" MIN.", ext=False, size=4.4, side=-1)
-    dim(ax, (yo + 1.6, fb), (yo + 1.6, gnd), 0, f"{ftin(gnd - fb)}", ext=False, size=4.4, side=-1)
-    txt(ax, yo + 0.25, top + 0.35, f"EL {top:.1f}", size=4.4, ha="left")
-    txt(ax, yo + 0.9, gnd + 0.45, f"GROUND EL {gnd:.1f}", size=4.4, color=EARTH, ha="left")
-    txt(ax, xi - pf - 0.1, fb + 0.2, f"F4 20 x 10 in.\nbottom EL {fb:.1f}", size=4.4, ha="right")
-    txt(ax, yb + 5.4, ylo + 1.0, "UNDISTURBED\nGROUND", size=4.2, color=EARTH)
-    txt(ax, yg + 0.5, 922.9, "12 in. GARAGE\nREAR WALL", size=4.2, z=9)
-    txt(ax, x0v + 0.1, 923.2, "GARAGE", size=4.4, color=GREY, ha="left")
-    for p, q, n in (((yl + 0.25, EL_UPSTAND - 0.5), (yb + 1.3, 923.5), 1), ((yb + 2.6, m.EL_A - 0.2), (yb + 2.6, 926.9), 2), ((yb + 3.4, sub + 0.45), (yb + 3.9, 927.6), 3),
-                    ((yg + 0.25, EL_BRG), (x0v + 0.5, 927.2), 4), ((yb + 2.4, sub + 1.02), (yb + 1.3, 927.9), 5), ((xi + 0.3, 925.0), (xi - 1.5, 928.3), 6),
-                    ((yl - 0.25, EL_TOC + 0.53), (x0v + 0.55, 922.75), 7)):
+    txt(ax, x0v + 0.05, m.EL_A + 0.22, f"UNIT A FLOOR EL {m.EL_A:.2f}", size=4.6, ha="left")
+    dim(ax, (yb, m.EL_A + 0.8), (yb + BACKFILL, m.EL_A + 0.8), 0, ftin(BACKFILL), ext=False, size=4.6)
+    txt(ax, yb + 3.5, 923.35, "WALL BACKFILL", size=4.4, color=EARTH, box=True, z=9)
+    dim(ax, (yo + 0.5, gnd), (yo + 0.5, top), 0, "8\" MIN.", ext=False, size=4.4, side=-1)
+    dim(ax, (yo + 1.9, fb), (yo + 1.9, gnd), 0, f"{ftin(gnd - fb)}", ext=False, size=4.4)
+    txt(ax, yo - 0.9, top + 0.42, f"TOP EL {top:.1f}", size=4.4, ha="right")
+    txt(ax, yo + 1.1, gnd + 0.72, f"GROUND\nEL {gnd:.1f}", size=4.4, color=EARTH, ha="left")
+    txt(ax, xi - pf - 0.1, fb + 0.35, f"F4 20 x 10 in.\nbottom EL {fb:.1f}", size=4.4, ha="right")
+    txt(ax, yb + 5.6, ylo + 0.45, "UNDISTURBED GROUND", size=4.2, color=EARTH)
+    for p, q, n in (((yl + 0.25, EL_UPSTAND - 0.5), (yb + 1.0, 923.1), 1), ((yb + 1.1, m.EL_A - 0.2), (yb + 0.9, 927.6), 2), ((yb + 3.4, sub + 0.45), (yb + 3.4, 927.3), 3),
+                    ((yg + 0.25, EL_BRG), (x0v + 0.5, 927.2), 4), ((yb + 2.4, sub - 0.6), (yb + 2.6, 922.75), 5), ((xi + 0.3, 925.0), (xi - 1.5, 928.3), 6),
+                    ((yl - 0.25, EL_TOC + 0.53), (x0v + 0.3, 922.9), 7)):
         knote(ax, p, q, n)
     return ax
 
@@ -984,10 +984,8 @@ def sheet_s103(pdf):
     fig, bg = new_sheet("S-103", two_line(TITLE["S-103"]), "3/16\" = 1'-0\" U.N.O.", notes)
     L = MARGIN + 0.3
     # ---- A: garage slab plan
-    ax = frame(fig, ((2.0, 50.0), (3.2, 33.6)), L, 0.55, lot=False)
+    ax = frame(fig, ((4.5, 50.0), (3.2, 34.6)), L, 0.55, lot=False)
     lower_plan(ax, "bg", cars=False)
-    line(ax, [(m.OPEN[0], m.YF), (m.OPEN[0] + 1.5 * (m.YF - 3.2) / m.YF, 3.2)], lw=0.5, color=BG_EDGE, z=2)
-    line(ax, [(m.OPEN[1], m.YF), (m.OPEN[1] - 1.5 * (m.YF - 3.2) / m.YF, 3.2)], lw=0.5, color=BG_EDGE, z=2)
     for k in ("GAR", "LOBBY", "UTIL"):
         spoly(ax, G[k], fc=TINT, ec="none", z=4.1)
     spoly(ax, G["RW"], fc=CONC, ec=INK, lw=0.8, z=6)
@@ -1009,8 +1007,8 @@ def sheet_s103(pdf):
         arrow(ax, (x, 26.6), (x, 21.6), color=GREY, lw=0.8)
     txt(ax, 24.0, 27.3, "SLOPE 1/8 in. PER FT TO THE TRENCH DRAIN", size=4.8, color=GREY, weight="bold", box=True)
     eltag(ax, 11.0, m.Y_GR_I - 0.7, f"EL {m.EL_GAR:.2f} AT THE REAR WALL (high side)", size=4.8, w=0.0)
-    lead(ax, (17.0, Y_TD), (14.6, 5.9), f"TRENCH DRAIN, top EL {EL_TD:.2f}\ncentre line 7 in. outside the building face: detail C", size=4.6, color=BLUE, ha="left", va="top")
-    lead(ax, (22.5, Y_SLAB_S + THICK_W - 0.3), (22.6, 13.6), f"THICKENED EDGE 12 in. x {ftin(THICK_W)} (hatched)", size=4.6, va="bottom")
+    lead(ax, (17.0, Y_TD), (15.0, 5.4), f"TRENCH DRAIN, top EL {EL_TD:.2f}\ncentre line 7 in. outside the building face: detail C", size=4.6, color=BLUE, ha="left", va="top")
+    txt(ax, 14.0, 11.85, f"THICKENED EDGE 12 in. x {ftin(THICK_W)}: detail C", size=4.6, z=9)
     lead(ax, (m.STALL_LINES[0], 23.6), (15.0, 24.4), "CJ on the stall line", size=4.6, color=RED, ha="right")
     lead(ax, (16.0, ym), (15.0, 18.2), "CJ at mid-depth", size=4.6, color=RED, ha="center", va="top")
     lead(ax, (cx + 0.7, m.B1_Y + 0.3), (30.0, 14.6), "IJ: diamond block-out at the post,\nfilled after the base is grouted", size=4.6, color=RED)
@@ -1018,7 +1016,7 @@ def sheet_s103(pdf):
     lead(ax, (m.UTIL[0] + 1.0, m.UTIL[2] + 1.0), (33.4, 23.3), "15-mil VAPOUR BARRIER\nunder the utility room slab\nonly; floor drain by P-101", size=4.6, ha="right")
     # sewer exit
     line(ax, [(m.SEWER_OUT_X, m.YF + 2.6), (m.SEWER_OUT_X, 3.8)], lw=1.0, color="#2e7d32", ls=(0, (4, 1.5)), z=7)
-    lead(ax, (m.SEWER_OUT_X, 5.0), (38.6, 4.2), "4 in. BUILDING DRAIN leaves under the\nthickened edge here (P-101): sleeve it", size=4.6, color="#2e7d32")
+    lead(ax, (m.SEWER_OUT_X, 5.0), (37.9, 5.3), "4 in. BUILDING DRAIN leaves under the\nthickened edge here (P-101): sleeve it", size=4.6, color="#2e7d32")
     # areas
     txt(ax, 24.0, 16.2, f"GARAGE SLAB  {a_g:.0f} sf", size=5.4, weight="bold", box=True, z=9)
     txt(ax, (m.SHAFT_L[0] + m.SHAFT_L[1]) / 2, 21.6, f"LOBBY + STAIR\n{a_l:.0f} sf", size=4.6, weight="bold", box=True, z=9)
@@ -1037,15 +1035,14 @@ def sheet_s103(pdf):
     yt = 31.6 - m.Y_GR_O
     dim(ax, (m.xw_gi(m.Y_GR_I), m.Y_GR_O), (m.GAR_X1, m.Y_GR_O), yt, f"{ftin(m.GAR_X1 - m.xw_gi(m.Y_GR_I))}  INSIDE, AT THE REAR WALL", size=5.0)
     dim(ax, (m.SHAFT_X0, m.Y_GR_O), (m.XE_GI, m.Y_GR_O), yt, size=5.0)
-    dim(ax, (m.xw_gi(m.YF + 1.0), m.YF + 2.6), (m.GAR_X1, m.YF + 2.6), 0, f"{ftin(m.GAR_X1 - m.xw_gi(m.YF + 1.0))}  INSIDE, AT THE FRONT", ext=False, size=4.8)
-    dim(ax, (9.4, Y_SLAB_S), (9.4, Y_SLAB_S + THICK_W), 0, ftin(THICK_W), ext=False, size=4.6)
-    line(ax, [(9.2, Y_SLAB_S), (m.OPEN[0], Y_SLAB_S)], lw=0.3, z=8)
-    line(ax, [(9.2, Y_SLAB_S + THICK_W), (m.OPEN[0], Y_SLAB_S + THICK_W)], lw=0.3, z=8)
-    view_title(ax, 2.4, 32.2, "A", f"A   Garage slab plan, EL {m.EL_GAR:.2f}", "3/16\" = 1'-0\" · red = joints · blue = trench drain · preliminary", 8.5)
-    scale_bar(ax, 3.0, 4.6, 8, 4, 0.36, size=5.0)
+    dim(ax, (m.xw_gi(m.YF + 1.0), m.YF + 2.6), (m.GAR_X1, m.YF + 2.6), 0, "", ext=False, size=4.8)
+    txt(ax, 23.9, m.YF + 3.05, f"{ftin(m.GAR_X1 - m.xw_gi(m.YF + 1.0))}  INSIDE AT FRONT", size=4.8, z=9)
+    dim(ax, (m.OPEN[0], Y_SLAB_S), (m.OPEN[0], m.YF), 1.3, f"{round((m.YF - Y_SLAB_S) * 12)}\"", size=4.6)
+    view_title(ax, 4.9, 33.75, "A", f"A   Garage slab plan, EL {m.EL_GAR:.2f}", "3/16\" = 1'-0\" · red = joints · blue = trench drain · preliminary", 8.5)
+    scale_bar(ax, 40.0, 4.0, 8, 4, 0.36, size=5.0)
     # ---- B: Unit A slab on grade plan
-    ax2 = frame(fig, ((2.0, 50.0), (27.4, 44.2)), L, 6.75, lot=True)
-    rect(ax2, 2.0, 27.4, 50.0, m.Y_GR_I, fc="#f6f7f8", ec="none", z=1)
+    ax2 = frame(fig, ((4.5, 50.0), (27.4, 44.2)), L, 6.82, lot=True)
+    rect(ax2, 4.5, 27.4, 50.0, m.Y_GR_I, fc="#f6f7f8", ec="none", z=1)
     spoly(ax2, G["RW"].intersection(box(0, m.Y_GR_I - 0.01, 60, 60)), fc="#d3d7dc", ec=BG_EDGE, lw=0.6, z=3)
     spoly(ax2, G["SOG_NET"], fc=TINT, ec="none", z=3)
     spoly(ax2, G["SOG_NET"].intersection(box(0, m.Y_GR_O, 60, m.Y_GR_O + BACKFILL)), fc="none", ec=EARTH, lw=0.0, z=3.2, hatch="....")
@@ -1061,11 +1058,10 @@ def sheet_s103(pdf):
     ax2.add_patch(plt.Circle(m.STACK_2, 0.22, fc=PAPER, ec="#2e7d32", lw=0.9, zorder=8))
     line(ax2, [m.STACK_2, (m.CHASE_2[0], m.Y_GR_I + 0.5)], lw=1.0, color="#2e7d32", ls=(0, (4, 1.5)), z=7)
     rect(ax2, m.CHASE_2[0] - 0.5, m.CHASE_2[1] - 0.5, m.CHASE_2[0] + 0.5, m.Y_GR_I, fc=PAPER, ec="#2e7d32", lw=0.7, z=7)
-    lead(ax2, (m.CHASE_2[0] + 0.3, 32.6), (27.6, 36.2), "BATH 2: drains under the slab, then through the 6 in. upstand\nof the garage rear wall into chase 2 (P-101, P-102). In first.", size=4.6, color="#2e7d32", ha="left")
-    txt(ax2, 23.0, 33.0, "BATH 2", size=4.4, color=GREY, z=5)
+    txt(ax2, 26.9, 31.15, "BATH 2: drains go in first, under the slab, then\nthrough the 6 in. upstand of the garage rear\nwall into chase 2 (P-101, P-102).", size=4.4, color="#2e7d32", ha="left", box=True, z=9)
     txt(ax2, 15.0, 35.6, f"5 in. SLAB ON GRADE\nEL {m.EL_A:.2f}, level\n{a_s:.0f} sf", size=5.2, weight="bold", z=9)
-    lead(ax2, (33.0, m.Y_GR_O + 1.6), (36.5, 39.4), f"DOTTED STRIP: {ftin(BACKFILL)} beside the garage rear wall sits on wall\nbackfill. Slab spans it: #4 at 12 in. bottom, hooked #4 dowels\nat 16 in. into the wall upstand (prelim.). Detail D.", size=4.6, color=EARTH, ha="left")
-    lead(ax2, (12.6, m.yr_o(12.6) - 0.3), (4.0, 43.3), "8 in. STEM WALL, R-10 at the slab edge (S-101)", size=4.6, ha="left")
+    lead(ax2, (39.6, m.Y_GR_O + 0.75), (36.5, 39.4), f"DOTTED STRIP: {ftin(BACKFILL)} beside the garage rear wall sits on wall\nbackfill. Slab spans it: #4 at 12 in. bottom, hooked #4 dowels\nat 16 in. into the wall upstand (prelim.). Detail D.", size=4.6, color=EARTH, ha="left")
+    lead(ax2, (17.0, m.yr_o(17.0) - 0.3), (19.5, 41.0), "8 in. STEM WALL, R-10 at the slab edge (S-101)", size=4.6, ha="left", va="bottom")
     # dimensions
     dim(ax2, NWG, NE, -1.5, f"{ftin(LN)}  ALONG THE GARAGE REAR WALL", size=5.0, side=-1)
     dim(ax2, NWG, NWU, 1.6, ftin(L_STEM_W), size=5.0)
@@ -1075,7 +1071,7 @@ def sheet_s103(pdf):
     view_title(ax2, 27.5, 43.1, "B", "B   Unit A slab on grade plan", "3/16\" = 1'-0\" · garage rear wall below shown grey · preliminary", 8.5)
     north_arrow(ax2, 47.4, 41.6, 1.5, 6)
     # ---- right column: quantities, details
-    rx = L + 9.3
+    rx = L + 8.78
     bg.text(rx, 10.38, "QUANTITIES (computed from the model)", fontsize=7.4, fontweight="bold", va="center")
     rows = [("Slab", "Area", "Thick", "Concrete", "Stone")]
     rows.append(("Garage, incl. thick edge", f"{a_g:.0f} sf", "6 in.", f"{cy(a_g, SLAB_G) + extra:.1f} cy", f"{cy(a_g, STONE_G):.1f} cy"))
@@ -1084,12 +1080,12 @@ def sheet_s103(pdf):
     tg = a_g + a_l + a_u
     rows.append(("Garage level total", f"{tg:.0f} sf", "", f"{cy(tg, SLAB_G) + extra:.1f} cy", f"{cy(tg, STONE_G):.1f} cy"))
     rows.append(("Unit A slab on grade", f"{a_s:.0f} sf", "5 in.", f"{cy(a_s, SLAB_A):.1f} cy", f"{cy(a_s, STONE_A):.1f} cy"))
-    yb = table(bg, rx, 10.22, [1.42, 0.56, 0.48, 0.62, 0.56], rows, fs=5.5, rh=0.18)
+    yb = table(bg, rx, 10.22, [1.55, 0.62, 0.52, 0.7, 0.62], rows, fs=5.5, rh=0.18)
     bg.text(rx, yb - 0.13, f"Net of walls. Add waste. R-10 foam and vapour barrier under Unit A slab: {a_s:.0f} sf.", fontsize=5.2, color=GREY, va="center")
     bg.text(rx, yb - 0.27, f"Unit A slab outline to the outside of the walls: {poly_area(m.SOG):.0f} sf.", fontsize=5.2, color=GREY, va="center")
     vtitle(bg, rx, 8.42, "C", "Slab edge and trench drain at the opening", "3/4\" = 1'-0\" · looking west · preliminary")
-    trench_detail(fig, rx - 0.02, 6.2)
-    vtitle(bg, rx, 5.82, "D", "Section through the Unit A slab on grade", "3/8\" = 1'-0\" · cut at bath 2, looking west · preliminary")
+    trench_detail(fig, rx + 0.1, 6.2)
+    vtitle(bg, rx, 5.82, "D", "Section through the Unit A slab on grade", "3/8\" = 1'-0\" · cut at bath 2, looking west (garage at left) · preliminary")
     sog_section(fig, rx - 0.02, 3.1)
     keys = [
         "Garage rear wall: 6 in. truss ledge on the garage side, 6 in. upstand on the soil side to the underside of the slab.",
@@ -1102,7 +1098,7 @@ def sheet_s103(pdf):
     ]
     ky = 2.86
     for i, k in enumerate(keys):
-        lines = textwrap.wrap(k, 72)
+        lines = textwrap.wrap(k, 80)
         bg.add_patch(plt.Circle((rx + 0.08, ky - 0.045), 0.078, fc=PAPER, ec=INK, lw=0.5))
         bg.text(rx + 0.08, ky - 0.05, str(i + 1), fontsize=4.8, fontweight="bold", ha="center", va="center")
         bg.text(rx + 0.22, ky, "\n".join(lines), fontsize=5.2, va="top", linespacing=1.22)
@@ -1159,9 +1155,9 @@ def detail_bearing(fig, left, bottom):
     for x in (-1.5, 0.5):
         rect(ax, x, d + SILL, x + 3.5 * IN, 2.05, fc=WOODC, ec=INK, lw=0.4, z=4)
     txt(ax, -0.45, 1.78, "FLOOR TRUSSES OVER (S-201)", size=4.6, color=GREY)
-    dim(ax, (-0.5, -0.42), (0, -0.42), 0, "6\"", ext=False, size=4.8, side=-1)
+    dim(ax, (-0.5, seat), (0, seat), -(1.02 + seat), "6\" BEARING", size=4.6, side=-1)
     lead(ax, (0.9, d * 0.5), (0.55, -0.55), "B1  W14x34", size=5.2, color=STEEL, weight="bold", va="top", ha="left")
-    lead(ax, (-0.1, -PLATE / 2), (0.3, -0.95), "3/4 in. BEARING PLATE 7 x 6 in.\non 3/4 in. non-shrink grout", size=4.6, va="center")
+    lead(ax, (-0.1, -PLATE / 2), (0.3, -0.9), "3/4 in. BEARING PLATE 7 x 6 in.\non 3/4 in. non-shrink grout", size=4.6, va="center")
     lead(ax, (-0.25, 0.25), (-1.95, 0.55), "2 ANCHOR RODS\n3/4 in., 9 in. embed,\nslotted holes", size=4.6, ha="left")
     lead(ax, (-0.48, 0.9), (-1.95, 1.0), "1/2 in. GAP at the\nbeam end", size=4.6, ha="left")
     lead(ax, (1.2, d + SILL / 2), (0.75, 1.52), "2x8 NAILER on the steel", size=4.6, va="bottom", ha="left")
@@ -1197,13 +1193,12 @@ def detail_cap(fig, left, bottom):
     txt(ax, -1.72, 1.02, "PORCH SIDE\n(south)", size=4.6, color=GREY, ha="left")
     txt(ax, 1.5, 1.02, "GARAGE SIDE\n(north)", size=4.6, color=GREY, ha="right")
     arrow(ax, (-0.6, 1.72), (-1.6, 1.72), color=GREY, lw=0.6)
-    txt(ax, -1.1, 1.82, "cantilever 4'-0\"", size=4.4, color=GREY)
-    lead(ax, (bf / 2 - 0.05, 0.45), (0.62, 0.5), "B1  W14x34\nstiffeners over the\npost if required", size=4.6, ha="left")
+    txt(ax, -1.1, 1.84, "cantilever 4'-0\"", size=4.4, color=GREY, box=True)
+    lead(ax, (bf / 2 - 0.05, 0.45), (0.62, 0.5), "B1  W14x34, 6 3/4 in.\nflange; stiffeners over\nthe post if required", size=4.6, ha="left")
     lead(ax, (3.5 * IN, -PLATE / 2), (0.62, -0.28), "3/4 in. CAP PLATE 7 x 14 in.\n4 bolts 3/4 in. A325,\nbeyond the HSS faces", size=4.6, ha="left")
     lead(ax, (0.25, -0.95), (0.62, -0.95), "HSS 6x6x3/8 POST", size=4.6, ha="left", weight="bold", color=STEEL)
     lead(ax, (-3.625 * IN, d + SILL / 2), (-1.7, 0.45), "2x8 TREATED NAILER,\n1/2 in. bolts at 24 in.,\nstaggered, through the\ntop flange", size=4.6, ha="left", va="top")
     lead(ax, (0.9, y0 + 0.06), (0.62, 1.55), "20 in. FLOOR TRUSS, bears on\nthe nailer; clip each truss", size=4.6, ha="left", va="bottom")
-    dim(ax, (-bf / 2, -0.55), (bf / 2, -0.55), 0, "6 3/4\" FLANGE", ext=False, size=4.4, side=-1)
     return ax
 
 
@@ -1227,7 +1222,7 @@ def detail_base(fig, left, bottom):
     line(ax, [(-1.75, ft_top - PAD_T + 0.29), (1.75, ft_top - PAD_T + 0.29)], lw=0.9, color=RED, z=8)
     rebar_dots(ax, [(x, ft_top - PAD_T + 0.34) for x in np.arange(-1.5, 1.6, 1.0)], 0.03)
     dim(ax, (-PAD / 2, ft_top - PAD_T), (PAD / 2, ft_top - PAD_T), -0.16, f"{ftin(PAD)} SQUARE PAD F2", ext=False, size=4.8, side=-1)
-    dim(ax, (-2.2, ft_top - PAD_T), (-2.2, ft_top), 0, "14\"", ext=False, size=4.6)
+    dim(ax, (2.2, ft_top - PAD_T), (2.2, ft_top), 0, "14\"", ext=False, size=4.6, side=-1)
     eltag(ax, -2.4, 0.07, f"SLAB EL {EL_TD + (m.B1_Y - Y_TD) / 96:.2f} HERE", size=4.6, w=0.0)
     eltag(ax, 1.05, ft_top - 0.12, f"TOP OF PAD EL {m.EL_FTG_TOP:.2f}", size=4.6, w=0.0)
     lead(ax, (0.25, 0.45), (0.62, 0.52), "HSS 6x6x3/8 POST", size=4.6, weight="bold", color=STEEL)
@@ -1273,42 +1268,40 @@ def sheet_s104(pdf):
     L = MARGIN + 0.3
     vx = (3.0, 50.0)
     # ---- A: plan
-    ax = frame(fig, (vx, (3.6, 15.4)), L, 8.02, lot=False)
+    ax = frame(fig, (vx, (3.2, 14.6)), L, 8.0, lot=False)
     lower_plan(ax, "bg", cars=False)
     for k in ("F1", "F2", "F2E"):
-        spoly(ax, G[k].intersection(box(0, 0, 60, 15.4)), fc="none", ec=GREY, lw=0.5, z=6.5, ls=DASH)
-    spoly(ax, G["RW"].intersection(box(0, 0, 60, 15.4)), fc=CONC, ec=INK, lw=0.8, z=6)
-    spoly(ax, G["IW"].intersection(box(0, 0, 60, 15.4)), fc="#c3c7cc", ec=INK, lw=0.6, z=6)
+        spoly(ax, G[k].intersection(box(0, 0, 60, 14.6)), fc="none", ec=GREY, lw=0.5, z=6.5, ls=DASH)
+    spoly(ax, G["RW"].intersection(box(0, 0, 60, 14.6)), fc=CONC, ec=INK, lw=0.8, z=6)
+    spoly(ax, G["IW"].intersection(box(0, 0, 60, 14.6)), fc="#c3c7cc", ec=INK, lw=0.6, z=6)
     rect(ax, *m.PORCH[:2], *m.PORCH[2:], fc="none", ec=GREY, lw=0.6, z=5, ls=(0, (6, 3)))
     rect(ax, BEAM_X0, m.B1_Y - W14["bf"] / 2, BEAM_X1, m.B1_Y + W14["bf"] / 2, fc=STEEL, ec=INK, lw=0.5, z=8)
     cx = m.COL_X[1]
     rect(ax, cx - 0.25, m.B1_Y - 0.25, cx + 0.25, m.B1_Y + 0.25, fc=PAPER, ec=INK, lw=1.2, z=9)
     for x in m.COL_X:
         line(ax, [(x, m.B1_Y - 1.0), (x, m.B1_Y + 1.0)], lw=0.4, ls=(0, (6, 2, 1, 2)), z=10)
-    y1 = -(m.YF - 5.6)
+    y1 = -(m.YF - 5.25)
     dim(ax, (m.COL_X[0], m.YF), (m.COL_X[1], m.YF), y1, f"{ftin(L1)}  CENTRE OF BEARING TO CENTRE OF POST", size=5.0)
     dim(ax, (m.COL_X[1], m.YF), (m.COL_X[2], m.YF), y1, ftin(L2), size=5.0)
-    dim(ax, (BEAM_X0, m.YF), (BEAM_X1, m.YF), -(m.YF - 4.3), f"{ftin(blen)}  B1 OVERALL", size=5.0)
-    dim(ax, (m.PORCH[0] + 2.5, m.PORCH[1]), (m.PORCH[0] + 2.5, m.YF), 0, ftin(m.YF - m.PORCH[1]), ext=False, size=4.6)
-    txt(ax, 21.5, 8.2, "PORCH ABOVE: floor trusses cantilever over B1", size=4.6, color=GREY)
-    lead(ax, (17.0, m.B1_Y + 0.25), (13.0, 13.4), f"B1  W14x34 (prelim.), centre line {ftin(m.B1_Y - m.YF)} north of the building face, TOP OF STEEL EL {m.EL_B1_TOP:.2f}", size=4.8, color=STEEL, weight="bold")
-    lead(ax, (cx + 0.3, m.B1_Y + 0.3), (30.0, 12.2), "HSS 6x6x3/8 POST on pad F2", size=4.6)
-    for x, tag in ((m.COL_X[0], "1"), (cx, "2"), (cx, "3")):
-        pass
-    cut_mark(ax, (m.COL_X[0] - 1.6, 11.9), (m.COL_X[0] - 1.6, 11.9), "1")
-    cut_mark(ax, (cx - 1.4, 12.6), (cx - 1.4, 12.6), "2")
-    cut_mark(ax, (cx - 2.6, 12.6), (cx - 2.6, 12.6), "3")
-    txt(ax, 4.6, 12.2, "details", size=4.2, color=GREY)
-    vtitle(bg, L, 10.42, "A", "Plan of beam B1 over the garage opening", "3/16\" = 1'-0\" · steel blue · footings dashed · preliminary")
+    dim(ax, (BEAM_X0, m.YF), (BEAM_X1, m.YF), -(m.YF - 4.15), f"{ftin(blen)}  B1 OVERALL", size=5.0)
+    dim(ax, (m.PORCH[2] - 1.4, m.PORCH[1]), (m.PORCH[2] - 1.4, m.YF), 0, ftin(m.YF - m.PORCH[1]), ext=False, size=4.6)
+    txt(ax, 21.5, 8.3, f"PORCH ABOVE: floor trusses cantilever over B1. Centre line of B1 is {round((m.B1_Y - m.YF) * 12)} in. north of the building face.", size=4.6, color=GREY)
+    lead(ax, (16.0, m.B1_Y + 0.25), (13.0, 13.5), f"B1  W14x34 (prelim.)   TOP OF STEEL EL {m.EL_B1_TOP:.2f}", size=4.8, color=STEEL, weight="bold")
+    lead(ax, (cx + 0.3, m.B1_Y + 0.3), (31.6, 13.5), "HSS 6x6x3/8 POST", size=4.6)
+    knote(ax, (m.COL_X[0], m.B1_Y + 0.3), (m.COL_X[0] + 0.9, 12.7), 1)
+    knote(ax, (cx - 0.1, m.B1_Y + 0.3), (cx - 1.0, 12.7), 2)
+    knote(ax, (cx - 0.1, m.B1_Y + 0.3), (cx - 2.2, 12.7), 3)
+    knote(ax, (m.COL_X[2], m.B1_Y + 0.3), (m.COL_X[2] - 1.2, 12.9), 1)
+    vtitle(bg, L, 10.42, "A", "Plan of beam B1 over the garage opening", "3/16\" = 1'-0\" · steel blue · footings dashed · circled numbers = details below · preliminary")
     # ---- B: elevation looking north
-    yv = (910.9, 927.4)
+    yv = (910.9, 926.9)
     ax2 = plan_axes(fig, L, 4.48, vx, yv, FPI)
     xs_ = np.linspace(vx[0], vx[1], 60)
     gl = [(x, elev(x, m.YF - 0.5)) for x in xs_]
     poly(ax2, [(vx[0], yv[0])] + gl + [(vx[1], yv[0])], fc="#f7f3ec", ec="none", z=0.5)
-    rect(ax2, m.xw_gi(m.YF), yv[0], m.XE_GI, 927.4, fc=PAPER, ec="none", z=0.8)
+    rect(ax2, m.xw_gi(m.YF), yv[0], m.XE_GI, yv[1], fc=PAPER, ec="none", z=0.8)
     rect(ax2, vx[0], yv[0], vx[1], EL_F1_BOT, fc="#f7f3ec", ec="none", z=0.9)
-    line(ax2, gl, color=EARTH, lw=0.8, ls=(0, (5, 2)), z=6)
+    line(ax2, gl, color=EARTH, lw=0.6, ls=(0, (5, 2)), z=6)
     # footings
     rect(ax2, wx(m.YF, HEEL), EL_F1_BOT, m.OPEN[0] + 1.0, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
     rect(ax2, cx - PAD / 2, m.EL_FTG_TOP - PAD_T, cx + PAD / 2, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
@@ -1324,7 +1317,7 @@ def sheet_s104(pdf):
     rect(ax2, m.SHAFT_X0, m.EL_FTG_TOP, m.XE_GI, EL_TOC, fc="#c3c7cc", ec=INK, lw=0.7, z=4)
     rect(ax2, m.XE_GI, m.EL_FTG_TOP, m.XE, EL_TOC, fc=CONC, ec=INK, lw=0.9, z=4)
     rect(ax2, m.ENTRY[0], m.EL_GAR, m.ENTRY[1], m.EL_GAR + 6.667, fc=PAPER, ec=INK, lw=0.5, z=5)
-    txt(ax2, (m.ENTRY[0] + m.ENTRY[1]) / 2, m.EL_GAR + 3.3, "ENTRY\nDOOR", size=4.4, color=GREY, z=6)
+    txt(ax2, (m.ENTRY[0] + m.ENTRY[1]) / 2, m.EL_GAR + 1.7, "ENTRY\nDOOR", size=4.4, color=GREY, z=6)
     # steel
     rect(ax2, BEAM_X0, EL_SOFFIT, BEAM_X1, m.EL_B1_TOP, fc=STEEL, ec=INK, lw=0.5, z=6)
     rect(ax2, cx - 0.25, m.EL_FTG_TOP + GROUT + PLATE, cx + 0.25, EL_SOFFIT - PLATE, fc=STEEL, ec=INK, lw=0.5, z=6)
@@ -1334,7 +1327,7 @@ def sheet_s104(pdf):
     rect(ax2, m.xw_o(m.YF), m.EL_B1_TOP, m.XE, m.EL_A, fc="#f3ead6", ec=INK, lw=0.6, z=5)
     rect(ax2, m.xw_o(m.YF), m.EL_A, m.XE, yv[1], fc="#fbfaf7", ec=GREY, lw=0.5, z=3)
     txt(ax2, 22.0, (m.EL_B1_TOP + m.EL_A) / 2, "UNIT A FLOOR: 20 in. TRUSSES SIT ON TOP OF B1 (ON A NAILER) AND CANTILEVER 4'-0\" TOWARD YOU FOR THE PORCH", size=4.6, z=8)
-    txt(ax2, 22.0, 926.5, "UNIT A FRONT WALL (2x6), UNIT B AND ROOF ABOVE", size=4.6, color=GREY, z=8)
+    txt(ax2, 22.0, 926.2, "UNIT A FRONT WALL (2x6), UNIT B AND ROOF ABOVE", size=4.6, color=GREY, z=8)
     # dimensions
     yd = 921.3
     dim(ax2, (m.COL_X[0], yd), (m.COL_X[1], yd), 0, f"{ftin(L1)} SPAN", ext=False, size=5.0, color=STEEL)
@@ -1350,13 +1343,13 @@ def sheet_s104(pdf):
     eltag(ax2, xr, EL_SOFFIT - 0.2, f"UNDERSIDE EL {EL_SOFFIT:.2f}", size=4.6, w=0.6, color=STEEL)
     eltag(ax2, xr + 2.1, m.EL_GAR + 0.1, f"SLAB {m.EL_GAR:.2f}", size=4.4, w=0.3)
     eltag(ax2, xr + 2.1, m.EL_FTG_TOP - 0.55, f"FTG {m.EL_FTG_TOP:.2f}", size=4.4, w=0.3)
-    lead(ax2, (9.0, 918.5), (4.2, 915.2), f"CONCRETE\nRETURN PIER\n{ftin(m.OPEN[0] - m.xw_o(m.YF))} x 12 in.", size=4.4, ha="center", va="top", box=True)
-    txt(ax2, 5.0, 924.2, "existing ground at\nthe front wall (LiDAR)", size=4.2, color=EARTH)
+    lead(ax2, (9.0, 918.5), (4.5, 916.6), f"CONCRETE\nRETURN PIER\n{ftin(m.OPEN[0] - m.xw_o(m.YF))} x 12 in.", size=4.4, ha="center", va="top", box=True)
+    txt(ax2, 4.65, 920.4, "existing\nground at\nthe front\nwall (LiDAR)", size=4.2, color=EARTH)
     lead(ax2, (m.COL_X[2], 919.0), (34.6, 918.4), "8 in. LOBBY\nWALL CORNER", size=4.4, ha="right")
     txt(ax2, cx, m.EL_FTG_TOP - PAD_T - 0.5, f"F2 PAD {ftin(PAD)} SQ.", size=4.4, z=8)
     for x, tag in ((BEAM_X0 + 0.2, "1"), (cx, "2")):
         ax2.add_patch(plt.Circle((x, EL_SOFFIT - 0.1), 0.95, fc="none", ec=RED, lw=0.8, zorder=9))
-    txt(ax2, BEAM_X0 - 1.6, EL_SOFFIT - 1.3, "1", size=5.4, weight="bold", color=RED)
+    txt(ax2, BEAM_X0 + 1.75, EL_SOFFIT - 0.75, "1", size=5.4, weight="bold", color=RED)
     txt(ax2, cx - 1.5, EL_SOFFIT - 1.3, "2", size=5.4, weight="bold", color=RED)
     ax2.add_patch(plt.Circle((cx, m.EL_FTG_TOP + 0.1), 0.95, fc="none", ec=RED, lw=0.8, zorder=9))
     txt(ax2, cx - 1.5, m.EL_FTG_TOP + 1.2, "3", size=5.4, weight="bold", color=RED)

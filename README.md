@@ -21,12 +21,12 @@ door swing, toilet clearance, car or setback does not fit.
 |---|---|
 | Variance | One: rear setback 20 ft to 5 ft. Front 10 ft, sides 5 ft, coverage 48 %, height, parking, garage width (65 %) and driveway width (22 ft) all comply. |
 | Footprint | 942 sq ft, a four-sided wedge: the rear wall is parallel to the rear lot line and the west wall to the west lot line. All faces are held 2 in. inside the setback lines. |
-| Each flat | 784 sq ft net, 3 bedrooms, 3 baths with 60 in. tubs, living room and kitchen with an island, hall, laundry and air-handler closets. |
+| Each flat | 784 sq ft net, 3 bedrooms, 3 baths with 60 in. tubs, living room and kitchen with an island, hall, laundry closet and mechanical closet. |
 | Bedrooms | 125, 117 and 112 sq ft (were 94, 79 and 77). Each takes a queen bed with 24 in. both sides, a 48 in. desk and a 36 in. dresser. Closets are separate framed rooms with doors (8, 8 and 12 sq ft). |
 | Living and kitchen | 17 ft 2 in x 10 ft 6 in, 180 sq ft (was about 245). The bedrooms took more than the building gained. |
-| Garage | Open front, no doors, 25 ft opening, three cars with 2 ft 4 in between them, 8 ft 1 in clear under the beam. |
+| Garage | Open front, no doors, 25 ft opening, three cars with 2 ft 4 in between them, 8 ft clear under the beam. |
 | Heating and cooling | Central air: one ducted heat pump per flat. The air handler is in a closet off the hall; ducts run in 7 ft dropped ceilings; outdoor units are on the west side yard. |
-| Water heaters | Both in a heated utility room at garage level. Water enters that room below frost depth, so no water pipe is in the open garage. |
+| Water heaters | One in each flat, beside the air handler in a 5 ft x 2 ft 10 in mechanical closet off the hall (there is no linen closet). Water enters a small heated utility room at garage level below frost depth and rises inside the heated building, so no water pipe is in the open garage. |
 | Separate utilities | Two electric meters, two water meters. Common lights are automatic and run from Unit A's panel. All-electric, no gas, no cameras. |
 | Drainage | French drain, trench drain and roof leaders run by gravity to one outlet at the street edge. No sump pump. |
 | City property | Only the driveway apron, the buried drain outlet and the utility's meter pits are in the right-of-way. |

@@ -190,7 +190,7 @@ def lower_plan(ax, mode="arch", cars=True, labels=True):
     wall(ax, m.SHAFT_X0, m.SHAFT_U[3], m.XE_GI, m.UTIL[2], st, fc=st.conc)         # stair / utility
     line(ax, [(m.OPEN[0], m.YF), (m.OPEN[1], m.YF)], lw=0.5, ls=(0, (2, 3)), z=7, color=st.edge)
     cx = m.COL_X[1]
-    rect(ax, cx - 0.25, m.YF + 0.08, cx + 0.25, m.YF + 0.58, fc=st.conc if st.bg else BLUE, ec=st.edge, lw=0.4, z=7)   # steel post
+    rect(ax, cx - 0.25, m.B1_Y - 0.25, cx + 0.25, m.B1_Y + 0.25, fc=st.conc if st.bg else BLUE, ec=st.edge, lw=0.4, z=7)   # steel post, on the B1 line
     # entry door (street) and utility door (swings into the room, never toward a car)
     opening(ax, m.ENTRY[0], m.YF - 0.02, m.ENTRY[1], m.YF + m.CMU + 0.02)
     door(ax, (m.ENTRY[0], m.YF + m.CMU), 3.0, 0, 90, color=st.edge)
@@ -213,9 +213,7 @@ def lower_plan(ax, mode="arch", cars=True, labels=True):
         txt(ax, c + m.CAR_W / 2, m.CAR_Y0 + 8.3, f"{i + 1}", size=11, weight="bold", color=YELLOW, z=7)
     room(ax, 24.0, 28.1, "OPEN 3-CAR GARAGE", None, fs=6.0)
     txt(ax, (x0 + x1) / 2, 12.3, "COMMON\nSTAIR", size=4.8, color=GREY)
-    txt(ax, 39.3, 27.4, "UTILITY\n(heated)", size=4.6, weight="bold")
-    for i, (wx, wy) in enumerate(m.WH):
-        txt(ax, wx, wy, f"WH\n{'AB'[i]}", size=3.6, color=GREY, z=8)
+    txt(ax, 40.6, 27.2, "UTILITY (heated)\nwater service entry", size=4.4, weight="bold")
     return st
 
 
@@ -266,11 +264,14 @@ def unit_fixtures(ax, st, labels=True):
     lav(ax, *m.ISL_SINK, st)
     rect(ax, *m.ISL_DW[:2], *m.ISL_DW[2:], fc=PAPER, ec=f, lw=0.5, z=6)
     rect(ax, *m.PANEL[:2], *m.PANEL[2:], fc=f, ec=f, lw=0.4, z=7)
+    ax.add_patch(plt.Circle(m.WH_UNIT, m.WH_PAN_R, fc=PAPER, ec=f, lw=0.3, ls=(0, (2, 2)), zorder=6))
+    ax.add_patch(plt.Circle(m.WH_UNIT, m.WH_R, fc=PAPER, ec=f, lw=0.6, zorder=6))
     if labels and not st.bg:
         txt(ax, (m.FRIDGE[0] + m.FRIDGE[2]) / 2, (m.FRIDGE[1] + m.FRIDGE[3]) / 2, "REF", size=4.0, color=GREY, z=8)
         txt(ax, (m.ISL_DW[0] + m.ISL_DW[2]) / 2, (m.ISL_DW[1] + m.ISL_DW[3]) / 2, "DW", size=3.8, color=GREY, z=8)
         txt(ax, (m.WD[0] + m.WD[2]) / 2, (m.WD[1] + m.WD[3]) / 2, "W/D", size=3.8, color=GREY, z=8)
         txt(ax, (m.AHU[0] + m.AHU[2]) / 2, (m.AHU[1] + m.AHU[3]) / 2, "AHU", size=3.4, color=INK, z=8, weight="bold")
+        txt(ax, *m.WH_UNIT, "WH", size=3.6, color=INK, z=8, weight="bold")
 
 
 def unit_furniture(ax, st):
@@ -319,7 +320,6 @@ def unit_labels(ax, st, sizes=True):
     txt(ax, *ROOM_LABELS["HALL"], "HALL", size=4.0, color=GREY, rot=90)
     for k in ("CLOSET 1", "CLOSET 2", "CLOSET 3"):
         txt(ax, *ROOM_LABELS[k], "CLOSET", size=3.6, color=GREY)
-    txt(ax, 24.9, 29.05, "LINEN", size=3.4, color=GREY)
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
 
 

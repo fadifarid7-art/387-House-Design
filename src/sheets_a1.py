@@ -151,7 +151,7 @@ def west_pt(y):
 
 
 def lot_labels(ax):
-    txt(ax, 30.0, rear_y(30.0) + 0.75, "REAR LOT LINE", size=5.0, color=ACCENT, rot=-math.degrees(T_R))
+    txt(ax, 42.5, rear_y(42.5) + 0.75, "REAR LOT LINE", size=5.0, color=ACCENT, rot=-math.degrees(T_R))
     yy = 3.6
     txt(ax, west_x(yy) - 0.75, yy, "WEST LOT LINE", size=5.0, color=ACCENT, rot=90 - math.degrees(WEST_LEAN))
 
@@ -299,17 +299,16 @@ def sheet_a101(pdf):
     leader(ax, (16.5, m.B1_Y), (13.4, m.YF + 1.3), f"STEEL BEAM B1 OVER (S-104): {clr(m.OPEN_CLEAR_H)} CLEAR UNDER IT", size=4.4, color=BLUE,
            ha="left", arrow=False)
     leader(ax, (m.COL_X[1] + 0.25, m.YF + 0.33), (29.6, m.YF + 1.3), "STEEL POST (S-104)", size=4.4, color=BLUE, arrow=False)
-    leader(ax, (m.xw_gi(27.0), 27.0), (3.2, 30.6), "BIKE HOOKS ON THIS WALL,\nAT THE BACK", ha="right", **T)
-    leader(ax, (m.xw_o(15.0) + 0.5, 15.0), (2.0, 16.6), f"{inch(m.CONC)} CONCRETE RETAINING\nWALL ON 3 SIDES (S-102)", ha="right", **T)
-    leader(ax, (m.HP[1][0] - 0.4, m.HP[1][1]), (2.6, 25.4), "HEAT-PUMP PADS\nA AND B (M-101)", ha="right", **T)
-    line(ax, [(m.HP[0][0] - 0.4, m.HP[0][1]), (4.3, 23.9)], lw=0.3, z=9)
+    leader(ax, (m.xw_gi(27.0), 27.0), (2.8, 30.6), "BIKE HOOKS ON THIS WALL,\nAT THE BACK", ha="right", **T)
+    leader(ax, (m.xw_o(15.0) + 0.5, 15.0), (1.2, 16.6), f"{inch(m.CONC)} CONCRETE RETAINING\nWALL ON 3 SIDES (S-102)", ha="right", **T)
+    leader(ax, (m.HP[1][0] - 0.4, m.HP[1][1]), (2.2, 25.4), "HEAT-PUMP PADS\nA AND B (M-101)", ha="right", **T)
     txt(ax, (m.CHASE_1[0] + m.CHASE_2[0]) / 2, 26.55, "C1, C2: DRAIN CHASES, 1-HOUR,\nINSULATED, 16 x 16 in. (P-101)", size=3.9, color=RATED, box=True)
     leader(ax, (m.XE, 27.0), (50.9, 27.0), f"UTILITY ROOM (heated)\n{fi(util_w)} x {fi(util_d)} clear\nDoor swings in.\nWH A, WH B: 80 gal", arrow=False, **T)
     leader(ax, (m.XE_GI - 0.6, m.UTIL[2] - m.CMU / 2), (50.9, 23.2), f"{inch(m.CMU)} CONCRETE OR\nGROUTED BLOCK:\nlobby wall and stair /\nutility wall (S-101)", **T)
     leader(ax, (m.XE, 15.5), (50.9, 15.5), f"COMMON STAIR\nflights {fi(flight)} wide\n{lo['risers']} risers to Unit A", arrow=False, **T)
-    leader(ax, (m.XE - 1.0, 1.9), (46.3, 4.6), "TRASH BAY, 4 CARTS,\nSCREENED (C-107)", **T)
+    leader(ax, (m.XE - 1.0, 1.9), (46.4, 4.9), "TRASH BAY,\n4 CARTS, SCREENED\n(C-107)", **T)
     txt(ax, 40.9, 4.4, f"ENTRY LANDING\nEL {m.EL_GAR:.1f}, level", size=4.2)
-    leader(ax, (14.5, m.YF - 0.6), (3.0, 12.9), "TRENCH DRAIN ACROSS\nTHE OPENING (C-105)", ha="right", color=BLUE, **T)
+    leader(ax, (14.5, m.YF - 0.6), (0.7, 12.9), "TRENCH DRAIN ACROSS\nTHE OPENING (C-105)", ha="right", color=BLUE, **T)
     leader(ax, ((m.WING_W[0][0] + m.WING_W[1][0]) / 2, 5.3), (7.6, 3.3), "WING WALL RETAINS\nTHE FRONT YARD (C-107)", ha="right", **T)
     txt(ax, 24.3, 3.0, "CONCRETE APRON (C-107)", size=5.4, weight="bold")
     D(ax, m.APRON[5], m.APRON[2], 0.0, fi(m.APRON_W_ROW) + " AT THE RIGHT-OF-WAY LINE", ext=False, size=4.6)
@@ -355,9 +354,16 @@ def above_floor(el):
     return (max(r) if r else 0.0), (min(w) if w else Lw), Lw
 
 
+def rear_windows(ax):
+    """plans.unit_shell paints the rear wall over the white of its windows: put the white back."""
+    for (t, w_, s0, s1, n) in m.WINDOWS:
+        if w_ == "N":
+            poly(ax, m.win_quad(w_, s0, s1), fc=PAPER, ec="none", z=5.6)
+
+
 def unit_dims(ax, unit):
     """All dimension strings of a unit plan. Outside: openings / rooms / overall on each wall."""
-    o1, o2, o3 = 1.9, 3.1, 4.3
+    o1, o2, o3 = 1.8, 2.9, 4.0
     sw, se, ne, nw = m.OUT_U
     S = dict(size=4.5)
     # front wall (strings below the porch)
@@ -393,11 +399,11 @@ def unit_dims(ax, unit):
     D(ax, (8.75, m.YFI), (8.75, m.Y1), 0, **I)                                 # bedroom 1 depth
     y = 31.15
     D(ax, (m.xw_i(y), y), (m.E1, y), 0, **I)                                   # bedroom 2 width
-    D(ax, (16.7, m.Y4), (16.7, m.yr_i(16.7)), 0, **I)                          # bedroom 2 depth
+    D(ax, (16.7, m.Y4), (16.7, m.yr_i(16.7)), 0, at=0.8, **I)                          # bedroom 2 depth
     D(ax, (m.X_B3, 28.3), (m.X_ST, 28.3), 0, **I)                              # bedroom 3 width
     D(ax, (30.4, m.Y2), (30.4, m.yr_i(30.4)), 0, at=0.36, **I)                 # bedroom 3 depth to the rear wall
     y = m.Y1 - 0.45
-    D(ax, (m.X_H0, y), (m.X_ST, y), 0, side=-1, **I)                           # living / kitchen width
+    D(ax, (m.X_H0, y), (m.X_ST, y), 0, side=-1, at=0.3, **I)                           # living / kitchen width
     D(ax, (30.6, m.YFI), (30.6, m.Y1), 0, at=0.62, **I)                        # living / kitchen depth
     D(ax, (m.KIT_BASE[2], 14.4), (m.ISLAND[0], 14.4), 0, ext=False, size=4.2)  # kitchen aisle
     D(ax, (m.X_H0, 29.62), (m.X_H1, 29.62), 0, side=-1, ext=False, size=4.2)   # hall width
@@ -420,8 +426,8 @@ def unit_names(ax, unit):
     for i, (x0, y0, x1, y1) in enumerate(m.TUBS):
         txt(ax, x0 + 0.72, (y0 + y1) / 2, f"BATH {i + 1}", size=4.4, weight="bold", rot=90)
     txt(ax, 21.42, 23.6, "HALL", size=4.0, color=GREY, rot=90)
-    txt(ax, 10.4, 22.75, f"CLOSET\n{fi(m.CL_Y - m.Y2)} deep", size=3.7, color=GREY)
-    txt(ax, 10.5, 25.4, f"CLOSET\n{fi(m.Y3 - m.CL_Y - m.PART)} deep", size=3.7, color=GREY)
+    txt(ax, 10.45, 23.35, f"CLOSET {fi(m.CL_Y - m.Y2)} deep", size=3.6, color=GREY)
+    txt(ax, 10.6, 24.75, f"CLOSET {fi(m.Y3 - m.CL_Y - m.PART)} deep", size=3.6, color=GREY)
     txt(ax, 28.05, 32.3, f"CLOSET\n{fi(m.C3_X - m.X_B3)} wide", size=3.7, color=GREY)
     txt(ax, 24.75, 28.95, "LINEN", size=3.4, color=GREY)
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
@@ -511,6 +517,7 @@ def unit_sheet(pdf, number, unit):
         poly(ax, list(tint.exterior.coords)[:-1], fc=SLAB, ec="none", z=4.3)
     unit_shell(ax, st, unit, tags=True)
     unit_fixtures(ax, st, labels=True)
+    rear_windows(ax)
     if A:
         yl = m.Y_GR_O
         line(ax, [(m.xw_o(yl) - 1.0, yl), (m.XE + 0.8, yl)], color=BLUE, lw=0.8, ls=(0, (6, 2.5)), z=7.6)
@@ -582,8 +589,665 @@ def sheet_a103(pdf):
     unit_sheet(pdf, "A-103", "B")
 
 
+# ----------------------------------------------------------------------------
+# A-104  Furniture and clearance plan
+# ----------------------------------------------------------------------------
+FURN_NAME = {"bed": "QUEEN BED", "desk": "DESK", "dresser": "DRESSER", "sofa": "SOFA", "tv": "TV STAND"}
+
+
+def furn_size(kind, pts):
+    """Real size of a furniture polygon in inches, as (text, angle of its long side)."""
+    a, b = math.dist(pts[0], pts[1]), math.dist(pts[1], pts[2])
+    long_edge = (pts[0], pts[1]) if a >= b else (pts[1], pts[2])
+    ang = math.degrees(math.atan2(long_edge[1][1] - long_edge[0][1], long_edge[1][0] - long_edge[0][0]))
+    if ang > 90.01 or ang <= -89.99:
+        ang += 180
+    lo, hi = sorted((round(a * 12), round(b * 12)))
+    return (f"{lo} x {hi}" if kind == "bed" else f"{hi} x {lo}"), ang
+
+
+def bed_zones(room, pts):
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+    if m.BED_HEAD[room] == "W":
+        return [((x0, y0 - 2.0, x1, y0), "y"), ((x0, y1, x1, y1 + 2.0), "y"), ((x1, y0, x1 + 2.0, y1), "x")]
+    return [((x0 - 2.0, y0, x0, y1), "x"), ((x1, y0, x1 + 2.0, y1), "x"), ((x0, y1, x1, y1 + 2.0), "y")]
+
+
+def clearance_overlays(ax, wc_dims=True, size=4.2):
+    """Door swings, bed bands and toilet clearances drawn from the same shapes model.check() tests."""
+    for d in m.DOORS:
+        poly(ax, list(m.door_sector(d).exterior.coords)[:-1], fc=SWING, ec="none", z=4.4, alpha=0.9)
+    for (room, kind, pts) in m.FURN:
+        if kind != "bed":
+            continue
+        for (x0, y0, x1, y1), axis in bed_zones(room, pts):
+            rect(ax, x0, y0, x1, y1, fc=BAND, ec=BLUE, lw=0.3, z=4.3, alpha=0.85)
+            if axis == "y":
+                D(ax, ((x0 + x1) / 2, y0), ((x0 + x1) / 2, y1), 0, fi(y1 - y0), ext=False, size=size, color=BLUE)
+            else:
+                D(ax, (x0, (y0 + y1) / 2), (x1, (y0 + y1) / 2), 0, fi(x1 - x0), ext=False, size=size, color=BLUE)
+    for (cx, cy, f) in m.WCS:
+        yf = cy - m.WC_D
+        rect(ax, cx - m.WC_W / 2, yf - 1.75, cx + m.WC_W / 2, cy, fc="none", ec=BLUE, lw=0.5, ls=(0, (3, 2)), z=7.2)
+        if wc_dims:
+            chain(ax, [(cx - 1.25, yf - 1.75), (cx, yf - 1.75), (cx + 1.25, yf - 1.75)], 0.0, size=size, color=BLUE, ends=False,
+                  labels=[inch(1.25), inch(1.25)])
+            D(ax, (cx - 1.25, yf - 1.75), (cx - 1.25, yf), 0, inch(1.75), ext=False, size=size, color=BLUE, side=-1)
+
+
+def sheet_a104(pdf):
+    notes = [
+        ("What this sheet proves", [
+            "Every piece is drawn at its real size and",
+            "sits where the model puts it. The model",
+            "then tests each piece against the walls,",
+            "the other pieces and every door swing.",
+            "Furniture is by the tenant: the plan only",
+            "shows that standard pieces fit.",
+        ]),
+        ("Rules held (model.check)", [
+            "Queen bed in every bedroom with 24 in.",
+            "clear on both sides and at the foot.",
+            "No furniture, fixture or cabinet inside a",
+            "door swing (orange). Bifolds: half a leaf.",
+            "Toilet: 15 in. from centre to each side,",
+            "21 in. clear in front (IRC R307).",
+            f"Kitchen aisle {fi(m.ISLAND[0] - m.KIT_BASE[2])} (42 in. min.); path north",
+            f"of the island {fi(m.Y1 - m.ISLAND_TOP[3])} (30 in. min.).",
+            "Bedrooms: 100 sf and 8'-6\" x 10'-0\" clear",
+            "rectangle or better (code: 70 sf, 7 ft).",
+        ]),
+        ("For the trim carpenter", [
+            "Hang doors on the hinge side shown.",
+            "Do not move a door or reverse a swing",
+            "without checking it against this sheet.",
+            "Closets are framed rooms with bifold",
+            "doors; shelf and rod by owner (A-601).",
+        ]),
+    ]
+    fig, bg = new_sheet("A-104", "Furniture and clearance plan", "3/16\" = 1'-0\"", notes)
+    fpi = plans.FPI
+    xlim, ylim = (4.6, 46.6), (8.4, 42.0)
+    left, bottom = 0.62, 3.5
+    ax = plan_axes(fig, left, bottom, xlim, ylim, fpi)
+    top = bottom + (ylim[1] - ylim[0]) / fpi
+    bg.text(left, 10.36, "FURNITURE AND CLEARANCE PLAN", fontsize=9, fontweight="bold", color=INK, va="center")
+    bg.text(left, 10.14, "Unit A shown; Unit B is the same · 3/16\" = 1'-0\" · every size below is a real catalogue size",
+            fontsize=6.2, color=GREY, va="center")
+    st = unit_plan(ax, "arch", "A", furniture=True, labels=False)
+    rear_windows(ax)
+    clearance_overlays(ax)
+    # furniture, labelled with its real size
+    for (room, kind, pts) in m.FURN:
+        s, ang = furn_size(kind, pts)
+        cx, cy = sum(p[0] for p in pts) / 4, sum(p[1] for p in pts) / 4
+        if kind == "bed":
+            dx = 0.6 if m.BED_HEAD[room] == "W" else 0.0
+            dy = 0.0 if m.BED_HEAD[room] == "W" else 0.55
+            txt(ax, cx + dx, cy + dy + 0.55, room, size=5.0, weight="bold")
+            txt(ax, cx + dx, cy + dy - 0.45, f"QUEEN BED\n{s} in.", size=4.4)
+        elif kind == "sofa":
+            txt(ax, cx, cy - 0.35, f"SOFA {s} in.", size=4.4)
+        else:
+            txt(ax, cx, cy, f"{FURN_NAME[kind]}\n{s}", size=4.2, rot=ang, z=9.6)
+    for room, c in m.CHAIRS.items():
+        poly(ax, c, fc="none", ec=GREY, lw=0.4, ls=(0, (2, 2)), z=6.5)
+    txt(ax, m.STOOLS[1][0] + 1.25, m.STOOLS[1][1], "3 STOOLS", size=4.2, rot=90)
+    txt(ax, 34.4, 16.0, "LIVING / KITCHEN", size=5.0, weight="bold")
+    txt(ax, 23.7, 11.75, "KITCHEN", size=4.4, weight="bold")
+    txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
+    txt(ax, (m.ISLAND[0] + m.ISLAND[2]) / 2, m.ISLAND[1] + 3.6, "ISLAND", size=3.8, color=GREY, rot=90, z=9)
+    txt(ax, (m.FRIDGE[0] + m.FRIDGE[2]) / 2, (m.FRIDGE[1] + m.FRIDGE[3]) / 2, "REF\n36 in.", size=3.8, color=GREY, z=8)
+    txt(ax, (m.WD[0] + m.WD[2]) / 2, (m.WD[1] + m.WD[3]) / 2, "W/D", size=3.8, color=GREY, z=8)
+    txt(ax, (m.AHU[0] + m.AHU[2]) / 2, (m.AHU[1] + m.AHU[3]) / 2, "AHU", size=3.4, z=8, weight="bold")
+    for i, (x0, y0, x1, y1) in enumerate(m.TUBS):
+        txt(ax, (x0 + x1) / 2, (y0 + y1) / 2, f"BATH {i + 1} · TUB 60 x 30", size=4.0, rot=90)
+    # kitchen and living clearances
+    K = dict(ext=False, size=4.2, color=BLUE)
+    D(ax, (m.KIT_BASE[2], 14.3), (m.ISLAND[0], 14.3), 0, **K)
+    D(ax, (m.FRIDGE[2], 17.3), (m.ISLAND[0], 17.3), 0, **K)
+    D(ax, (27.0, m.ISLAND_TOP[3]), (27.0, m.Y1), 0, **K)
+    D(ax, (27.9, m.YFI), (27.9, m.ISLAND[1]), 0, **K)
+    tv = [p for (r, k, p) in m.FURN if k == "tv"][0]
+    sofa = [p for (r, k, p) in m.FURN if k == "sofa"][0]
+    D(ax, (32.9, max(p[1] for p in tv)), (32.9, min(p[1] for p in sofa)), 0, **K)
+    D(ax, (max(s[0] for s in m.STOOLS) + 0.55, 18.9), (min(p[0] for p in sofa), 18.9), 0, "", **K)
+    D(ax, (m.X_H0, 22.6), (m.X_H1, 22.6), 0, fi(m.X_H1 - m.X_H0), ext=False, size=4.0, color=BLUE)
+    sb = plan_axes(fig, 9.0, 0.5, (0.0, 20.0), (0.0, 2.0), fpi)
+    scale_bar(sb, 1.0, 1.1, 16, 4, 0.42, size=5.2)
+    north_arrow(ax, xlim[1] - 3.2, ylim[1] - 3.6, 1.6, 6.0)
+
+    # ---- right column: standard sizes ----
+    xr = left + (xlim[1] - xlim[0]) / fpi + 0.35
+    bg.text(xr, 10.36, "STANDARD SIZES USED (model.SIZES)", fontsize=7.0, fontweight="bold", color=INK, va="center")
+    rows = [("ITEM", "SIZE DRAWN")] + [(k, v) for k, v in m.SIZES.items()]
+    wrapped = []
+    for k, v in rows:
+        if len(v) > 58:
+            cut = v.rfind(", ", 0, 58)
+            cut = cut + 1 if cut > 0 else v.rfind(" ", 0, 58)
+            v = v[:cut].rstrip() + "\n" + v[cut:].strip()
+        wrapped.append((k, v))
+    y = 10.2
+    W = [0.82, 13.62 - xr - 0.82]
+    for r, (k, v) in enumerate(wrapped):
+        rh = 0.165 * (v.count("\n") + 1) + 0.035
+        if r == 0:
+            bg.add_patch(Rectangle((xr, y - rh), sum(W), rh, fc="#e3e6ea", ec="none"))
+        elif r % 2 == 0:
+            bg.add_patch(Rectangle((xr, y - rh), sum(W), rh, fc="#f6f7f8", ec="none"))
+        bg.text(xr + 0.05, y - rh / 2, k, fontsize=5.4, va="center", color=INK, fontweight="bold" if r == 0 else "normal")
+        bg.text(xr + W[0] + 0.05, y - rh / 2, v, fontsize=5.4, va="center", color=INK, fontweight="bold" if r == 0 else "normal", linespacing=1.2)
+        bg.plot([xr, xr + sum(W)], [y - rh, y - rh], color=LIGHT, lw=0.4)
+        y -= rh
+    bg.add_patch(Rectangle((xr, y), sum(W), 10.2 - y, fill=False, ec=INK, lw=0.6))
+    # legend
+    y -= 0.3
+    bg.text(xr, y, "LEGEND", fontsize=7.0, fontweight="bold", color=INK, va="center")
+    items = [
+        (dict(fc=SWING, ec="none"), "Floor swept by a door (must stay empty)"),
+        (dict(fc=BAND, ec=BLUE, lw=0.4), "24 in. clear band beside and at the foot of a bed"),
+        (dict(fc="none", ec=BLUE, lw=0.6, ls=(0, (3, 2))), "Toilet clearance: 30 in. wide, 21 in. in front of the bowl"),
+        (dict(fc="none", ec=GREY, lw=0.5, ls=(0, (2, 2))), "Desk chair pulled out (may overlap a bed band)"),
+        (dict(fc="#f2f3f5", ec=plans.FURN, lw=0.5), "Furniture at real size (inches)"),
+    ]
+    for kw, s in items:
+        y -= 0.21
+        bg.add_patch(Rectangle((xr, y - 0.065), 0.3, 0.13, **kw))
+        bg.text(xr + 0.4, y, s, fontsize=5.6, va="center", color=INK)
+    y -= 0.2
+    block(bg, xr, y - 0.1, "The build checks this sheet", [
+        "model.check() runs before any sheet is drawn and",
+        "stops the build if any item overlaps another item,",
+        "a door swing or a wall, if a bed loses its 24 in.",
+        "bands, if a toilet loses its clearance, or if the",
+        "kitchen aisle drops under 42 in. Nothing on this",
+        "plan is placed by eye.",
+    ], fs=5.8, lh=0.145)
+
+    # ---- under the plan: every piece, its size and what is left around it ----
+    rows = [("ROOM", "PIECE", "SIZE (in.)", "ROOM", "PIECE", "SIZE (in.)")]
+    flat = []
+    for (room, kind, pts) in m.FURN:
+        flat.append((room.title().replace(" / K", " / k"), FURN_NAME[kind].title(), furn_size(kind, pts)[0]))
+    for room, c in m.CHAIRS.items():
+        a, b = math.dist(c[0], c[1]), math.dist(c[1], c[2])
+        flat.append((room.title(), "Desk chair space", f"{round(a * 12)} x {round(b * 12)}"))
+    flat.append(("Living / kitchen", "3 stools at the island", f"{inch(m.STOOLS[1][1] - m.STOOLS[0][1])} centre to centre"))
+    half = (len(flat) + 1) // 2
+    for i in range(half):
+        r2 = flat[i + half] if i + half < len(flat) else ("", "", "")
+        rows.append(flat[i] + r2)
+    bg.text(left, 3.17, "FURNITURE SHOWN (model.FURN, CHAIRS, STOOLS)", fontsize=7.0, fontweight="bold", color=INK, va="center")
+    table(bg, left, 3.05, [1.05, 1.25, 1.2, 1.05, 1.25, 1.2], rows, fs=5.4, rh=0.165)
+    save(fig, "A-104", pdf)
+
+
+# ----------------------------------------------------------------------------
+# A-105  Roof plan
+# ----------------------------------------------------------------------------
+OH_REAR, OH_RAKE, OH_FRONT = 1.0, 8 * IN, 4.0          # overhangs, square to each wall
+ICE_IN = 2.0                                           # ice barrier: 24 in. inside the wall line
+
+
+def roof_geometry():
+    yf = m.YF - OH_FRONT
+    xe = m.XE + OH_RAKE
+    xwr = lambda y: m.xw_o(y) - OH_RAKE / math.cos(WEST_LEAN)        # west rake edge
+    yre = lambda x: m.yr_o(x) + OH_REAR / math.cos(T_R)              # rear eave edge
+    y = 40.0
+    for _ in range(60):
+        y = yre(xwr(y))
+    nw = (xwr(y), y)
+    x = 9.0
+    for _ in range(60):
+        x = xwr(m.ridge_y(x))
+    ridge_w = (x, m.ridge_y(x))
+    ridge_e = (xe, m.ridge_y(xe))
+    out = [(xwr(yf), yf), (xe, yf), (xe, yre(xe)), nw]
+    return dict(out=out, ridge=(ridge_w, ridge_e), xwr=xwr, yre=yre, yf=yf, xe=xe)
+
+
+def sheet_a105(pdf):
+    g = roof_geometry()
+    out, (rw, re_) = g["out"], g["ridge"]
+    sw, se, ne, nw = out
+    p = m.ROOF_PITCH
+    f_front = math.sqrt(1 + p * p)
+    g_rear = p * math.sqrt(1 + REAR_SLOPE ** 2)                       # true fall of the rear plane, square to its eave
+    f_rear = math.sqrt(1 + g_rear ** 2)
+    a_front = poly_area([sw, se, re_, rw]) * f_front
+    a_rear = poly_area([rw, re_, ne, nw]) * f_rear
+    squares = (a_front + a_rear) / 100
+    x_hi = m.OUT_U[3][0] + 0.5                                         # station of m.EL_RIDGE_HI
+    side_gap = perp_to_west(*m.OUT_U[0]) - OH_RAKE
+    notes = [
+        ("Roof", [
+            "Common trusses run north-south at 24 in.,",
+            f"4:12, {inch(m.HEEL)} raised heel (S-203).",
+            f"Top of wall plate EL {m.EL_PLATE:.2f}.",
+            "The front and rear walls are not parallel,",
+            "so spans grow to the west and the ridge",
+            f"climbs from EL {m.EL_RIDGE_LO:.1f} to EL {m.EL_RIDGE_HI:.2f}.",
+            "Both eaves stay level.",
+        ]),
+        ("Roofing", [
+            "Architectural asphalt shingles over",
+            "synthetic underlayment.",
+            "Ice barrier (self-adhered) from each eave",
+            "edge to 24 in. inside the wall line.",
+            "Metal drip edge on eaves and rakes.",
+            "Pipe flashing at the 3 plumbing vents.",
+            "Step flashing: none (no wall above roof).",
+            f"Area on the slope: about {a_front + a_rear:,.0f} sf",
+            f"= {squares:.1f} squares, before waste.",
+        ]),
+        ("Venting and fire rating", [
+            "Ridge vent full length. Front soffit",
+            "vented. Rear soffit SOLID, no vents, with",
+            "a 1-hour underside: it is within 5 ft of",
+            "the lot line (IRC R302.1).",
+            f"Side rakes are {fi(side_gap)} from the side lot",
+            "lines: same rule, to be confirmed.",
+        ]),
+        ("Gutters", [
+            "Gutter on the front and rear eaves, a",
+            "downspout at each of the 4 corners, piped",
+            "to the site drains (C-105). Sizes prelim.",
+        ]),
+    ]
+    fig, bg = new_sheet("A-105", "Roof plan", "3/16\" = 1'-0\"", notes)
+    ax = plan_frame(fig, "Roof plan", f"4:12 asphalt shingles · plate EL {m.EL_PLATE:.2f} · ridge EL {m.EL_RIDGE_LO:.1f} to {m.EL_RIDGE_HI:.2f}",
+                    view=VIEW_A, bottom=0.5)
+    lot_labels(ax)
+    poly(ax, out, fc="#eceff2", ec=INK, lw=1.0, z=3)
+    # trusses at 24 in. from the east end wall
+    x = m.XE - 2.0
+    while x > sw[0] + 0.05:
+        y1 = g["yre"](x) if x >= nw[0] else (x - g["xwr"](0.0)) / math.tan(WEST_LEAN)
+        line(ax, [(x, g["yf"]), (x, y1)], color="#c4c9cf", lw=0.3, z=3.2)
+        x -= 2.0
+    line(ax, m.OUT_U + [m.OUT_U[0]], color=GREY, lw=0.6, ls=(0, (5, 3)), z=4)
+    # ice barrier limits
+    yi_f = m.YFI + ICE_IN
+    line(ax, [(g["xwr"](yi_f) + 0.1, yi_f), (g["xe"] - 0.1, yi_f)], color=BLUE, lw=0.6, ls=(0, (2, 2)), z=5)
+    a = (m.OUT_U[3][0] + 1.6, m.yr_i(m.OUT_U[3][0] + 1.6) - ICE_IN / math.cos(T_R))
+    b = (g["xe"] - 0.1, m.yr_i(g["xe"] - 0.1) - ICE_IN / math.cos(T_R))
+    line(ax, [a, b], color=BLUE, lw=0.6, ls=(0, (2, 2)), z=5)
+    # ridge, gutters, downspouts
+    line(ax, [rw, re_], color=INK, lw=2.2, z=6)
+    line(ax, [rw, re_], color=PAPER, lw=0.5, ls=(0, (4, 3)), z=6.1)
+    off = 0.22
+    line(ax, [(sw[0], sw[1] - off), (se[0], se[1] - off)], color=BLUE, lw=1.6, z=6)
+    line(ax, [(nw[0] + N_R[0] * off, nw[1] + N_R[1] * off), (ne[0] + N_R[0] * off, ne[1] + N_R[1] * off)], color=BLUE, lw=1.6, z=6)
+    ds = [(sw[0] + 0.5, sw[1] - off), (se[0] - 0.5, se[1] - off), (ne[0] - 0.5, ne[1] + 0.4), (nw[0] + 0.75, nw[1] + 0.05)]
+    for (dx, dy) in ds:
+        ax.add_patch(plt.Circle((dx, dy), 0.38, fc=PAPER, ec=BLUE, lw=0.9, zorder=7))
+        txt(ax, dx, dy, "DS", size=3.4, color=BLUE, z=9, weight="bold")
+    # plumbing vents and attic access
+    for i, (vx, vy) in enumerate((m.STACK_1, m.STACK_2, m.STACK_3)):
+        ax.add_patch(plt.Circle((vx, vy), 0.3, fc=PAPER, ec=INK, lw=0.8, zorder=7))
+        ax.add_patch(plt.Circle((vx, vy), 0.1, fc=INK, ec=INK, lw=0.4, zorder=7.1))
+    leader(ax, (m.STACK_1[0] - 0.25, m.STACK_1[1] - 0.2), (13.6, 24.0), "VENT THROUGH ROOF\nstack 1 (bath 1)", size=4.4, ha="center", va="top")
+    leader(ax, (m.STACK_2[0] + 0.2, m.STACK_2[1] - 0.25), (23.4, 33.6), "VENT THROUGH ROOF\nstack 2 (bath 2)", size=4.4, ha="center", va="top")
+    leader(ax, (m.STACK_3[0] - 0.25, m.STACK_3[1] - 0.2), (34.8, 29.3), "VENT THROUGH ROOF\nstack 3 (bath 3)", size=4.4, ha="center", va="top")
+    hx = m.X_H0 + (m.X_H1 - m.X_H0 - 22 * IN) / 2
+    rect(ax, hx, 24.75, hx + 22 * IN, 24.75 + 30 * IN, fc="none", ec=GREY, lw=0.6, ls=(0, (3, 2)), z=6)
+    leader(ax, (hx + 22 * IN, 25.4), (24.8, 20.6), "ATTIC ACCESS 22 x 30 in.\nin Unit B's hall ceiling (below)", size=4.4, color=GREY, va="top", ha="left")
+    # slope arrows
+    arrow = dict(arrowstyle="-|>", lw=0.9, color=INK, mutation_scale=9)
+    for xa in (16.5, 37.0):
+        yr = m.ridge_y(xa)
+        ax.annotate("", xy=(xa, yr - 6.3), xytext=(xa, yr - 2.6), arrowprops=arrow, zorder=8)
+        txt(ax, xa + 0.3, yr - 4.4, "4:12\nDOWN", size=5.0, weight="bold", ha="left")
+    for xa, d0, d1 in ((14.0, 2.6, 6.3), (37.0, 2.0, 5.2)):
+        yr = m.ridge_y(xa)
+        ax.annotate("", xy=(xa, yr + d1), xytext=(xa, yr + d0), arrowprops=arrow, zorder=8)
+        txt(ax, xa + 0.3, yr + (d0 + d1) / 2, "4:12\nDOWN", size=5.0, weight="bold", ha="left")
+    txt(ax, 27.0, m.ridge_y(27.0) + 5.3, f"along the trusses; {g_rear * 12:.1f}:12 square to the rear eave", size=4.2, color=GREY,
+        rot=-math.degrees(T_R))
+    txt(ax, 27.3, 12.4, "ROOF TRUSSES AT 24 in. O.C., SPAN NORTH-SOUTH (grey lines; layout S-203)", size=4.4, color=GREY, box=True)
+    # ridge elevations
+    ang = math.degrees(math.atan2(re_[1] - rw[1], re_[0] - rw[0]))
+    txt(ax, 27.0, m.ridge_y(27.0) + 0.75, "RIDGE, WITH CONTINUOUS RIDGE VENT", size=5.0, weight="bold", rot=ang)
+    for xs, el, lab, pos, ha in ((m.XE, m.EL_RIDGE_LO, "RIDGE LOW END\nat the east wall", (51.0, 22.2), "left"),
+                                 (x_hi, m.EL_RIDGE_HI, "RIDGE HIGH END\nabove the north-west corner", (-1.0, 28.6), "right")):
+        ax.add_patch(plt.Circle((xs, m.ridge_y(xs)), 0.3, fc=ACCENT, ec=ACCENT, zorder=8))
+        leader(ax, (xs, m.ridge_y(xs)), pos, f"EL {el:.2f}\n{lab}", size=4.8, color=ACCENT, ha=ha, weight="bold")
+
+    # ---- dimensions ----
+    S = dict(size=4.8)
+    D(ax, sw, se, -1.4, fi(math.dist(sw, se)) + " FRONT EAVE", **S)
+    D(ax, se, ne, -3.0, fi(math.dist(se, ne)) + " EAST RAKE", **S)
+    D(ax, nw, ne, 1.5, fi(math.dist(nw, ne)) + " REAR EAVE, ALONG THE EAVE", **S)
+    D(ax, sw, nw, 1.5, fi(math.dist(sw, nw)) + " WEST RAKE, ALONG THE RAKE", **S)
+    # overhangs
+    D(ax, (41.0, g["yf"]), (41.0, m.YF), 0, fi(OH_FRONT) + " OVERHANG", ext=False, size=4.4, at=0.5)
+    D(ax, (m.XE, 14.0), (g["xe"], 14.0), 0, inch(OH_RAKE), ext=False, size=4.4, at=2.6)
+    c = (31.0, m.yr_o(31.0))
+    D(ax, c, (c[0] + N_R[0] * OH_REAR, c[1] + N_R[1] * OH_REAR), 0, inch(OH_REAR), ext=False, size=4.4, at=2.4)
+    c = (m.xw_o(16.0), 16.0)
+    D(ax, (c[0] + N_W[0] * OH_RAKE, c[1] + N_W[1] * OH_RAKE), c, 0, inch(OH_RAKE), ext=False, size=4.4, at=-1.8)
+    # ridge position and truss span at each end
+    for xs, dxl in ((m.XE - 1.6, 0), (x_hi, 0)):
+        yr, yb = m.ridge_y(xs), m.yr_o(xs)
+        chain(ax, [(xs, m.YF), (xs, yr), (xs, yb)], 0.0, size=4.4, ends=False, labels=[fi(yr - m.YF), fi(yb - yr)])
+    txt(ax, m.XE - 4.1, 13.9, f"TRUSS SPAN\n{fi(m.yr_o(m.XE - 1.6) - m.YF)}\nhere", size=4.4, weight="bold")
+    txt(ax, x_hi + 2.6, 13.9, f"TRUSS SPAN\n{fi(m.yr_o(x_hi) - m.YF)}\nhere", size=4.4, weight="bold")
+    # ice barrier widths
+    D(ax, (21.0, g["yf"]), (21.0, yi_f), 0, fi(yi_f - g["yf"]) + " ICE BARRIER", ext=False, size=4.4, color=BLUE)
+    c = (22.0, m.yr_i(22.0) - ICE_IN / math.cos(T_R))
+    wr = OH_REAR + m.EXT + ICE_IN
+    D(ax, c, (c[0] + N_R[0] * wr, c[1] + N_R[1] * wr), 0, fi(wr), ext=False, size=4.4, color=BLUE, side=-1)
+    txt(ax, 26.6, m.yr_i(26.6) - ICE_IN / math.cos(T_R) - 0.45, "ICE BARRIER TO THIS LINE (24 in. inside the wall)", size=4.2, color=BLUE,
+        rot=-math.degrees(T_R))
+    # notes with leaders
+    T = dict(size=4.5)
+    leader(ax, (30.0, g["yf"] - off), (30.0, 2.6), "GUTTER, FRONT EAVE · FRONT SOFFIT VENTED (continuous strip vent)", color=BLUE, ha="center", va="top", **T)
+    leader(ax, (36.0 + N_R[0] * 0.3, g["yre"](36.0) + N_R[1] * 0.3), (39.5, 39.6),
+           "GUTTER, REAR EAVE · REAR SOFFIT SOLID, NO VENTS,\n1-HOUR UNDERSIDE (within 5 ft of the lot line)", color=BLUE, ha="left", **T)
+    leader(ax, (ds[0][0] + 0.2, ds[0][1] - 0.35), (8.0, 2.4), "DOWNSPOUT AT EACH CORNER (4),\nTO THE SITE DRAINS (C-105)", color=BLUE, **T)
+    leader(ax, (m.XE - 0.2, 26.0), (51.0, 27.2), "WALL LINE BELOW\n(dashed)", color=GREY, **T)
+    leader(ax, (g["xe"], 17.0), (51.0, 17.0), f"RAKE, {inch(OH_RAKE)} OVERHANG,\ndrip edge, {fi(side_gap)} from\nthe side lot line", arrow=False, **T)
+    txt(ax, 25.0, 8.2, "FRONT OVERHANG COVERS UNIT B'S PORCH", size=4.6, weight="bold", box=True)
+    # roof edge to lot line (fire separation of the overhangs), in red
+    R = dict(color=ACCENT, size=4.8)
+    D(ax, (47.3, 0.0), (47.3, g["yf"]), 0, fi(g["yf"]), ext=False, **R)
+    line(ax, [(se[0] + 0.3, se[1]), (47.8, se[1])], color=ACCENT, lw=0.25, z=8)
+    D(ax, ne, (50.0, ne[1]), 1.3, fi(50.0 - ne[0]), **R)
+    foot = (sw[0] + N_W[0] * perp_to_west(*sw), sw[1] + N_W[1] * perp_to_west(*sw))
+    D(ax, foot, sw, -1.2, fi(perp_to_west(*sw)), side=-1, **R)
+    c = (17.0, g["yre"](17.0))
+    d = perp_to_rear(*c)
+    D(ax, c, (c[0] + N_R[0] * d, c[1] + N_R[1] * d), 0, fi(d) + " EAVE TO LOT LINE", ext=False, at=1.9, **R)
+
+    # ---- strip at the left: slope and area table ----
+    xl, yt = ax_in(ax, -11.5, 46.2)
+    rows = [("ROOF PLANE", "PLAN AREA", "ON SLOPE"),
+            ("Front (4:12)", f"{poly_area([sw, se, re_, rw]):,.0f} sf", f"{a_front:,.0f} sf"),
+            (f"Rear ({g_rear * 12:.1f}:12 true)", f"{poly_area([rw, re_, ne, nw]):,.0f} sf", f"{a_rear:,.0f} sf"),
+            ("Total", f"{poly_area(out):,.0f} sf", f"{a_front + a_rear:,.0f} sf")]
+    yb = table(bg, xl, yt, [0.92, 0.6, 0.6], rows, fs=5.0, rh=0.152)
+    yb = block(bg, xl, yb - 0.16, "Key heights", [
+        f"Top of wall plate          EL {m.EL_PLATE:.2f}",
+        f"Ridge, east wall           EL {m.EL_RIDGE_LO:.2f}",
+        f"Ridge, north-west corner   EL {m.EL_RIDGE_HI:.2f}",
+        f"Ridge rises {inch(m.EL_RIDGE_HI - m.EL_RIDGE_LO)} over its length.",
+        f"Unit B floor               EL {m.EL_B:.1f}",
+    ])
+    block(bg, xl, yb, "For the roofer", [
+        "1. Both eaves are level; only the ridge",
+        "   climbs. Shingle courses run parallel to",
+        "   each eave, so front and rear courses do",
+        "   not meet square at the ridge: cut to the",
+        "   ridge line and cap.",
+        "2. The rear plane is slightly steeper than",
+        "   4:12 measured square to its eave. Both",
+        "   planes are above the 4:12 minimum for",
+        "   standard shingle application.",
+        "3. Ice barrier strip is wider at the front",
+        "   because of the 4'-0\" overhang.",
+        "4. The west rake leans with the lot line:",
+        "   rake trim follows the wall, not the",
+        "   trusses (S-203).",
+        "5. Rear and side overhangs are close to the",
+        "   lot lines: no vents in them, fire-rated",
+        "   underside as noted. Confirm side rakes",
+        "   with the building official.",
+        "6. No roof-mounted equipment. Nothing but",
+        "   the 3 plumbing vents and the ridge vent",
+        "   penetrates the roof.",
+        "7. Truss layout, bracing, sheathing and",
+        "   nailing: S-203. This sheet is the",
+        "   roofer's sheet.",
+    ])
+    save(fig, "A-105", pdf)
+
+
+# ----------------------------------------------------------------------------
+# A-401  Kitchen and bath enlarged plans (1/2 in. = 1 ft)
+# ----------------------------------------------------------------------------
+BLOCK = "#d9730d"
+FPI_E = 2.0
+
+
+def enlarged(fig, bg, left, bottom, xlim, ylim, title, sub):
+    ax = plan_axes(fig, left, bottom, xlim, ylim, FPI_E)
+    st = plans.Style("arch")
+    unit_shell(ax, st, "A")
+    unit_fixtures(ax, st, labels=False)
+    rear_windows(ax)
+    crop_texts(ax)
+    w, h = (xlim[1] - xlim[0]) / FPI_E, (ylim[1] - ylim[0]) / FPI_E
+    bg.add_patch(Rectangle((left, bottom), w, h, fill=False, ec=LIGHT, lw=0.6))
+    bg.text(left, bottom + h + 0.19, title.upper(), fontsize=8.5, fontweight="bold", color=INK, va="center")
+    bg.text(left, bottom + h + 0.06, sub, fontsize=5.6, color=GREY, va="center")
+    return ax
+
+
+def blocking(ax, a, b, off=0.1):
+    """Grab-bar blocking inside a wall: orange dashes just behind the finished face a -> b."""
+    (x0, y0), (x1, y1) = a, b
+    L = math.hypot(x1 - x0, y1 - y0)
+    nx, ny = -(y1 - y0) / L * off, (x1 - x0) / L * off
+    line(ax, [(x0 + nx, y0 + ny), (x1 + nx, y1 + ny)], color=BLOCK, lw=2.0, ls=(0, (2.2, 1.2)), z=7.8)
+
+
+def bath_view(fig, bg, i, left, bottom, xlim, ylim):
+    name = f"BATH {i + 1}"
+    tub, (cx, cy, _), lav = m.TUBS[i], m.WCS[i], m.LAVS[i]
+    door = [d for d in m.DOORS if d["tag"] == ("D5", "D6", "D7")[i]][0]
+    xs, ys = [p[0] for p in m.ROOMS[name]], [p[1] for p in m.ROOMS[name]]
+    bx0, bx1, by0 = min(xs), max(xs), min(ys)
+    by1 = tub[3]
+    off_room = ("bedroom 1", "bedroom 2", "bedroom 3")[i]
+    ax = enlarged(fig, bg, left, bottom, xlim, ylim, f"{name} (opens off {off_room})",
+                  f"1/2\" = 1'-0\" · {fi(bx1 - bx0)} x {fi(by1 - by0)} clear · {m.area(name):.0f} sf")
+    poly(ax, list(m.door_sector(door).exterior.coords)[:-1], fc=SWING, ec="none", z=4.4, alpha=0.9)
+    yf = cy - m.WC_D
+    S = dict(size=5.0)
+    # toilet centre line and its clearance box
+    line(ax, [(cx, cy + 0.25), (cx, yf - 2.0)], color=BLUE, lw=0.5, ls=(0, (8, 2, 2, 2)), z=7.5)
+    rect(ax, cx - m.WC_W / 2, yf - 1.75, cx + m.WC_W / 2, cy, fc="none", ec=BLUE, lw=0.6, ls=(0, (3, 2)), z=7.4)
+    # string 1: fixtures along the toilet wall
+    if i == 1:
+        y = yf - 0.55
+        chain(ax, [(bx0, y), (cx, y), (tub[0], y)], 0.0, ends=False, color=BLUE,
+              labels=[fi(cx - bx0), fi(tub[0] - cx)], box=True, **S)
+        ys_ = m.HALL_Y1                                                  # vanity string, outside the south wall
+        chain(ax, [(bx0, ys_), (lav[0], ys_), (lav[2], ys_), (tub[0], ys_), (bx1, ys_)], -0.45,
+              labels=[None, fi(lav[2] - lav[0]) + " VANITY", fi(tub[0] - lav[2]), fi(bx1 - tub[0])], side=-1, **S)
+    else:
+        yn = by1 + (m.WET if i == 0 else m.PART)                         # far face of the wall behind the toilet
+        lx = lav[2]
+        labs = [fi(lx - bx0) + (" VANITY" if i == 0 else " LAV"), fi(cx - lx), fi(tub[0] - cx), fi(bx1 - tub[0]) + " TUB"]
+        chain(ax, [(bx0, yn), (lx, yn), (cx, yn), (tub[0], yn), (bx1, yn)], 0.38, labels=labs, **S)
+    # toilet: clear in front, 15 in. each side
+    front_to = lav[3] if i == 1 else by0
+    xf = cx + 0.62 if i != 1 else lav[2] - 0.3
+    D(ax, (xf, front_to), (xf, yf), 0, f"{fi(yf - front_to)} CLEAR", ext=False, size=4.6, color=BLUE, side=-1 if i != 1 else 1)
+    txt(ax, cx - 0.4, yf - 1.75 + 0.14, "15\" + 15\" x 21\" MIN. CLEAR", size=3.9, color=BLUE, z=9.5, box=True)
+    txt(ax, cx + 0.07, cy + 0.2, "CL", size=3.8, color=BLUE, ha="left", z=9.5)
+    # tub alcove
+    xc = (tub[0] + tub[2]) / 2
+    D(ax, (xc + 0.35, tub[1]), (xc + 0.35, tub[3]), 0, fi(tub[3] - tub[1]) + " ALCOVE, FINISHED WALL TO WALL", ext=False, size=4.6,
+      color=BLUE, side=-1)
+    txt(ax, xc - 0.45, (tub[1] + tub[3]) / 2, "TUB 60 x 30 in.\nfibreglass surround", size=4.6, rot=90, z=9.5)
+    # door string, outside the door wall
+    tag = door["tag"]
+    if door["wall"] == "h":
+        yd = door["at"][0]
+        chain(ax, [(bx0, yd), (door["s0"], yd), (door["s1"], yd), (bx1, yd)], -0.38, side=-1,
+              labels=[None, f"{fi(door['w'])} DOOR {tag}", None], **S)
+    else:
+        xd = door["at"][0]
+        top = max(ys)
+        chain(ax, [(xd, by0), (xd, door["s0"]), (xd, door["s1"]), (xd, top)], 0.42,
+              labels=[None, f"{fi(door['w'])} DOOR {tag}", None], **S)
+    # vanity / lavatory label
+    w_in, d_in = round((lav[2] - lav[0]) * 12), round((lav[3] - lav[1]) * 12)
+    kind = ("VANITY", "VANITY", "WALL-HUNG LAV")[i]
+    lx, ly = (lav[0] + lav[2]) / 2, (lav[1] - 0.22 if i != 1 else (lav[1] + lav[3]) / 2)
+    txt(ax, lx, ly, f"{kind} {w_in} x {d_in}", size=4.2, z=9.5, box=True)
+    # grab-bar blocking: three tub walls, and behind / beside the toilet
+    blocking(ax, (tub[2], tub[1]), (tub[2], tub[3]), off=-0.12)
+    blocking(ax, (tub[0], tub[1]), (tub[2], tub[1]), off=-0.12)
+    blocking(ax, (tub[0], tub[3]), (tub[2], tub[3]), off=0.12)
+    blocking(ax, (cx - 1.25, cy), (cx + 1.25, cy), off=0.12)
+    # exhaust fan (ceiling)
+    fan = (xc, tub[1] + 0.72)
+    rect(ax, fan[0] - 0.4, fan[1] - 0.4, fan[0] + 0.4, fan[1] + 0.4, fc=PAPER, ec=INK, lw=0.7, ls=(0, (3, 1.5)), z=8)
+    txt(ax, fan[0], fan[1], "EF", size=4.6, weight="bold", z=9.5)
+    return ax
+
+
+def sheet_a401(pdf):
+    notes = [
+        ("Scope", [
+            "Unit A is drawn; Unit B is identical and",
+            "stacks directly above. Build both from",
+            "this sheet. Sizes are standard catalogue",
+            "sizes (model.SIZES); rental grade.",
+        ]),
+        ("Blocking (framer)", [
+            "Orange dashes: 2x8 flat blocking between",
+            "studs, 33 to 36 in. above the floor, on",
+            "the three walls of each tub and behind",
+            "each toilet, for grab bars now or later.",
+            "Also block for vanities, the wall-hung",
+            "lavatory, towel bars and wall cabinets.",
+        ]),
+        ("Exhaust fans", [
+            "EF: ceiling fan, 80 cfm, over the end of",
+            "each tub (listed for a tub location),",
+            "ducted outside: bath 1 to the west wall,",
+            "baths 2 and 3 to the rear wall (M-102).",
+        ]),
+        ("Tubs and toilets", [
+            "60 x 30 alcove tub: frame each alcove",
+            "5'-0\" between finished walls. Check the",
+            "tub maker's rough-in before framing.",
+            "Toilet centre line 15 in. from the tub",
+            "and 15 in. min. from the other side;",
+            "21 in. min. clear in front (IRC R307).",
+        ]),
+    ]
+    fig, bg = new_sheet("A-401", "Kitchen and bath enlarged plans", "1/2\" = 1'-0\"", notes)
+    bh = 3.7
+    b0 = 0.5
+    # ---- three baths along the bottom ----
+    bath_view(fig, bg, 0, 0.5, b0, (11.9, 20.5), (20.48, 20.48 + bh * FPI_E))
+    bath_view(fig, bg, 1, 5.0, b0, (18.7, 26.7), (29.15, 29.15 + bh * FPI_E))
+    bath_view(fig, bg, 2, 9.2, b0, (36.2, 45.0), (23.4, 23.4 + bh * FPI_E))
+
+    # ---- kitchen ----
+    kb = b0 + bh + 0.45
+    xlim, ylim = (19.2, 31.6), (10.3, 21.5)
+    ax = enlarged(fig, bg, 0.5, kb, xlim, ylim, "Kitchen",
+                  f"1/2\" = 1'-0\" · west wall run and island · aisle {fi(m.ISLAND[0] - m.KIT_BASE[2])}")
+    for (sx, sy) in m.STOOLS:
+        ax.add_patch(plt.Circle((sx, sy), 0.55, fc=PAPER, ec=plans.FURN, lw=0.5, zorder=6))
+    for d in m.DOORS:
+        if d["tag"] in ("D2", "D14"):
+            poly(ax, list(m.door_sector(d).exterior.coords)[:-1], fc=SWING, ec="none", z=4.4, alpha=0.9)
+    S = dict(size=5.0)
+    kx = m.KIT_BASE[2]
+    # west wall run
+    xr_ = m.FRIDGE[2] + 0.35
+    chain(ax, [(xr_, m.YFI), (xr_, m.RANGE[1]), (xr_, m.FRIDGE[1]), (xr_, m.FRIDGE[3]), (xr_, m.Y1)], 0.0, ends=False, side=-1,
+          labels=[fi(m.RANGE[1] - m.YFI), fi(m.FRIDGE[1] - m.RANGE[1]), fi(m.FRIDGE[3] - m.FRIDGE[1]), fi(m.Y1 - m.FRIDGE[3])], **S)
+    cxb = (m.KIT_BASE[0] + kx) / 2
+    txt(ax, cxb, m.YFI + 1.25, "BASE\n24 in.", size=4.6, z=9.5)
+    D(ax, (m.KIT_BASE[0], m.YFI + 0.4), (kx, m.YFI + 0.4), 0, fi(kx - m.KIT_BASE[0]), ext=False, size=4.4)
+    txt(ax, cxb, (m.RANGE[1] + m.RANGE[3]) / 2, "RANGE 30 in.\nhood over", size=4.4, z=9.5, box=True)
+    txt(ax, (m.FRIDGE[0] + m.FRIDGE[2]) / 2, m.FRIDGE[1] + 2.0, "REFRIGERATOR\nSPACE 36 in.", size=4.6, z=9.5)
+    D(ax, (m.FRIDGE[0], m.FRIDGE[1] + 0.75), (m.FRIDGE[2], m.FRIDGE[1] + 0.75), 0, fi(m.FRIDGE[2] - m.FRIDGE[0]) + " DEEP", ext=False, size=4.4)
+    # aisles
+    A = dict(ext=False, size=5.0, color=BLUE, weight="bold")
+    D(ax, (kx, 14.35), (m.ISLAND[0], 14.35), 0, fi(m.ISLAND[0] - kx) + " AISLE", at=0.56, **A)
+    D(ax, (m.FRIDGE[2], 17.9), (m.ISLAND[0], 17.9), 0, fi(m.ISLAND[0] - m.FRIDGE[2]), at=0.6, **A)
+    D(ax, (26.9, m.ISLAND_TOP[3]), (26.9, m.Y1), 0, fi(m.Y1 - m.ISLAND_TOP[3]) + " PATH", **A)
+    D(ax, (29.3, m.YFI), (29.3, m.ISLAND[1]), 0, fi(m.ISLAND[1] - m.YFI), **A)
+    # island
+    xi = m.ISLAND[0] - 0.4
+    chain(ax, [(xi, m.ISLAND[1]), (xi, m.ISL_DW[1]), (xi, m.ISL_DW[3]), (xi, m.ISLAND[3])], 0.0, ends=False,
+          labels=[inch(m.ISL_DW[1] - m.ISLAND[1]), fi(m.ISL_DW[3] - m.ISL_DW[1]), fi(m.ISLAND[3] - m.ISL_DW[3])], **S)
+    line(ax, [(m.ISLAND[0], m.ISL_DW[3]), (m.ISLAND[2], m.ISL_DW[3])], lw=0.4, color=plans.FURN, z=6.5)
+    yi = m.ISLAND[1]
+    chain(ax, [(m.ISLAND[0], yi), (m.ISLAND[2], yi), (m.ISLAND_TOP[2], yi)], -0.42, side=-1,
+          labels=[fi(m.ISLAND[2] - m.ISLAND[0]) + " CABINET", inch(m.ISLAND_TOP[2] - m.ISLAND[2]) + " OVERHANG"], **S)
+    D(ax, (m.ISLAND_TOP[2], m.ISLAND[1]), (m.ISLAND_TOP[2], m.ISLAND[3]), -2.5, fi(m.ISLAND[3] - m.ISLAND[1]) + " ISLAND TOP", side=-1, **S)
+    xs_ = m.STOOLS[0][0] + 0.85
+    chain(ax, [(xs_, sy) for (sx, sy) in m.STOOLS], 0.0, ends=False, side=-1, size=4.4,
+          labels=[inch(m.STOOLS[1][1] - m.STOOLS[0][1])] * 2)
+    txt(ax, (m.ISL_DW[0] + m.ISL_DW[2]) / 2, (m.ISL_DW[1] + m.ISL_DW[3]) / 2, "DISHWASHER\n24 in.", size=4.4, z=9.5)
+    txt(ax, (m.ISLAND[0] + m.ISLAND[2]) / 2, m.ISLAND[3] - 0.38, "SINK BASE 33 in.", size=4.2, z=9.5)
+    txt(ax, m.ISLAND[2] + 0.5, m.ISLAND[1] + 3.3, "12 in. SEATING OVERHANG", size=4.2, rot=90, z=9.5)
+    txt(ax, m.STOOLS[1][0], m.STOOLS[1][1], "STOOL", size=3.6, color=GREY, z=9.5)
+    # notes in the view
+    txt(ax, 20.2, 19.75, "DOOR D2 TO BEDROOM 1", size=4.4, color=GREY, rot=90)
+    txt(ax, 28.2, 11.05, "PORCH DOOR D14", size=4.4, color=GREY)
+    txt(ax, 24.4, 11.0, "WINDOW W2 (A-601)", size=4.4, color=GREY)
+    txt(ax, 30.2, 20.6, "LIVING ROOM", size=5.0, weight="bold")
+    scale_bar(ax, 29.2, 19.6, 2, 1, 0.12, size=4.6)
+
+    # ---- notes and sizes beside the kitchen ----
+    xn = 0.5 + (xlim[1] - xlim[0]) / FPI_E + 0.35
+    yt = kb + (ylim[1] - ylim[0]) / FPI_E + 0.2
+    y1_ = block(bg, xn, yt, "Kitchen: for the cabinet installer", [
+        "WEST WALL RUN, from the front wall going north:",
+        f"  {fi(m.RANGE[1] - m.YFI)} base cabinet, {fi(m.RANGE[3] - m.RANGE[1])} freestanding range,",
+        f"  {fi(m.FRIDGE[3] - m.FRIDGE[1])} refrigerator space ({fi(m.FRIDGE[2] - m.FRIDGE[0])} deep, no cabinet).",
+        f"  Then {fi(m.Y1 - m.FRIDGE[3])} of clear floor to the bedroom 1 door.",
+        "  Base cabinets 24 in. deep, laminate counter 25 in.",
+        "  deep at 36 in. high. Range hood over the range,",
+        "  ducted to the front wall (M-102).",
+        "ISLAND, fixed to the floor:",
+        f"  Cabinet body {fi(m.ISLAND[3] - m.ISLAND[1])} x {fi(m.ISLAND[2] - m.ISLAND[0])}: from the south end,",
+        f"  {inch(m.ISL_DW[1] - m.ISLAND[1])} filler, 24 in. dishwasher, 33 in. sink base.",
+        f"  Top {fi(m.ISLAND_TOP[3] - m.ISLAND_TOP[1])} x {fi(m.ISLAND_TOP[2] - m.ISLAND_TOP[0])}: 12 in. seating overhang on the",
+        "  living-room side, on brackets by the supplier.",
+        f"  3 stools at {inch(m.STOOLS[1][1] - m.STOOLS[0][1])} centres (by tenant).",
+        "  Sink drain, water and the island receptacle come",
+        "  up through the floor inside the sink base: cut",
+        "  the cabinet floor after the plumber marks it.",
+        "  Finished end panels on both ends and the back.",
+    ], fs=5.6, lh=0.138)
+    xn2 = xn + 3.3
+    y2_ = block(bg, xn2, yt, "Clearances held", [
+        f"Counter to island: {fi(m.ISLAND[0] - kx)} (42 in. min.).",
+        f"Refrigerator to island: {fi(m.ISLAND[0] - m.FRIDGE[2])}.",
+        f"Island to the front wall: {fi(m.ISLAND[1] - m.YFI)}.",
+        f"Island to the hall wall: {fi(m.Y1 - m.ISLAND_TOP[3])} (30 in. min.).",
+        "Orange = floor swept by a door: keep clear.",
+    ], fs=5.6, lh=0.138)
+    y2_ = block(bg, xn2, y2_, "Baths: for plumber and tile", [
+        "Fixtures back onto the 2x6 plumbing wall",
+        "(bath 1), the furred pipe space (bath 2)",
+        "and the pipe space behind bath 3.",
+        "Vanity tops: laminate with drop-in bowl.",
+        "Floors LVP; tub surrounds fibreglass, no tile.",
+        "Bath 2 in Unit A sits on the slab on grade:",
+        "its drains go in before the slab (P-101).",
+    ], fs=5.6, lh=0.138)
+    block(bg, xn2, y2_, "Legend", [
+        "Blue dashed box: toilet clearance.",
+        "Blue dash-dot: toilet centre line (CL).",
+        "Orange dashes: blocking in the wall.",
+        "EF in a dashed square: ceiling exhaust fan.",
+    ], fs=5.6, lh=0.138)
+    keep = ("Bathtub", "Toilet", "Vanity", "Range", "Refrigerator", "Dishwasher", "Sink base", "Base cabinets", "Island")
+    rows = [("ITEM", "STANDARD SIZE (model.SIZES)")] + [(k, m.SIZES[k]) for k in keep]
+    table(bg, xn, kb + 10 * 0.152 + 0.02, [0.95, 13.62 - xn - 0.95], rows, fs=5.2, rh=0.152)
+    save(fig, "A-401", pdf)
+
+
 SHEETS = [
     ("A-101", sheet_a101),
     ("A-102", sheet_a102),
     ("A-103", sheet_a103),
+    ("A-104", sheet_a104),
+    ("A-105", sheet_a105),
+    ("A-401", sheet_a401),
 ]

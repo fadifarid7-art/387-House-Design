@@ -86,7 +86,12 @@ def sheet(number, title, scale_txt, notes):
     h = sum(0.31 + sum(0.148 * (ln.count("\n") + 1) + 0.035 for ln in lines) for _, lines in notes)
     if h > 5.72:
         print(f"WARNING {number}: title-block notes are {h:.2f} in. tall (limit 5.72)")
-    return new_sheet(number, title, scale_txt, notes)
+    fig, bg = new_sheet(number, title, scale_txt, notes)
+    if len(title) > 27:                          # long titles run past the title block at the stock size
+        for t in bg.texts:
+            if t.get_text() == title.upper():
+                t.set_fontsize(9.6 * 27 / len(title))
+    return fig, bg
 
 
 def plan_view(fig, bg, title, sub, view=PV, left=PLAN_L, bottom=PLAN_B, arrow=(47.6, 42.3), bar=(33.0, 44.4)):
@@ -942,7 +947,7 @@ def header_for(width):
     """Preliminary header by opening width: (mark, Unit A size, Unit B size)."""
     if width <= 3.01:
         return ("H1", "(2) 2x10, 2 trimmers", "(2) 2x8, 1 trimmer")
-    return ("H2", "(2) 1 3/4 x 9 1/4 LVL, 2 trimmers", "(2) 2x10, 2 trimmers")
+    return ("H2", "(2) 1 3/4 x 9 1/4 LVL, 2 trimmers", "(2) 2x10, 2 trim.")
 
 
 def porch_posts():
@@ -961,7 +966,8 @@ def porch_plan(fig, bg, left, bottom):
     rect(ax, m.xw_o(m.YF), m.YFI, m.XE, vy[1], fc="#f6f7f8", ec="none", z=2)
     for s0, s1, tag, _ in _open_list("S"):
         rect(ax, s0, m.YF - 0.01, s1, m.YFI + 0.01, fc=PAPER, ec=BG_EDGE, lw=0.4, z=4)
-        txt(ax, (s0 + s1) / 2, m.YFI + 0.55, "PORCH DOOR D14" if tag == "D14" else f"WINDOW {tag}", size=4.2, color=GREY)
+        if s0 > vx[0] + 1:
+            txt(ax, (s0 + s1) / 2, m.YFI + 0.62, "PORCH DOOR D14" if tag == "D14" else f"WINDOW {tag}", size=4.2, color=GREY, box=True, z=9)
     rect(ax, x0, y0, x1, y1, fc="#fbf8f1", ec="none", z=2)
     for y in np.arange(y0 + 5.5 * IN, y1 - 0.05, 5.625 * IN):
         line(ax, [(x0, y), (x1, y)], lw=0.2, color=LIGHT, z=3)
@@ -984,21 +990,20 @@ def porch_plan(fig, bg, left, bottom):
     # dims
     yd = y0 - 0.75
     for a, b in zip(posts[:-1], posts[1:]):
-        dim(ax, (a, yd), (b, yd), 0, ftin8(bay) if a == posts[0] else "", size=4.4, ext=False)
-    txt(ax, (posts[1] + posts[-1]) / 2, yd + 0.34, f"GUARD POSTS: {len(posts) - 1} EQUAL BAYS OF {ftin8(bay)} (5'-0\" MAX.)", size=4.5)
+        dim(ax, (a, yd), (b, yd), 0, ftin8(bay), size=4.4, ext=False)
     dim(ax, (x0, yd - 0.72), (x1, yd - 0.72), 0, f"{ftin(x1 - x0)} PORCH, OUT TO OUT OF RIMS", size=4.6, ext=False)
     dim(ax, (x0, y0), (x0, y1), 0.8, "4'-0\"", size=4.6)
     k = len(xs) // 2
-    dim(ax, (xs[k], m.YFI + 0.62), (xs[k + 1], m.YFI + 0.62), 0, "16\"", size=4.2, ext=False)
+    dimb(ax, (xs[k], 9.55), (xs[k + 1], 9.55), 0, "16\"", size=4.2, ext=False)
     # labels
     lead(ax, (15.2, y0 + RIM), (10.0, 8.9), "DOUBLED RIM\n(2) 1 1/2 x 11 7/8\nLVL, PT or wrapped", size=4.3, color=TR, ha="left", va="center") if False else None
-    txt(ax, 19.6, 8.2, "5/4 x 6 COMPOSITE OR PT DECKING, BOARDS EAST-WEST ACROSS THE TRUSS TAILS, 1/8 in. GAPS", size=4.5, box=True, z=9)
-    txt(ax, 19.6, 7.35, "truss tails at 16 in. o.c. = floor trusses run out 4'-0\" (FT-A1, FT-A4); top chord stepped down for the deck", size=4.2, color=TR, box=True, z=9)
-    lead(ax, (m.COL_X[1] + 3.0, m.B1_Y), (34.2, 9.3), "B1 BELOW (dashed blue): full-depth blocking between trusses over it", size=4.2, color=STEEL)
+    txt(ax, 21.6, 8.75, "5/4 x 6 COMPOSITE OR PT DECKING, BOARDS EAST-WEST ACROSS THE TRUSS TAILS, 1/8 in. GAPS", size=4.5, box=True, z=9)
+    txt(ax, 21.6, 7.95, "truss tails at 16 in. o.c. = the floor trusses run out 4'-0\" (FT-A1, FT-A4); top chord stepped down for the deck", size=4.2, color=TR, box=True, z=9)
+    txt(ax, 21.6, 7.15, f"black squares = 4x4 PT guard posts, {len(posts) - 1} equal bays (5'-0\" max.), bolted to the DOUBLED RIM; guard 36 in. min. above the deck",
+        size=4.2, box=True, z=9)
+    lead(ax, (m.COL_X[1] + 3.0, m.B1_Y), (33.4, 9.55), "B1 BELOW (dashed blue): full-depth blocking between trusses over it", size=4.2, color=STEEL)
     lead(ax, (posts[2], y0 - ps / 2), (posts[2] + 0.5, 5.05), "4x4 PT GUARD POST, 36 in. MIN. ABOVE THE DECK, (2) 1/2 in. THROUGH-BOLTS TO THE DOUBLED RIM + BLOCKING. 200 lb AT THE TOP, ANY DIRECTION.", size=4.2) if False else None
     txt(ax, x1 + 0.3, 9.0, "END TRUSS\n= porch end,\nguard returns\nto the wall", size=4.0, color=TR, ha="left")
-    txt(ax, x0 - 0.9, 6.4, "DOUBLED RIM,\nguard posts\nbolted to it", size=4.0, color=TR, ha="right")
-    line(ax, [(x0 - 0.85, 6.3), (x0 + 0.3, y0 + RIM)], lw=0.3, color=TR, z=9)
     bg.text(left, bottom + (vy[1] - vy[0]) / f + 0.07, "PORCH FRAMING PLAN (UNIT A SHOWN, UNIT B THE SAME ON ITS OWN TRUSSES)   1/4\" = 1'-0\"", fontsize=7.0, fontweight="bold", va="bottom")
     return ax
 
@@ -1099,8 +1104,8 @@ def sheet_s204(pdf):
     lead(ax, (m.XE - 0.27, 16.5), (m.XE + 3.4, 12.4), "EAST WALL:\nnon-bearing gable\nwall, no openings,\non the concrete\nwall below", size=4.4, va="center")
     lead(ax, wall_pt("W", 26.0, -0.27), (2.2, 29.6), "WEST WALL:\nnon-bearing gable wall\n(carries the trimmed\nfloor truss ends)", size=4.4, ha="left", va="center") if False else None
     px, py = wall_pt("W", 23.0, -0.27)
-    line(ax, [(px, py), (px - 4.2, py + 3.0)], lw=0.3, z=10)
-    txt(ax, px - 4.3, py + 3.0, "WEST WALL: non-bearing\ngable wall (carries the\ntrimmed truss ends)", size=4.4, ha="right", box=True, z=12)
+    line(ax, [(px, py), (px - 3.6, py + 3.0)], lw=0.3, z=10)
+    txt(ax, px - 3.7, py + 3.0, "WEST WALL: non-bearing\ngable wall (carries the\ntrimmed truss ends)", size=4.4, ha="right", box=True, z=12)
     txt(ax, 30.0, 23.3, "ALL INTERIOR PARTITIONS NON-BEARING\n2x4 @ 16 in. · plumbing walls 2x6", size=4.6, box=True, z=12)
     lead(ax, (m.SHAFT_X0 - 0.2, 18.0), (33.4, 19.6), "STAIR WALLS: 2x4 + 5/8 X each\nside, 1-hour, non-bearing here", size=4.4, color=ACCENT, ha="right")
     # legend
@@ -1136,7 +1141,7 @@ def sheet_s204(pdf):
     ], fs=5.4)
     y -= 0.08
     y = strip_head(bg, y, "Header schedule (preliminary, by width)")
-    y = table(bg, STRIP_X, y, [0.3, 0.98, 0.36, 0.96, STRIP_W - 2.6], hrows, fs=4.3, rh=0.152)
+    y = table(bg, STRIP_X, y, [0.27, 0.9, 0.33, 1.14, STRIP_W - 2.64], hrows, fs=4.3, rh=0.152)
     y -= 0.07
     y = strip_lines(bg, y, [
         "Unit A headers carry the Unit B floor and porch; the",
@@ -1180,4 +1185,420 @@ def sheet_s204(pdf):
     save(fig, "S-204", pdf)
 
 
-SHEETS = [("S-201", sheet_s201), ("S-202", sheet_s202), ("S-203", sheet_s203), ("S-204", sheet_s204)]
+# ----------------------------------------------------------------------------
+# S-301  Structural sections and details
+# ----------------------------------------------------------------------------
+XS = 15.0                                   # station of the section (ft east of the SW lot corner)
+PORCH_STEP = 3.5 * IN                       # truss top chord drops this much outside the wall line (prelim., A-402)
+DECK_T = 1.0 * IN                           # 5/4 decking
+FRAME = "#d6c39a"                           # framed wall in section
+STONE = "#e3ded3"
+W14 = dict(d=m.B1_DEPTH, bf=6.75 * IN, tf=0.455 * IN, tw=0.285 * IN)      # W14x34 catalogue size
+
+
+def i_beam(ax, yc, ztop, z=8, color=STEEL):
+    d, bf, tf, tw = W14["d"], W14["bf"], W14["tf"], W14["tw"]
+    for a, b, c, e in ((yc - bf / 2, ztop - tf, yc + bf / 2, ztop), (yc - bf / 2, ztop - d, yc + bf / 2, ztop - d + tf),
+                       (yc - tw / 2, ztop - d + tf, yc + tw / 2, ztop - tf)):
+        rect(ax, a, b, c, e, fc=color, ec=color, lw=0.4, z=z)
+
+
+def bubble(ax, y, z, n, r=1.7):
+    ax.add_patch(plt.Circle((y, z), r, fc="none", ec=ACCENT, lw=0.8, ls=(0, (4, 2)), zorder=13))
+    a = math.radians(40)
+    cx, cy = y + (r + 0.75) * math.cos(a), z + (r + 0.75) * math.sin(a)
+    ax.add_patch(plt.Circle((cx, cy), 0.75, fc=PAPER, ec=ACCENT, lw=0.8, zorder=14))
+    txt(ax, cx, cy, str(n), size=5.6, color=ACCENT, weight="bold", z=15)
+
+
+def roof_top(y, yr):
+    return min(EL_HEEL + (y - m.YF) * P, EL_HEEL + (yr - y) * P)
+
+
+def detail_title(bg, x, y, n, s, scale="1/2\" = 1'-0\""):
+    bg.add_patch(plt.Circle((x + 0.11, y + 0.05), 0.11, fc=PAPER, ec=ACCENT, lw=0.9))
+    bg.text(x + 0.11, y + 0.045, str(n), fontsize=6.6, fontweight="bold", color=ACCENT, ha="center", va="center")
+    bg.text(x + 0.3, y + 0.05, s.upper(), fontsize=6.6, fontweight="bold", va="center")
+    bg.text(x + 0.3, y - 0.1, scale, fontsize=5.0, color=GREY, va="center")
+
+
+def section_main(fig, bg):
+    yr, yri = m.yr_o(XS), m.yr_i(XS)
+    tS = 8 * IN / CR                                   # stem wall as cut by the section (skew)
+    ZB, ZT = 911.3, 951.3
+    ax = plan_axes(fig, 0.5, 2.95, (0.0, 46.0), (ZB, ZT), FPI)
+    g_rear = elev(XS, yr)
+    stem_top = g_rear + 8 * IN
+    y_td = m.YF - 0.6
+
+    def apron(y):
+        return m.EL_GAR + (street_el(XS) - m.EL_GAR) * max(0.0, y_td - y) / (y_td - PAVE_N)
+
+    # ---- ground
+    ys = list(np.arange(yr, 46.01, 0.5))
+    soil = [(0, ZB), (0, apron(0) - 1.0), (m.YF, m.EL_GAR - 1.0), (m.Y_GR_O, m.EL_GAR - 1.0), (m.Y_GR_O, m.EL_A - 0.75), (yr, m.EL_A - 0.75)]
+    soil += [(y, elev(XS, y)) for y in ys] + [(46, ZB)]
+    poly(ax, soil, fc=SOIL, ec="none", z=1)
+    line(ax, [(y, elev(XS, y)) for y in ys], lw=0.9, color=EARTH, z=3)
+    ex = [(y, elev(XS, y)) for y in np.arange(0, yr + 0.3, 0.5)]
+    line(ax, ex, lw=0.8, color=EARTH, ls=(0, (5, 3)), z=7.5)
+    # stone layers
+    poly(ax, [(0, apron(0) - 1.0), (m.YF, m.EL_GAR - 1.0), (m.Y_GR_I, m.EL_GAR - 1.0), (m.Y_GR_I, m.EL_GAR - 0.5), (m.YF, m.EL_GAR - 0.5), (0, apron(0) - 0.5)],
+         fc=STONE, ec="none", z=2, hatch="...")
+    rect(ax, m.Y_GR_O, m.EL_A - 0.75, yr - tS, m.EL_A - 5 * IN, fc=STONE, ec="none", z=2, hatch="...")
+    # ---- concrete
+    rect(ax, m.Y_GR_I - 1.5, m.EL_FTG_TOP - m.FTG_T, m.Y_GR_O + 1.5, m.EL_FTG_TOP, fc=CONC_F, ec=INK, lw=0.7, z=4)          # retaining-wall footing
+    poly(ax, [(m.Y_GR_I, m.EL_FTG_TOP), (m.Y_GR_O, m.EL_FTG_TOP), (m.Y_GR_O, m.EL_A - 5 * IN), (m.Y_GR_I + BRG, m.EL_A - 5 * IN),
+              (m.Y_GR_I + BRG, EL_BRG_A), (m.Y_GR_I, EL_BRG_A)], fc=CONC_F, ec=INK, lw=0.8, z=5)                             # wall + upstand
+    rect(ax, m.YF - 0.0, m.EL_GAR - 0.5, m.Y_GR_I, m.EL_GAR, fc=CONC_F, ec=INK, lw=0.6, z=4)                                 # garage slab
+    poly(ax, [(0, apron(0) - 0.5), (0, apron(0)), (y_td, m.EL_GAR), (m.YF, m.EL_GAR), (m.YF, m.EL_GAR - 0.5)], fc="#d0d4d9", ec=INK, lw=0.5, z=4)   # apron
+    rect(ax, y_td - 0.25, m.EL_GAR - 0.6, y_td + 0.25, m.EL_GAR, fc=PAPER, ec=BLUE, lw=0.9, z=6)                             # trench drain
+    rect(ax, m.Y_GR_I + BRG, m.EL_A - 5 * IN, yr - tS, m.EL_A, fc=CONC_F, ec=INK, lw=0.6, z=6)                               # slab on grade
+    line(ax, [(m.Y_GR_O, m.EL_A - 5 * IN - 0.06), (yr - tS, m.EL_A - 5 * IN - 0.06)], lw=1.2, color="#d9607a", z=6)          # R-10 under the slab
+    ft_top = m.EL_A - 1.5
+    rect(ax, yr - tS / 2 - 10 * IN / CR, ft_top - 10 * IN, yr - tS / 2 + 10 * IN / CR, ft_top, fc=CONC_F, ec=INK, lw=0.6, z=4)   # stem-wall footing
+    rect(ax, yr - tS, ft_top, yr, stem_top, fc=CONC_F, ec=INK, lw=0.8, z=5)                                                  # stem wall
+    line(ax, [(m.Y_GR_O + 0.07, m.EL_FTG_TOP), (m.Y_GR_O + 0.07, m.EL_A - 0.8)], lw=1.2, color=BLUE, z=6)                    # membrane + drainage board
+    ax.add_patch(plt.Circle((m.Y_GR_O + 0.75, m.EL_FTG_TOP + 0.3), 0.22, fc=PAPER, ec=BLUE, lw=1.0, zorder=7))               # French drain
+    # ---- things beyond (west of the section) and the post (east of it)
+    rect(ax, m.YF, m.EL_GAR, m.YF + m.CONC, EL_BRG_A, fc="#eceef1", ec=GREY, lw=0.5, z=3.5)
+    rect(ax, m.B1_Y - 0.25, m.EL_GAR, m.B1_Y + 0.25, m.EL_B1_TOP - m.B1_DEPTH, fc="none", ec=STEEL, lw=0.7, ls=(0, (3, 2)), z=7)
+    i_beam(ax, m.B1_Y, m.EL_B1_TOP)
+    # ---- Unit A floor (20 in. trusses) and porch
+    truss_band(ax, m.YF, YN_A, EL_BRG_A, EL_TOP_A, panel=2.0)
+    truss_band(ax, YS_P + 2 * RIM, m.YF, EL_BRG_A, EL_TOP_A - PORCH_STEP, panel=2.0)
+    rect(ax, m.B1_Y + 0.3, EL_BRG_A + 1.5 * IN, m.Y_GR_I, EL_BRG_A + 11 * IN, fc=INSUL, ec="none", z=5.9, alpha=0.9)
+    rect(ax, m.YF, EL_TOP_A, m.Y_GR_I + BRG, m.EL_A, fc=WOODF, ec=INK, lw=0.4, z=7)
+    rect(ax, m.B1_Y + 0.3, EL_BRG_A - 0.625 * IN, m.Y_GR_I, EL_BRG_A, fc="#dfe2e6", ec=INK, lw=0.3, z=7)
+    for el_top, el_fl in ((EL_TOP_A, m.EL_A), (EL_TOP_B, m.EL_B)):
+        dk = el_top - PORCH_STEP + DECK_T
+        rect(ax, YS_P, el_top - PORCH_STEP - 0.9, YS_P + 2 * RIM, el_top - PORCH_STEP, fc=WOODF, ec=TR, lw=0.4, z=7)            # doubled rim
+        rect(ax, YS_P - 0.08, dk - DECK_T, m.YF, dk, fc="#c9b28a", ec=INK, lw=0.3, z=7)                                         # decking
+        rect(ax, YS_P - 0.29, dk - 1.0, YS_P, dk + 3.0, fc=PAPER, ec=INK, lw=0.6, z=8)                                          # guard post
+        for zz in (dk + 3.0 - 0.08, dk + 0.3):
+            line(ax, [(YS_P, zz), (m.YF, zz)], lw=0.6, color=GREY, z=6)
+        for yy in np.arange(YS_P + 0.4, m.YF - 0.1, 0.4):
+            line(ax, [(yy, dk + 0.3), (yy, dk + 3.0 - 0.08)], lw=0.2, color=LIGHT, z=5.5)
+    # ---- Unit A walls
+    top_a = EL_BRG_B
+    rect(ax, m.YF, m.EL_A, m.YFI, top_a, fc=FRAME, ec=INK, lw=0.6, z=6)
+    rect(ax, yri, stem_top, yr, top_a, fc=FRAME, ec=INK, lw=0.6, z=6)
+    for (a, b) in ((m.Y1, m.Y2), (m.Y3, m.Y4)):
+        rect(ax, a, m.EL_A, b, m.EL_A + m.CLG_A, fc="#eceef1", ec=GREY, lw=0.4, z=5)
+        rect(ax, a, m.EL_B, b, m.EL_B + m.CLG_B, fc="#eceef1", ec=GREY, lw=0.4, z=5)
+    # ---- Unit B floor (24 in. trusses)
+    truss_band(ax, m.YF, yr - RIM / CR, EL_BRG_B, EL_TOP_B, panel=2.4)
+    truss_band(ax, YS_P + 2 * RIM, m.YF, EL_BRG_B, EL_TOP_B - PORCH_STEP, panel=2.0)
+    rect(ax, m.YF, EL_TOP_B, yr, m.EL_B, fc=WOODF, ec=INK, lw=0.4, z=7)
+    rect(ax, m.YFI, EL_BRG_B - 1.25 * IN, yri, EL_BRG_B, fc="#f0b9b3", ec=ACCENT, lw=0.4, z=7)                                 # rated ceiling membrane
+    # ---- Unit B walls and roof
+    rect(ax, m.YF, m.EL_B, m.YFI, m.EL_PLATE, fc=FRAME, ec=INK, lw=0.6, z=6)
+    rect(ax, yri, m.EL_B, yr, m.EL_PLATE, fc=FRAME, ec=INK, lw=0.6, z=6)
+    rect(ax, m.YFI, m.EL_B + m.CLG_B, yri, m.EL_PLATE, fc="#dfe2e6", ec=INK, lw=0.3, z=6)
+    rect(ax, m.YFI, m.EL_PLATE + 0.29, yri, m.EL_PLATE + 1.25, fc=INSUL, ec="none", z=4, alpha=0.9)
+    ye_r = yr + OH_REAR / CR
+    yrd = m.ridge_y(XS)
+    top = [(EAVE_F, EL_EAVE_F), (yrd, m.ridge_el(XS)), (ye_r, EL_EAVE_R)]
+    ch = 0.31
+    poly(ax, top + [(ye_r, EL_EAVE_R - ch), (yrd, m.ridge_el(XS) - ch), (EAVE_F, EL_EAVE_F - ch)], fc=WOODF, ec=TR, lw=0.5, z=8)
+    rect(ax, m.YF, m.EL_PLATE, yr, m.EL_PLATE + 0.29, fc=WOODF, ec=TR, lw=0.5, z=8)
+    L = yr - m.YF
+    for (yb, yt) in ((1 / 3, 1 / 4), (1 / 3, 1 / 2), (2 / 3, 1 / 2), (2 / 3, 3 / 4), (1 / 6, 1 / 8), (1 / 6, 1 / 4), (5 / 6, 7 / 8), (5 / 6, 3 / 4)):
+        ya, yb_ = m.YF + yb * L, m.YF + yt * L
+        line(ax, [(ya, m.EL_PLATE + 0.29), (yb_, roof_top(yb_, yr) - ch)], lw=0.6, color=TR, z=7.5)
+    for yy in (m.YF + 0.15, yr - 0.15):
+        line(ax, [(yy, m.EL_PLATE + 0.29), (yy, roof_top(yy, yr) - ch)], lw=1.4, color=TR, z=7.5)
+    line(ax, [(a, b + 0.09) for a, b in top], lw=1.3, color=INK, z=9)                                                          # sheathing + shingles
+    sof_f, sof_r = EL_EAVE_F - 0.62, EL_EAVE_R - 0.62
+    line(ax, [(EAVE_F, EL_EAVE_F + 0.09), (EAVE_F, sof_f), (m.YF, sof_f)], lw=0.9, color=INK, z=9)
+    line(ax, [(ye_r, EL_EAVE_R + 0.09), (ye_r, sof_r), (yr, sof_r)], lw=0.9, color=ACCENT, z=9)
+    # ---- lot lines
+    yl = rear_y(XS)
+    line(ax, [(yl, 926.5), (yl, 936.5)], lw=0.9, color=ACCENT, ls=(0, (9, 2.5, 1.5, 2.5)), z=8)
+    txt(ax, yl - 0.45, 934.4, "REAR LOT LINE", size=4.4, color=ACCENT, rot=90)
+    dimb(ax, (yr, 930.3), (yl, 930.3), 0, ftin(yl - yr), size=4.4, ext=False, color=ACCENT)
+    # ---- room names
+    for y_, z_, s in ((20.0, 919.3, "OPEN GARAGE"), (15.8, 929.6, "UNIT A · BEDROOM 1"), (24.1, 929.0, "BATH 1"), (30.6, 931.3, "BEDROOM 2"),
+                      (15.8, 939.6, "UNIT B · BEDROOM 1"), (24.1, 939.0, "BATH 1"), (33.0, 939.6, "BEDROOM 2")):
+        txt(ax, y_, z_, s, size=5.0 if "GARAGE" in s or "UNIT" in s else 4.4, color=GREY, weight="bold")
+    # ---- level lines at the left
+    for z_, s in ((m.EL_PLATE, "TOP OF B PLATES"), (m.EL_B, "UNIT B FLOOR"), (EL_BRG_B, "TOP OF A PLATES"), (m.EL_A, "UNIT A FLOOR"),
+                  (EL_BRG_A, "TOP OF B1 + LEDGES"), (m.EL_B1_TOP - m.B1_DEPTH, "UNDERSIDE OF B1")):
+        line(ax, [(0.2, z_), (YS_P - 0.5, z_)], lw=0.35, color=INK, z=10)
+        txt(ax, 0.25, z_ + 0.42, f"EL {z_:.2f}  {s}", size=4.3, ha="left", z=12)
+    lead(ax, (13.0, m.EL_GAR), (12.6, 915.55), f"EL {m.EL_GAR:.2f}  GARAGE SLAB, 6 in. on 6 in. stone, slopes 1/8 in./ft to the trench drain (S-103)", size=4.4, dot=False)
+    lead(ax, (m.Y_GR_O + 1.3, m.EL_FTG_TOP), (33.2, 914.6), f"EL {m.EL_FTG_TOP:.2f}  TOP OF FOOTING\n{ftin(m.FTG_W)} x {round(m.FTG_T * 12)} in. (S-101)", size=4.4)
+    lead(ax, (m.Y_GR_O + 0.75, m.EL_FTG_TOP + 0.3), (33.2, 916.9), "4 in. FRENCH DRAIN in stone,\ngravity to the street, no sump (S-102)", size=4.4, color=BLUE)
+    lead(ax, (m.Y_GR_O + 0.07, 919.5), (33.2, 919.6), "MEMBRANE + DRAINAGE BOARD,\nbackfill in lifts only after the\nUnit A floor is on (S-102)", size=4.4, color=BLUE)
+    lead(ax, (m.Y_GR_I + 0.5, 921.3), (27.9, 921.6), "12 in. CONCRETE\nRETAINING WALL\n(S-102)", size=4.4, ha="right")
+    lead(ax, (m.B1_Y + 0.3, m.EL_B1_TOP - 0.6), (12.6, 921.9), "B1  W14x34 (prelim.)", size=4.6, color=STEEL, weight="bold")
+    lead(ax, (m.B1_Y + 0.25, 917.4), (12.6, 917.5), f"HSS 6x6 POST: {ftin(m.COL_X[1] - XS)} east of this\nsection, dashed for reference (S-104)", size=4.3, color=STEEL, dot=False)
+    lead(ax, (m.YF + 0.5, 920.4), (12.6, 920.3), "CONCRETE RETURN BEYOND\n(west end of B1 sits on it)", size=4.3, color=GREY, dot=False)
+    txt(ax, 20.2, 922.85, f"20 in. FLOOR TRUSSES FT-A1 @ 16 in. · span {ftin((m.Y_GR_I + BRG / 2) - m.B1_Y)} · R-30 + 5/8 in. Type X below", size=4.5, weight="bold", box=True, z=12)
+    txt(ax, 22.6, 932.5, f"24 in. FLOOR TRUSSES FT-B2 @ 12 in. here · span {ftin(span_cc(XS))} · 1-hour floor / ceiling (A-501)", size=4.5, weight="bold", box=True, z=12)
+    txt(ax, yrd, 945.75, f"ROOF TRUSS T15 · span {ftin(depth_oo(XS))} · 4:12 · 12 in. raised heel · 24 in. o.c. · R-49 on the ceiling", size=4.5, weight="bold", box=True, z=12)
+    lead(ax, (yrd, m.ridge_el(XS) + 0.1), (yrd + 1.5, 950.6), f"RIDGE EL {m.ridge_el(XS):.2f} at this section ({m.ridge_el(m.XE):.2f} east end, {m.ridge_el(RIDGE_W[0]):.2f} west end)", size=4.5, weight="bold")
+    lead(ax, (EAVE_F + 0.6, EL_EAVE_F + 0.25), (0.3, 947.0), f"FRONT EAVE EL {EL_EAVE_F:.2f}:\n4'-0\" cantilevered tails,\nlevel soffit return", size=4.4, va="center")
+    lead(ax, (ye_r, EL_EAVE_R), (ye_r + 0.4, 948.3), f"REAR EAVE EL {EL_EAVE_R:.2f},\n12 in., 1-hour soffit", size=4.4, color=ACCENT)
+    lead(ax, (yr - tS + 0.05, stem_top - 0.6), (38.2, 929.4), f"8 in. CONCRETE STEM WALL up to 8 in.\nabove grade (top EL {stem_top:.1f} here); the\n2x6 wall starts on top of it. Footing\n20 x 10 in., 36 in. min. below grade (S-101)", size=4.3, ha="right")
+    lead(ax, (32.6, m.EL_A - 0.2), (31.0, 926.75), "5 in. SLAB ON GRADE on R-10, vapour barrier, 4 in. stone (S-103)", size=4.3)
+    txt(ax, 0.3, 919.0, "EXISTING GRADE (LiDAR),\ndashed: cut away for the\napron and garage (C-104)", size=4.2, color=EARTH, ha="left", va="top")
+    txt(ax, 3.4, 913.7, "APRON (C-107)", size=4.2, ha="center", box=True)
+    lead(ax, (y_td, m.EL_GAR + 0.05), (0.3, 916.5), "TRENCH DRAIN (S-103)", size=4.2, color=BLUE, dot=False)
+    txt(ax, 42.3, elev(XS, 42.3) - 3.4, f"EXISTING GRADE\nEL {g_rear:.1f} at the wall;\nfinished grade and\nswale: C-105", size=4.2, color=EARTH)
+    lead(ax, (YS_P - 0.15, m.EL_A + 2.2), (0.3, 928.9), "36 in. GUARD,\nposts bolted to\nthe doubled rim", size=4.3, va="center")
+    txt(ax, (YS_P + m.YF) / 2, m.EL_A + 4.6, "PORCH A", size=4.2, color=GREY)
+    txt(ax, (YS_P + m.YF) / 2, m.EL_B + 4.6, "PORCH B", size=4.2, color=GREY)
+    txt(ax, 3.0, 937.6, "NO POSTS between\nthe porches or down\nto the apron", size=4.3, color=ACCENT)
+    # ---- dimensions
+    yv = 12.1
+    dimb(ax, (yv, m.EL_GAR), (yv, m.EL_GAR + m.CLG_GAR), 0, f"{ftin8(m.CLG_GAR)} CLEAR", size=4.4, ext=False, side=-1)
+    dimb(ax, (yv, m.EL_A), (yv, m.EL_A + m.CLG_A), 0, f"{ftin8(m.CLG_A)}", size=4.4, ext=False, side=-1)
+    dimb(ax, (yv, m.EL_B), (yv, m.EL_B + m.CLG_B), 0, f"{ftin8(m.CLG_B)}", size=4.4, ext=False, side=-1)
+    dimb(ax, (9.2, m.EL_GAR), (9.2, m.EL_B1_TOP - m.B1_DEPTH), 0, f"{ftin8(m.OPEN_CLEAR_H)} UNDER B1", size=4.3, ext=False, side=1)
+    yv2 = 45.55
+    dimb(ax, (yv2, m.EL_GAR), (yv2, m.EL_A), 0, ftin(m.EL_A - m.EL_GAR), size=4.4, ext=False, side=1)
+    dimb(ax, (yv2, m.EL_A), (yv2, m.EL_B), 0, ftin(m.EL_B - m.EL_A), size=4.4, ext=False, side=1)
+    dimb(ax, (yv2, m.EL_B), (yv2, m.EL_PLATE), 0, ftin8(m.EL_PLATE - m.EL_B), size=4.4, ext=False, side=1)
+    dimb(ax, (yv2, m.EL_PLATE), (yv2, m.ridge_el(XS)), 0, ftin8(m.ridge_el(XS) - m.EL_PLATE), size=4.4, ext=False, side=1)
+    for z_ in (m.EL_GAR, m.EL_A, m.EL_B, m.EL_PLATE, m.ridge_el(XS)):
+        line(ax, [(yv2 - 0.8, z_), (yv2 + 0.3, z_)], lw=0.3, z=11)
+    zd = 911.85
+    dimb(ax, (YS_P, zd), (m.YF, zd), 0, "4'-0\"", size=4.4, ext=False)
+    dimb(ax, (m.YF, zd), (m.Y_GR_O, zd), 0, f"{ftin(m.Y_GR_O - m.YF)} GARAGE, OUT TO OUT", size=4.4, ext=False)
+    dimb(ax, (m.Y_GR_O, zd), (yr, zd), 0, f"{ftin(yr - m.Y_GR_O)} SLAB ON GRADE", size=4.4, ext=False)
+    # ---- detail bubbles
+    bubble(ax, m.Y_GR_I + 0.5, m.EL_A - 0.9, 1, r=1.5)
+    bubble(ax, m.B1_Y - 0.6, m.EL_A - 1.0, 2, r=1.6)
+    bubble(ax, yr - 0.3, m.EL_B - 1.0, 3, r=1.6)
+    bubble(ax, yr + 0.2, EL_HEEL - 0.4, 4, r=1.5)
+    # title
+    txt(ax, 10.6, 950.6, "", size=4)
+    bg.add_patch(plt.Circle((0.63, 10.47), 0.12, fc=PAPER, ec=INK, lw=0.9))
+    bg.text(0.63, 10.465, "A", fontsize=7.4, fontweight="bold", ha="center", va="center")
+    bg.text(0.84, 10.47, f"NORTH-SOUTH STRUCTURAL SECTION {ftin(XS)} EAST OF THE SW LOT CORNER, LOOKING WEST", fontsize=7.6, fontweight="bold", va="center")
+    bg.text(0.84, 10.31, "3/16\" = 1'-0\" · street on the left · cuts floor truss FT-A1, FT-B2 and roof truss T15 · numbered circles = details", fontsize=5.4, color=GREY, va="center")
+    return ax
+
+
+def detail_1(fig, bg, left, bottom, width):
+    """Truss bearing on the garage rear retaining wall, with the slab-on-grade edge on the wall upstand."""
+    f = 2.0
+    vy = (m.Y_GR_I - 8.2, m.Y_GR_I - 8.2 + width * f)
+    vz = (922.75, 926.75)
+    ax = plan_axes(fig, left, bottom, vy, vz, f)
+    yi, yo = m.Y_GR_I, m.Y_GR_O
+    yl, yrr = yi - 2.6, yo + 2.7                      # drawn extent
+    us = yi + BRG                                     # south face of the upstand
+    slab_b = m.EL_A - 5 * IN
+    rect(ax, yo, vz[0], yrr, slab_b - 4 * IN, fc=SOIL, ec="none", z=1)
+    rect(ax, yo, slab_b - 4 * IN, yrr, slab_b, fc=STONE, ec="none", z=2, hatch="...")
+    poly(ax, [(yi, vz[0]), (yo, vz[0]), (yo, slab_b), (us, slab_b), (us, EL_BRG_A), (yi, EL_BRG_A)], fc=CONC_F, ec=INK, lw=0.8, z=5)
+    rect(ax, us, slab_b, yrr, m.EL_A, fc="#c9ced4", ec=INK, lw=0.7, z=6)
+    line(ax, [(yo, slab_b - 0.05), (yrr, slab_b - 0.05)], lw=1.6, color="#d9607a", z=6.5)
+    line(ax, [(yo + 0.06, vz[0]), (yo + 0.06, slab_b - 0.1)], lw=1.4, color=BLUE, z=6.5)
+    line(ax, [(us + 0.25, EL_BRG_A - 0.7), (us + 0.25, slab_b + 0.22), (us + 1.6, slab_b + 0.22)], lw=1.0, color=ACCENT, z=7)          # dowel
+    truss_band(ax, yl, us, EL_BRG_A, EL_TOP_A, panel=1.5, lw=0.5, z=6)
+    rect(ax, yl, EL_BRG_A + 1.5 * IN, yi, EL_BRG_A + 11 * IN, fc=INSUL, ec="none", z=5.5, hatch="////")
+    rect(ax, yl, EL_TOP_A, us, m.EL_A, fc=WOODF, ec=INK, lw=0.5, z=7)
+    rect(ax, yl, EL_BRG_A - 0.625 * IN, yi, EL_BRG_A, fc="#dfe2e6", ec=INK, lw=0.4, z=7)
+    line(ax, [(yi + 0.02, EL_BRG_A + 0.015), (us - 0.02, EL_BRG_A + 0.015)], lw=1.6, color="#5d6b3a", z=8)                             # sill / bearing
+    line(ax, [(yi + 0.25, EL_BRG_A - 0.55), (yi + 0.25, EL_BRG_A + 0.22)], lw=1.2, color=ACCENT, z=8.5)                               # anchor bolt
+    line(ax, [(yi + 0.1, EL_BRG_A + 0.05), (yi + 0.1, EL_BRG_A + 0.75)], lw=1.6, color=ACCENT, z=8.5)                                 # strap
+    line(ax, [(yl, vz[0] + 0.3), (yl, vz[1] - 0.2)], lw=0.4, color=GREY, ls=(0, (6, 2, 1, 2)), z=3)
+    line(ax, [(yrr, vz[0] + 0.3), (yrr, vz[1] - 0.2)], lw=0.4, color=GREY, ls=(0, (6, 2, 1, 2)), z=3)
+    xl = yl - 0.35
+    for z_, s, c in ((m.EL_A + 0.0, f"EL {m.EL_A:.2f}: top of 3/4 in. T&G subfloor = top of slab", INK),
+                     (EL_BRG_A + 1.28, "20 in. FLOOR TRUSS FT-A1 @ 16 in. o.c. End blocking between trusses", TR),
+                     (EL_BRG_A + 0.72, "TRUSS STRAPPED TO THE SILL (red): the floor props the wall top", ACCENT),
+                     (EL_BRG_A + 0.16, f"EL {EL_BRG_A:.2f}: 5 1/2 in. BEARING LEDGE, PT 2x6 sill, 1/2 in. anchor bolts", INK),
+                     (EL_BRG_A - 0.4, "R-30 in the bottom of the trusses + 5/8 in. Type X garage ceiling", INK)):
+        txt(ax, xl, z_, s, size=4.4, color=c, ha="right")
+        line(ax, [(xl + 0.08, z_), (yl - 0.02 if z_ > EL_BRG_A else yi - 0.3, z_)], lw=0.3, color=c, z=9)
+    xr_ = yrr + 0.35
+    for z_, s, c, px in ((m.EL_A - 0.2, "5 in. SLAB ON GRADE (S-103) runs over the upstand to the subfloor edge", INK, yrr - 0.4),
+                         (slab_b - 0.05 - 0.38, "R-10 + 15-mil vapour barrier under the slab, 4 in. stone", "#b23a56", yrr - 0.4),
+                         (EL_BRG_A + 0.1, "6 1/2 in. CONCRETE UPSTAND (stem) cast with the wall: carries the slab\nedge and closes the truss space. #4 dowels at 24 in. (prelim.)", INK, us + 0.3),
+                         (EL_BRG_A - 0.72, "12 in. RETAINING WALL (S-102). Membrane + drainage board (blue)", BLUE, yo + 0.1)):
+        txt(ax, xr_, z_, s, size=4.4, color=c, ha="left")
+        line(ax, [(xr_ - 0.08, z_), (px, z_ if px > yo + 0.2 else z_)], lw=0.3, color=c, z=9)
+    dim(ax, (yi, vz[0] + 0.28), (us, vz[0] + 0.28), 0, "5 1/2\"", size=4.2, ext=False, side=-1)
+    dim(ax, (us, vz[0] + 0.28), (yo, vz[0] + 0.28), 0, "6 1/2\"", size=4.2, ext=False, side=-1)
+    detail_title(bg, left, bottom + (vz[1] - vz[0]) / f + 0.08, 1, "Truss bearing on the garage rear wall, slab-on-grade edge on the upstand")
+    return ax
+
+
+def detail_2(fig, bg, left, bottom, width, height):
+    """Trusses over beam B1 with the porch cantilever."""
+    f = 2.0
+    vy = (4.75, 4.75 + width * f)
+    vz = (921.75, 921.75 + height * f)
+    ax = plan_axes(fig, left, bottom, vy, vz, f)
+    yend = vy[1] - 0.5
+    tail_top = EL_TOP_A - PORCH_STEP
+    dk = tail_top + DECK_T
+    i_beam(ax, m.B1_Y, m.EL_B1_TOP)
+    truss_band(ax, m.YF, yend, EL_BRG_A, EL_TOP_A, panel=1.5, lw=0.5)
+    truss_band(ax, YS_P + 2 * RIM, m.YF, EL_BRG_A, tail_top, panel=1.3, lw=0.5)
+    rect(ax, YS_P, EL_BRG_A, YS_P + RIM, tail_top, fc=WOODF, ec=TR, lw=0.6, z=7)
+    rect(ax, YS_P + RIM, EL_BRG_A, YS_P + 2 * RIM, tail_top, fc=WOODF, ec=TR, lw=0.6, z=7)
+    rect(ax, YS_P - 0.1, tail_top, m.YF, dk, fc="#c9b28a", ec=INK, lw=0.4, z=7)
+    for yy in np.arange(YS_P - 0.1 + 5.625 * IN, m.YF, 5.625 * IN):
+        line(ax, [(yy, tail_top), (yy, dk)], lw=0.3, z=7.5)
+    rect(ax, YS_P - 3.5 * IN, EL_BRG_A + 0.15, YS_P, vz[1] - 0.25, fc=PAPER, ec=INK, lw=0.7, z=8)                      # guard post
+    for zz in (EL_BRG_A + 0.45, tail_top - 0.3):
+        line(ax, [(YS_P - 3.5 * IN - 0.1, zz), (YS_P + 2 * RIM + 0.1, zz)], lw=1.3, color=ACCENT, z=9)                # through-bolts
+    rect(ax, m.B1_Y - 1.75 * IN, EL_BRG_A, m.B1_Y + 1.75 * IN, EL_TOP_A, fc="#efe3c6", ec=TR, lw=0.5, z=6.6)           # blocking over B1
+    line(ax, [(m.B1_Y - 1.75 * IN, EL_BRG_A), (m.B1_Y + 1.75 * IN, EL_TOP_A)], lw=0.4, color=TR, z=6.7)
+    line(ax, [(m.B1_Y - 1.75 * IN, EL_TOP_A), (m.B1_Y + 1.75 * IN, EL_BRG_A)], lw=0.4, color=TR, z=6.7)
+    rect(ax, m.YF, EL_TOP_A, yend, m.EL_A, fc=WOODF, ec=INK, lw=0.5, z=7)
+    rect(ax, m.YF, m.EL_A, m.YFI, vz[1] - 0.25, fc=FRAME, ec=INK, lw=0.6, z=6)
+    line(ax, [(m.YF, m.EL_A + 1.5 * IN), (m.YFI, m.EL_A + 1.5 * IN)], lw=0.4, z=7)
+    rect(ax, m.B1_Y + W14["bf"] / 2, EL_BRG_A + 1.5 * IN, yend, EL_BRG_A + 11 * IN, fc=INSUL, ec="none", z=5.5, hatch="////")
+    rect(ax, m.B1_Y + W14["bf"] / 2, EL_BRG_A - 0.625 * IN, yend, EL_BRG_A, fc="#dfe2e6", ec=INK, lw=0.4, z=7)
+    line(ax, [(m.B1_Y - 0.2, EL_BRG_A + 0.02), (m.B1_Y - 0.2, EL_BRG_A + 0.6)], lw=1.6, color=ACCENT, z=9)             # clip
+    line(ax, [(yend, vz[0] + 0.2), (yend, vz[1] - 0.2)], lw=0.4, color=GREY, ls=(0, (6, 2, 1, 2)), z=3)
+    # labels
+    lead(ax, (m.B1_Y, m.EL_B1_TOP - 0.7), (11.2, 922.45), f"B1 W14x34 (prelim.)\ntop of steel EL {m.EL_B1_TOP:.2f}\ntrusses clipped to it\n(bearing: engineer)", size=4.3, color=STEEL)
+    lead(ax, (m.B1_Y + 0.05, EL_BRG_A + 1.0), (11.25, 923.3), "FULL-DEPTH BLOCKING between\ntrusses over B1 (X)", size=4.3, color=TR, va="center") if False else None
+    lead(ax, (12.2, EL_BRG_A + 0.9), (11.6, 923.05), "20 in. TRUSS FT-A1 runs over B1; R-30 + 5/8 X ceiling", size=4.3, color=TR, dot=False) if False else None
+    txt(ax, 12.15, EL_BRG_A + 0.9, "20 in. TRUSS FT-A1", size=4.3, color=TR, box=True, z=12)
+    lead(ax, (m.B1_Y + 0.1, EL_TOP_A - 0.35), (11.3, 926.6), "FULL-DEPTH BLOCKING (X)\nbetween trusses over B1", size=4.3, color=TR)
+    lead(ax, (m.YF + 0.27, m.EL_A + 0.7), (11.3, 927.35), "UNIT A FRONT WALL 2x6 (bearing)\nlands on the trusses over B1", size=4.3)
+    lead(ax, (8.3, dk), (6.4, 926.6), f"5/4 DECKING, deck ±{round((m.EL_A - dk) * 12 * 4) / 4:g} in.\nbelow the floor (A-402)", size=4.3, va="center")
+    lead(ax, (8.3, tail_top - 0.5), (7.1, 922.9), "TRUSS TAIL: 4'-0\" cantilever,\ntop chord stepped down", size=4.3, color=TR, va="center")
+    lead(ax, (YS_P + RIM, EL_BRG_A + 0.25), (5.0, 922.15), "DOUBLED RIM + blocking,\n(2) 1/2 in. through-bolts per post", size=4.3, color=ACCENT, va="center", dot=False)
+    txt(ax, YS_P - 0.5, 927.2, "4x4 PT GUARD POST,\n36 in. above the deck", size=4.2, ha="right")
+    dimb(ax, (YS_P, 924.55), (m.YF, 924.55), 0, "4'-0\"", size=4.3, ext=False)
+    dim(ax, (m.YF, vz[0] + 0.3), (m.B1_Y, vz[0] + 0.3), 0, "6\"", size=4.2, ext=False, side=-1)
+    detail_title(bg, left, bottom + height + 0.08, 2, "Trusses over beam B1, porch cantilever")
+    return ax
+
+
+def detail_3(fig, bg, left, bottom, width, height):
+    """Unit B floor truss bearing on the Unit A rear wall, rated ceiling."""
+    f = 2.0
+    yr, yri = m.yr_o(XS), m.yr_i(XS)
+    vy = (yr - 4.9, yr - 4.9 + width * f)
+    vz = (931.6, 931.6 + height * f)
+    ax = plan_axes(fig, left, bottom, vy, vz, f)
+    yl = vy[0] + 0.5
+    rim = RIM / CR
+    rect(ax, yri, vz[0] + 0.25, yr, EL_BRG_B, fc=FRAME, ec=INK, lw=0.6, z=6)
+    for k in (1, 2):
+        line(ax, [(yri, EL_BRG_B - k * 1.5 * IN), (yr, EL_BRG_B - k * 1.5 * IN)], lw=0.4, z=7)
+    truss_band(ax, yl, yr - rim, EL_BRG_B, EL_TOP_B, panel=1.7, lw=0.5)
+    rect(ax, yr - rim, EL_BRG_B, yr, EL_TOP_B, fc=WOODF, ec=TR, lw=0.6, z=7)
+    rect(ax, yl, EL_TOP_B, yr, m.EL_B, fc=WOODF, ec=INK, lw=0.5, z=7)
+    rect(ax, yri, m.EL_B, yr, vz[1] - 0.25, fc=FRAME, ec=INK, lw=0.6, z=6)
+    line(ax, [(yri, m.EL_B + 1.5 * IN), (yr, m.EL_B + 1.5 * IN)], lw=0.4, z=7)
+    rect(ax, yl, EL_BRG_B + 1.5 * IN, yri, EL_BRG_B + 5.0 * IN, fc=INSUL, ec="none", z=5.5, hatch="////")
+    rect(ax, yl, EL_BRG_B - 0.5 * IN, yri, EL_BRG_B, fc=PAPER, ec=GREY, lw=0.3, z=7)                                   # resilient channel
+    rect(ax, yl, EL_BRG_B - 1.25 * IN, yri, EL_BRG_B - 0.5 * IN, fc="#f0b9b3", ec=ACCENT, lw=0.5, z=7)                 # 5/8 X
+    rect(ax, yri - 0.5 * IN, vz[0] + 0.25, yri, EL_BRG_B - 1.25 * IN, fc="#dfe2e6", ec=INK, lw=0.3, z=7)
+    rect(ax, yri - 0.5 * IN, m.EL_B, yri, vz[1] - 0.25, fc="#dfe2e6", ec=INK, lw=0.3, z=7)
+    line(ax, [(yr + 0.04, vz[0] + 0.25), (yr + 0.04, vz[1] - 0.25)], lw=1.0, color=TR2, z=7)                           # OSB
+    line(ax, [(yr + 0.1, EL_BRG_B - 1.0), (yr + 0.1, m.EL_B + 1.0)], lw=1.8, color=ACCENT, z=8)                        # strap
+    line(ax, [(yl, vz[0] + 0.2), (yl, vz[1] - 0.2)], lw=0.4, color=GREY, ls=(0, (6, 2, 1, 2)), z=3)
+    xr_ = yr + 0.5
+    lead(ax, (yr + 0.1, m.EL_B + 0.6), (xr_, 937.0), "STRAP Unit B studs to\nUnit A studs across the\nfloor at shear-wall ends", size=4.3, color=ACCENT, va="center", dot=False)
+    lead(ax, (yr - rim / 2, EL_TOP_B - 0.5), (xr_, 935.6), "1 1/4 in. RIM BOARD\nfollows the skewed wall", size=4.3, color=TR, va="center")
+    lead(ax, (yr - 0.25, EL_BRG_B + 0.05), (xr_, 934.2), f"TRUSS END cut {abs(m.REAR_ANGLE):.1f}° off\nsquare, bears 5 1/2 in. on the\ndouble 2x6 top plate,\nEL {EL_BRG_B:.2f}", size=4.3, va="center")
+    lead(ax, (yr - 0.25, 932.3), (xr_, 932.3), "UNIT A REAR WALL 2x6\n@ 16 in. (bearing)", size=4.3, va="center")
+    txt(ax, yl + 0.1, m.EL_B + 0.9, f"EL {m.EL_B:.2f} UNIT B FLOOR\n3/4 in. T&G subfloor (+ sound mat, A-501)", size=4.3, ha="left")
+    txt(ax, yl + 1.6, EL_BRG_B + 1.1, "24 in. FLOOR TRUSS", size=4.3, color=TR, box=True, z=12, ha="left")
+    lead(ax, (yl + 1.2, EL_BRG_B - 0.07), (yl + 0.1, 932.55), "1-HOUR CEILING MEMBRANE (A-501): 5/8 in.\nType X on resilient channel, batts above.\nNo holes except fire-stopped pipes, ducts, boxes.", size=4.3, color=ACCENT, va="center", dot=False)
+    detail_title(bg, left, bottom + height + 0.08, 3, "Unit B floor truss on the Unit A wall, rated ceiling")
+    return ax
+
+
+def detail_4(fig, bg, left, bottom, width, height):
+    """Roof truss heel at the rear wall: raised heel, hurricane tie, 1-hour soffit."""
+    f = 2.0
+    yr, yri = m.yr_o(XS), m.yr_i(XS)
+    vy = (yr - 4.9, yr - 4.9 + width * f)
+    vz = (942.0, 942.0 + height * f)
+    ax = plan_axes(fig, left, bottom, vy, vz, f)
+    yl = vy[0] + 0.5
+    ye = yr + OH_REAR / CR
+    ch = 3.5 * IN / math.cos(math.atan(P))
+
+    def zt(y):
+        return EL_HEEL + (yr - y) * P
+
+    rect(ax, yri, vz[0] + 0.25, yr, m.EL_PLATE, fc=FRAME, ec=INK, lw=0.6, z=6)
+    for k in (1, 2):
+        line(ax, [(yri, m.EL_PLATE - k * 1.5 * IN), (yr, m.EL_PLATE - k * 1.5 * IN)], lw=0.4, z=7)
+    rect(ax, yl, m.EL_B + m.CLG_B, yri, m.EL_PLATE, fc="#dfe2e6", ec=INK, lw=0.4, z=7)                                 # ceiling
+    rect(ax, yri - 0.5 * IN, vz[0] + 0.25, yri, m.EL_B + m.CLG_B, fc="#dfe2e6", ec=INK, lw=0.3, z=7)
+    poly(ax, [(yl, m.EL_PLATE + 3.5 * IN), (yr - 3.5 * IN, m.EL_PLATE + 3.5 * IN), (yr - 3.5 * IN, zt(yr - 3.5 * IN) - ch), (yl + 0.9, m.EL_PLATE + 1.17 + 3.5 * IN),
+              (yl, m.EL_PLATE + 1.17 + 3.5 * IN)], fc=INSUL, ec="none", z=4, hatch="////")
+    rect(ax, yl, m.EL_PLATE, yr, m.EL_PLATE + 3.5 * IN, fc=WOODF, ec=TR, lw=0.6, z=8)                                  # bottom chord
+    poly(ax, [(yl, zt(yl)), (ye, zt(ye)), (ye, zt(ye) - ch), (yl, zt(yl) - ch)], fc=WOODF, ec=TR, lw=0.6, z=8)         # top chord + tail
+    rect(ax, yr - 3.5 * IN, m.EL_PLATE + 3.5 * IN, yr, zt(yr - 1.75 * IN) - ch, fc=WOODF, ec=TR, lw=0.6, z=8)          # heel post
+    line(ax, [(yl, zt(yl) + 0.06), (ye + 0.12, zt(ye + 0.12) + 0.06)], lw=1.6, color=INK, z=9)                         # sheathing + shingles
+    rect(ax, ye, zt(ye) - ch - 0.2, ye + 1.5 * IN, zt(ye) + 0.02, fc=WOODF, ec=TR, lw=0.6, z=8)                        # sub-fascia
+    sof = zt(ye) - ch - 0.2
+    rect(ax, yr + 0.05, sof - 1.1 * IN, ye + 1.5 * IN, sof, fc="#f0b9b3", ec=ACCENT, lw=0.6, z=8)                      # rated soffit
+    line(ax, [(yr + 0.04, vz[0] + 0.25), (yr + 0.04, zt(yr) - ch)], lw=1.0, color=TR2, z=7)                            # wall OSB up to the roof deck
+    poly(ax, [(yr - 0.02, m.EL_PLATE - 0.45), (yr + 0.09, m.EL_PLATE - 0.45), (yr + 0.09, m.EL_PLATE + 0.75), (yr - 0.02, m.EL_PLATE + 0.75)],
+         fc=ACCENT, ec=ACCENT, lw=0.3, z=10)                                                                           # hurricane tie
+    line(ax, [(yl, vz[0] + 0.2), (yl, vz[1] - 0.2)], lw=0.4, color=GREY, ls=(0, (6, 2, 1, 2)), z=3)
+    # pitch symbol
+    px, pz = yl + 1.5, zt(yl + 1.5) + 0.45
+    line(ax, [(px, pz), (px + 1.5, pz), (px + 1.5, pz - 0.5), (px, pz)], lw=0.5, z=10)
+    txt(ax, px + 0.75, pz + 0.2, "12", size=4.2)
+    txt(ax, px + 1.72, pz - 0.25, "4", size=4.2)
+    dim(ax, (yr, m.EL_PLATE), (yr, EL_HEEL), -0.95, "12\" HEEL", size=4.2, side=-1) if False else None
+    xr_ = ye + 0.55
+    lead(ax, (ye + 0.1, zt(ye) + 0.08), (xr_, 946.0), f"7/16 in. OSB + H-clips,\nshingles. REAR EAVE\nEL {EL_EAVE_R:.2f} (top of truss)", size=4.3, va="center")
+    lead(ax, (yr + 0.09, m.EL_PLATE + 0.5), (xr_, 944.6), "HURRICANE TIE at\nevery truss, both\nwalls (red)", size=4.3, color=ACCENT, va="center", dot=False)
+    lead(ax, (ye - 0.3, sof - 0.05), (xr_, 943.35), "1-HOUR SOFFIT (within 5 ft\nof the lot line): 5/8 in. Type X\nexterior gypsum + fibre-\ncement, no vents (A-501)", size=4.3, color=ACCENT, va="center", dot=False)
+    lead(ax, (yr - 0.25, 942.6), (xr_, 942.35), "UNIT B REAR WALL 2x6", size=4.3, va="center")
+    txt(ax, yl + 0.1, 947.6, f"ROOF TRUSS @ 24 in., 4:12 · 12 in. RAISED HEEL:\ntop of truss EL {EL_HEEL:.2f} at the outside face of the wall", size=4.3, ha="left")
+    lead(ax, (yr - 0.6, m.EL_PLATE + 0.9), (yl + 0.1, 942.9), f"R-49 full depth over the plate. Heel blocking\nwith OSB up to the roof deck (shear + wind-wash).\nPlates EL {m.EL_PLATE:.2f}; ceiling EL {m.EL_B + m.CLG_B:.2f}", size=4.3, va="center", dot=False)
+    dimb(ax, (yr, zt(yr) + 0.55), (ye, zt(yr) + 0.55), 0, ftin8(OH_REAR / CR).replace("1'-0", "12"), size=4.2, ext=False)
+    dimb(ax, (yr - 0.75, m.EL_PLATE), (yr - 0.75, EL_HEEL), 0, "12\"", size=4.2, ext=False, side=1)
+    detail_title(bg, left, bottom + height + 0.08, 4, "Roof truss heel at the rear wall, 1-hour soffit")
+    return ax
+
+
+def sheet_s301(pdf):
+    notes = [
+        ("Section A", [
+            f"Cut {ftin(XS)} east of the SW lot corner,",
+            "through the garage, both flats and the",
+            "roof, looking west. Ground is the state",
+            "LiDAR surface: the survey replaces it.",
+            "At this cut the garage is 20'-0\" deep",
+            f"and the flats are {ftin(depth_oo(XS))} deep: the rear",
+            f"{ftin(m.yr_o(XS) - m.Y_GR_O)} of Unit A is a slab on grade.",
+        ]),
+        ("Load path", [
+            "Roof and Unit B floor: front and rear",
+            "walls only. Front wall line: down the",
+            "Unit A wall to the trusses over B1, to",
+            "the post, the concrete return and the",
+            "lobby wall. Rear wall line: down to the",
+            "stem wall (or the garage wall, east end).",
+            "Unit A floor: B1 and the rear-wall ledge.",
+        ]),
+        ("Sequence that matters", [
+            "Footings, walls, drains, garage slab,",
+            "steel, Unit A floor anchored to the walls,",
+            "THEN backfill, stem wall and rear slab.",
+        ]),
+        PRELIM,
+    ]
+    fig, bg = sheet("S-301", "Structural sections and details", "3/16\" and 1/2\" = 1'-0\"", notes)
+    section_main(fig, bg)
+    detail_1(fig, bg, 0.5, 0.5, 8.62)
+    xr_ = 9.33
+    w = SHEET_W - MARGIN - TB_W - 0.1 - xr_
+    detail_2(fig, bg, xr_, 7.3, w, 3.0)
+    detail_3(fig, bg, xr_, 3.9, w, 3.0)
+    detail_4(fig, bg, xr_, 0.5, w, 3.0)
+    save(fig, "S-301", pdf)
+
+
+SHEETS = [("S-201", sheet_s201), ("S-202", sheet_s202), ("S-203", sheet_s203), ("S-204", sheet_s204), ("S-301", sheet_s301)]

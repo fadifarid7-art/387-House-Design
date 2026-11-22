@@ -121,7 +121,7 @@ OPEN_W = 25.0                         # garage opening; 65 % of the facade is th
 OPEN = (GAR_X1 - OPEN_W, GAR_X1)
 GARAGE_PCT = 100 * OPEN_W / FACADE_W
 IN_L = [(xw_gi(YF), YF), (GAR_X1, YF), (GAR_X1, Y_GR_I), (xw_gi(Y_GR_I), Y_GR_I)]
-UTIL = (SHAFT_X0, XE_GI, SHAFT_U[3] + CMU, Y_GR_I)                  # heated utility room
+UTIL = (SHAFT_X0, XE_GI, SHAFT_U[3] + CMU, Y_GR_I)                  # heated utility room: water service entry, shutoffs
 CAR_W, CAR_L = 6.17, 16.0                                           # design car, 6'-2" x 16'-0"
 _c0, _c2 = OPEN[0] + 0.5, OPEN[1] - 1.25 - CAR_W
 CARS = [_c0, (_c0 + _c2) / 2, _c2]                                 # west side of each car
@@ -130,8 +130,9 @@ CAR_Y0 = YF + 2.0
 STALL_LINES = [(CARS[0] + CAR_W + CARS[1]) / 2, (CARS[1] + CAR_W + CARS[2]) / 2]
 ENTRY = (39.5, 42.5)                  # 3'-0" street door into the stair
 UTIL_DOOR = (UTIL[3] - 0.25 - 2.667, UTIL[3] - 0.25)                # 2'-8" door, west wall, swings INTO the room
-WH = [(XE_GI - 1.1, UTIL[2] + 1.12), (XE_GI - 1.1, UTIL[2] + 3.24)]  # 80-gal heaters, 24 in. dia. (centres)
-WH_R = 1.0
+WH = []                               # (Rev E.1) no water heaters at garage level: each is in its own flat, see WH_UNIT
+WH_R = 1.0                            # 80 gal electric heater, 24 in. diameter
+WH_PAN_R = 13 * IN                    # 26 in. drain pan under each heater
 SOG = [(xw_o(Y_GR_O), Y_GR_O), (XE, Y_GR_O), OUT_U[3]]              # Unit A floor that is a slab on grade
 
 # porches (Unit A and Unit B), cantilevered 4'-0"; allowed 5'-0" into the front setback
@@ -157,11 +158,12 @@ HP = [(xw_o(20.5) - 1.1, 20.5), (xw_o(24.6) - 1.1, 24.6)]           # heat-pump 
 HP_SIZE = (38 * IN, 15 * IN)
 
 # ---- coordination points shared by every trade ----
-EL_FTG_TOP = EL_GAR - 1.0             # top of the retaining-wall footing (slab 6 in. + 6 in. stone above it)
+EL_FTG_TOP = EL_GAR - (36 - 14) * IN  # top of the retaining-wall footing: its bottom is 36 in. (frost) below the open garage slab
 FTG_W, FTG_T = 4.0, 14 * IN           # preliminary retaining-wall footing, 4'-0" x 14 in.
 EL_SLAB_A = EL_A                      # Unit A slab on grade (rear), same level as the framed floor
 B1_Y = YF + 0.5                       # centre line of steel beam B1 over the garage opening (dropped below the trusses)
-EL_B1_TOP = EL_A - 0.75 * IN - TRUSS_A
+EL_B1_TOP = EL_A - 0.75 * IN - TRUSS_A - 1.5 * IN        # 1 1/2 in. wood nailer between steel and trusses
+B1_PAD = 5.0                          # preliminary pad footing under the B1 post, 5'-0" square
 B1_DEPTH = 14 * IN                    # W14 preliminary
 OPEN_CLEAR_H = EL_B1_TOP - B1_DEPTH - EL_GAR
 SEWER_OUT_X = 33.5                                      # building drain leaves under the garage opening here
@@ -179,6 +181,11 @@ PANEL_A_AMPS, PANEL_B_AMPS = 150, 125
 def avg_grade():
     """Average existing grade at the four building corners (zoning height reference)."""
     return sum(elev(x, y) for x, y in OUT_U) / 4
+
+
+def zoning_height():
+    """Mean roof height (midway between the eave and the highest ridge) above average grade."""
+    return ((EL_PLATE + HEEL) + EL_RIDGE_HI) / 2 - avg_grade()
 
 
 # ----------------------------------------------------------------------------
@@ -204,8 +211,8 @@ CL_X0, CL_X1 = 8.875, 12.125          # closets at the west end of the strip (3'
 B1_X0 = CL_X1 + PART                  # bath 1 west face (7'-0" to E1)
 CL_Y = Y2 + 2.25                      # bedroom 1 closet depth 2'-3"
 WD_Y1 = Y2 + 3.0                      # washer/dryer closet 3'-0"
-AH_Y0, AH_Y1 = WD_Y1 + PART, WD_Y1 + PART + 2.5                    # air-handler closet 2'-6"
-LIN_Y0 = AH_Y1 + PART
+AH_Y0, AH_Y1 = WD_Y1 + PART, WD_Y1 + PART + 2.5                    # mechanical closet, air-handler half 2'-6"
+LIN_Y0 = AH_Y1                        # water-heater half starts here (no wall between the two halves)
 C3_Y = Y2 + 6.667 + 2.0               # bedroom 3 closet: south face of its front wall (24 in. past the bed)
 C3_X = X_B3 + 3.0                     # bedroom 3 closet: east inside face (3'-0" wide)
 B2_FUR = round(yr_i(X_C1 - 2.5) - 0.02 - B2_Y1, 3)   # furred wall behind the bath 2 toilet
@@ -222,7 +229,6 @@ PARTITIONS = [
     (X_H1, Y2, X_C0, HALL_Y1, "p"),                  # hall east wall (closet fronts)
     (X_H0, HALL_Y1, X_C1, B2_Y0, "p"),               # hall end / bath 2 south wall
     (X_C0, WD_Y1, X_C1, AH_Y0, "p"),                 # W/D | air handler
-    (X_C0, AH_Y1, X_C1, LIN_Y0, "p"),                # air handler | linen
     (X_C1, Y2, X_B3, yr_i(X_C1) + 0.1, "p"),                     # closet strip + bath 2 / bedroom 3
     (X_B3, C3_Y, C3_X + PART, C3_Y + PART, "p"),     # bedroom 3 closet front
     (C3_X, C3_Y, C3_X + PART, yr_i(C3_X) + 0.1, "p"),   # bedroom 3 closet end
@@ -255,8 +261,8 @@ DOORS = [
     _d("D9", "h", CL_X0 + 0.29, 2.667, (Y3, Y4), "lo", +1, "bifold", "Bedroom 2 closet, 2'-8\" bifold"),
     _d("D10", "h", X_B3 + 0.25, 2.5, (C3_Y, C3_Y + PART), "lo", -1, "bifold", "Bedroom 3 closet, 2'-6\" bifold"),
     _d("D11", "v", Y2 + 0.167, 2.667, (X_H1, X_C0), "lo", -1, "bifold", "Washer/dryer, 2'-8\" bifold"),
-    _d("D12", "v", AH_Y0 + 0.25, 2.0, (X_H1, X_C0), "lo", -1, note="Air handler, 2'-0\" with return grille"),
-    _d("D13", "v", LIN_Y0 + 0.1, 1.5, (X_H1, X_C0), "lo", -1, note="Linen, 1'-6\""),
+    _d("D12", "v", (AH_Y0 + HALL_Y1) / 2 - 2.0, 2.0, (X_H1, X_C0), "lo", -1, note="Mechanical closet, pair leaf 2'-0\" with return grille (air handler)"),
+    _d("D13", "v", (AH_Y0 + HALL_Y1) / 2, 2.0, (X_H1, X_C0), "hi", -1, note="Mechanical closet, pair leaf 2'-0\" (water heater)"),
     _d("D14", "h", 26.9, 3.0, (YF, YFI), "lo", +1, note="Porch, 3'-0\" full-glass"),
 ]
 
@@ -295,7 +301,7 @@ ROOMS = {
     "CLOSET 3": [(X_B3, C3_Y + PART), (C3_X, C3_Y + PART), (C3_X, yr_i(C3_X)), (X_B3, yr_i(X_B3))],
     "W/D": [(X_C0, Y2), (X_C1, Y2), (X_C1, WD_Y1), (X_C0, WD_Y1)],
     "AIR HANDLER": [(X_C0, AH_Y0), (X_C1, AH_Y0), (X_C1, AH_Y1), (X_C0, AH_Y1)],
-    "LINEN": [(X_C0, LIN_Y0), (X_C1, LIN_Y0), (X_C1, HALL_Y1), (X_C0, HALL_Y1)],
+    "WATER HEATER": [(X_C0, LIN_Y0), (X_C1, LIN_Y0), (X_C1, HALL_Y1), (X_C0, HALL_Y1)],
 }
 STAIR_AREA = (SHAFT_U[1] - SHAFT_U[0]) * (SHAFT_U[3] - SHAFT_U[2])
 
@@ -321,8 +327,8 @@ SIZES = {
     "Toilet": "30 in. wide space (15 in. each side of centre), 28 in. deep, 21 in. clear in front",
     "Vanity": "24 x 21 in. (bath 1); 30 x 18 in. (bath 2); 20 x 18 in. wall-hung lavatory (bath 3)",
     "Washer/dryer": "stacked 27 x 31 in. in a 36 x 34 in. closet",
-    "Air handler": "vertical, 21 x 21 in., in a 30 x 34 in. closet",
-    "Water heater": "80 gal electric, 24 in. dia. x 60 in., in the garage-level utility room",
+    "Air handler": "vertical, 21 x 21 in., in the 5'-0\" x 2'-10\" mechanical closet off the hall",
+    "Water heater": "80 gal electric, 24 in. dia. x 60 in., on a 26 in. drain pan, in the mechanical closet of its own flat",
     "Range": "30 in.",
     "Refrigerator": "36 in. wide space x 30 in. deep",
     "Dishwasher": "24 in.",
@@ -343,6 +349,7 @@ LAVS = [(B1_X0, Y3 - 1.75, B1_X0 + 2.0, Y3), (X_H0 + 0.35, B2_Y0, X_H0 + 2.85, B
 WD = (X_C0 + 0.29, Y2 + 0.2, X_C0 + 0.29 + 2.25, Y2 + 0.2 + 2.583)        # 27 x 31 in.
 AHU = (X_C0 + 0.5, AH_Y0 + 0.375, X_C0 + 2.25, AH_Y0 + 2.125)             # 21 x 21 in.
 PANEL = (X_H0, Y2 + 1.2, X_H0 + 0.33, Y2 + 2.4)                           # load centre, hall west wall
+WH_UNIT = (X_C0 + 1.45, HALL_Y1 - 1.2)                                    # water heater centre, in each flat's mechanical closet
 KIT_BASE = (X_H0, YFI, X_H0 + 2.083, YFI + 2.0)
 RANGE = (X_H0, YFI + 2.0, X_H0 + 2.083, YFI + 4.5)
 FRIDGE = (X_H0, YFI + 4.5, X_H0 + 2.5, YFI + 7.5)
@@ -503,7 +510,10 @@ def check(verbose=False):
         ok(area(k) >= 100, f"{k} under 100 sf")
     sectors = [(d["tag"], door_sector(d)) for d in DOORS]
     solid = []
-    for (x0, y0, x1, y1) in TUBS + LAVS + [WD, AHU, KIT_BASE, RANGE, FRIDGE, ISLAND_TOP]:
+    _wh = (WH_UNIT[0] - WH_R, WH_UNIT[1] - WH_R, WH_UNIT[0] + WH_R, WH_UNIT[1] + WH_R)
+    ok(Polygon(ROOMS["WATER HEATER"]).buffer(0.01).contains(Point(*WH_UNIT).buffer(WH_PAN_R)), "water heater pan does not fit its closet")
+    ok(box(*AHU).intersection(Point(*WH_UNIT).buffer(WH_PAN_R)).area < 0.01, "air handler and water heater overlap")
+    for (x0, y0, x1, y1) in TUBS + LAVS + [WD, AHU, _wh, KIT_BASE, RANGE, FRIDGE, ISLAND_TOP]:
         solid.append(box(x0, y0, x1, y1))
     for (cx, cy, f) in WCS:
         solid.append(box(cx - 0.8, cy - WC_D, cx + 0.8, cy))
