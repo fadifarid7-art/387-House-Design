@@ -1,0 +1,241 @@
+<title>387 Baird Street Concept</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a drawing-set cover. One reading column for the findings, then the sheets full width, each under its sheet number like a title block. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #14181d;
+  --muted: #5b6470;
+  --rule: #d5d9df;
+  --accent: #b3261e;      /* property-line red used on the drawings */
+  --accent-soft: #f8e4e2;
+  --ok: #1c6b3a;
+  --warn: #8a5200;
+  --paper: #ffffff;       /* drawings are always on white paper */
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b2027; --ink: #e9ecf0; --muted: #a0a9b5; --rule: #323a45;
+    --accent: #f0766c; --accent-soft: #3a2220; --ok: #6fcf97; --warn: #e6b566; --paper: #ffffff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b2027; --ink: #e9ecf0; --muted: #a0a9b5; --rule: #323a45;
+  --accent: #f0766c; --accent-soft: #3a2220; --ok: #6fcf97; --warn: #e6b566; --paper: #ffffff;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.col { max-width: 760px; }
+header.cover { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 28px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.02; margin: 8px 0 10px; letter-spacing: -.01em; text-wrap: balance; }
+.lede { font-size: 1.1rem; color: var(--ink); max-width: 62ch; margin: 0; }
+.stamp { display: inline-block; margin-top: 16px; border: 1.5px solid var(--accent); color: var(--accent); background: var(--accent-soft);
+  font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 6px 10px; }
+h2 { font-family: var(--display); font-size: 1.45rem; margin: 44px 0 12px; text-wrap: balance; }
+h3 { font-family: var(--display); font-size: 1.05rem; margin: 0 0 6px; }
+p { margin: 0 0 12px; max-width: 68ch; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0; border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); margin: 16px 0 8px; background: var(--surface); }
+.facts > div { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 16px; min-width: 0; }
+.facts dt { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.facts dd { margin: 0; font-weight: 600; font-size: 1.02rem; }
+.facts dd small { display: block; font-weight: 400; color: var(--muted); font-size: .86rem; margin-top: 2px; }
+.tablewrap { overflow-x: auto; margin: 12px 0 8px; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; background: var(--surface); font-size: .94rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1.5px solid var(--ink); }
+td.need { color: var(--accent); font-weight: 600; }
+td.ok { color: var(--ok); font-weight: 600; }
+td.warn { color: var(--warn); font-weight: 600; }
+ol.findings { padding-left: 1.3em; margin: 8px 0; max-width: 70ch; }
+ol.findings li { margin-bottom: 10px; }
+ul { padding-left: 1.2em; max-width: 70ch; margin: 8px 0 12px; }
+li { margin-bottom: 6px; }
+.callout { border-left: 4px solid var(--accent); background: var(--surface); padding: 14px 16px; margin: 16px 0; max-width: 72ch; }
+.callout p:last-child { margin-bottom: 0; }
+.sheet { margin: 26px 0 0; }
+.sheet-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; border-top: 1.5px solid var(--ink); padding-top: 10px; margin-bottom: 8px; }
+.sheet-no { font-family: var(--mono); font-weight: 600; font-size: 1.05rem; }
+.sheet-title { font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
+.sheet-note { color: var(--muted); font-size: .9rem; flex-basis: 100%; max-width: 80ch; }
+.paper { background: var(--paper); border: 1px solid var(--rule); overflow-x: auto; }
+.paper img { display: block; width: 100%; max-width: none; height: auto; cursor: zoom-in; }
+.paper.zoom img { width: 2400px; cursor: zoom-out; }
+button.zoomhint { font: inherit; font-size: .82rem; color: var(--muted); background: none; border: 1px solid var(--rule); border-radius: 3px; padding: 3px 9px; cursor: pointer; margin-left: auto; }
+button.zoomhint:hover { color: var(--ink); border-color: var(--ink); }
+button.zoomhint:focus-visible, .paper:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+nav.index { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+nav.index a { font-family: var(--mono); font-size: 12px; color: var(--ink); text-decoration: none; border: 1px solid var(--rule); background: var(--surface); padding: 5px 9px; }
+nav.index a:hover { border-color: var(--ink); }
+.sources a { color: var(--ink); }
+footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px; color: var(--muted); font-size: .88rem; }
+</style>
+
+<div class="wrap">
+  <header class="cover">
+    <div class="eyebrow">Morgantown, WV 26505 · Tax District 13 · Map 29 · Parcel 84 · Zoned R-2</div>
+    <h1>387 Baird Street</h1>
+    <p class="lede">Feasibility concept for removing the existing 1929 house and building a small house over a drive-under garage with storage. Prepared from public records for review by a licensed architect, engineer and surveyor.</p>
+    <div class="stamp">Concept · not for construction · no survey or site visit</div>
+  </header>
+
+  <div class="col">
+    <p>The lot can take a 36 x 22 ft house over a two-car garage, but only with a rear-setback variance from the Board of Zoning Appeals. Under the R-2 setbacks as written, the buildable area is a wedge of about 396 sq ft. The slope suits the garage: cut in at street level, it puts the main floor level with the back yard.</p>
+  </div>
+
+  <dl class="facts">
+    <div><dt>Owner of record</dt><dd>R &amp; L Rentals LLC<small>3025 Greystone Dr, Morgantown WV 26508 · Deed Book 1246, Page 78</small></dd></div>
+    <div><dt>Last recorded sale</dt><dd>1 June 2001<small>$160,000, coded as a related-party transfer. Prior sale 1 Oct 2000, $160,000, covering more than one parcel.</small></dd></div>
+    <div><dt>Lot</dt><dd>50 ft frontage, 34 to 48 ft deep<small>0.0471 acre deeded, about 2,050 sq ft</small></dd></div>
+    <div><dt>Cars</dt><dd>2 inside, as drawn<small>1 to 3 depending on how much storage is kept</small></dd></div>
+  </dl>
+
+  <div class="col">
+    <h2>Ownership and sale history</h2>
+    <p>R &amp; L Rentals LLC has been the owner on every county tax roll from 2005 through 2026. The $160,000 price bought several parcels together in 2000, so it is not the price of this lot. The 2001 entry carries the assessor's code for a transfer between related individuals or corporations. A title search of Deed Book 1246, Page 78 will confirm both.</p>
+    <p>The county's 2026 appraisal is $28,000: $15,400 for the land and $12,600 for the building.</p>
+    <p>The lot behind, 386 Forest Ave, is held by R &amp; L Apartments LLC at the same mailing address. Both lots are parts of the original Lot 2, so the seller also controls the rear boundary, which is the tightest dimension on this site.</p>
+
+    <h2>The parcel</h2>
+    <ul>
+      <li>50.0 ft on Baird St, 34.0 ft on the east side, 48.0 ft on the west, with a diagonal rear line of about 46.6 ft (county tax map 09-0029).</li>
+      <li>Three area figures disagree: 2,052 sq ft deeded, about 1,950 from the tax-map dimensions, 1,911 in the county GIS. A boundary survey settles it.</li>
+      <li>Existing house: 1929, two-storey stucco, 24 x 16 ft plus a porch, 768 sq ft, no basement, at or very near the front lot line.</li>
+      <li>The lot rises 8 to 12 ft from street to rear line. Baird St climbs about 11 % along the frontage and is one lane, about 14 ft of pavement in a 30 ft right-of-way.</li>
+      <li>Flood risk is low, with no mapped flood zone.</li>
+    </ul>
+
+    <h2>Zoning against the concept</h2>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Standard</th><th>R-2 requires</th><th>Concept</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Lot area</td><td>5,000 sq ft minimum</td><td>about 2,050 sq ft</td><td class="warn">Legal nonconforming lot</td></tr>
+        <tr><td>Frontage</td><td>40 ft minimum</td><td>50 ft</td><td class="ok">Meets</td></tr>
+        <tr><td>Front setback</td><td>10 ft min, 20 ft max</td><td>8 ft</td><td class="warn">Variance, or block-average rule</td></tr>
+        <tr><td>Side setbacks</td><td>5 ft</td><td>5.0 ft east, 5.5 to 8.0 ft west</td><td class="ok">Meets</td></tr>
+        <tr><td>Rear setback</td><td>20 ft</td><td>5.3 to 15.9 ft</td><td class="need">Variance needed</td></tr>
+        <tr><td>Lot coverage</td><td>50 % maximum</td><td>39 %</td><td class="ok">Meets</td></tr>
+        <tr><td>Height</td><td>2.5 storeys or 35 ft</td><td>25.6 ft, two storeys over the garage level</td><td class="warn">Storey count needs a ruling</td></tr>
+        <tr><td>Parking</td><td>2 spaces per single-family dwelling</td><td>2 inside</td><td class="ok">Meets</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <div class="callout">
+      <h3>Get the variance before demolishing</h3>
+      <p>The existing house sits closer to the lot lines than R-2 allows, and that is grandfathered only while it stands. Under section 1373.06, a nonconforming structure that is voluntarily torn down must be replaced to current standards. Make any offer contingent on Board of Zoning Appeals approval.</p>
+    </div>
+
+    <h2>How many cars</h2>
+    <p>Parking is only possible inside the building. The garage door sits 15 ft from the pavement, but about 7 ft of that is city right-of-way, so nothing can legally park on the apron. The street is one lane with no room to park on it.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Option</th><th>Cars</th><th>Storage</th><th>Parking rule</th><th>Extra approval</th></tr></thead>
+      <tbody>
+        <tr><td>A · as drawn</td><td>2</td><td>177 sq ft room plus shelving</td><td class="ok">Meets</td><td>None expected</td></tr>
+        <tr><td>B · storage first</td><td>1</td><td>about 370 sq ft</td><td class="need">1 short</td><td>Parking variance</td></tr>
+        <tr><td>C · cars first</td><td>3</td><td>Wall shelving only</td><td class="ok">Meets</td><td>Garage-width relief; slab about 1 ft lower</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <div class="callout">
+      <h3>Storage for other properties needs a written answer</h3>
+      <p>R-2 allows indoor storage that is accessory to the dwelling. The code defines a private garage as housing the occupants' automobiles, "not commercial vehicles". Stocking materials for other rental properties could be read as a contractor or warehouse use. Ask the Planning Division for its position in writing before buying.</p>
+    </div>
+
+    <h2>Drawing set</h2>
+    <p>Nine sheets drawn for 11 x 17 in paper. Select a sheet to enlarge it. The print-ready PDF and the scripts that generate it are in the project repository.</p>
+    <nav class="index" aria-label="Sheets">
+      <a href="#g-001">G-001</a><a href="#c-101">C-101</a><a href="#c-102">C-102</a><a href="#a-101">A-101</a><a href="#a-102">A-102</a><a href="#a-103">A-103</a><a href="#a-201">A-201</a><a href="#a-301">A-301</a><a href="#a-401">A-401</a>
+    </nav>
+  </div>
+
+  <div id="sheets"></div>
+
+  <div class="col">
+    <h2>Questions for the licensed team</h2>
+    <ul>
+      <li><strong>Surveyor.</strong> Boundary and topographic survey. The public GIS used here is good to about 3 to 5 ft.</li>
+      <li><strong>Planning Division</strong>, 389 Spruce St, 304-284-7431. Pre-application meeting on the rear setback, whether the developed-block averaging rule in 1363.02(C) sets the front setback, whether the garage level is a basement or a storey, and the storage use.</li>
+      <li><strong>Geotechnical and structural engineer.</strong> Borings, rock depth, any old mine workings, retaining walls holding 7.5 to 10.5 ft of soil, and shoring beside 441 and 442 Baird and 386 Forest.</li>
+      <li><strong>Civil engineer and City Engineer.</strong> A driveway onto an 11 % one-lane street. The street falls about 1.8 ft across the 16 ft door, so the apron has to warp from about 0 % to 12 %.</li>
+      <li><strong>Architect.</strong> Fire separation at the east wall, 5 ft from the line, and at the north-east corner, 5.3 ft from the rear line. East, west and north elevations are not drawn.</li>
+    </ul>
+
+    <h2>Limits of this study</h2>
+    <ul>
+      <li>Street View was not used. Google's service refused lookups from the machine this was prepared on, so measurements come from the county tax map, the assessor's building sketch, the 2026 county orthophoto and the state 1 m LiDAR. Walls, steps, poles and overhead lines in front of the lot were not observed.</li>
+      <li>The zoning text was read from the city's published 2019 edition of the code. The R-2 numbers match the city's current zoning layer, but later amendments should be checked.</li>
+      <li>No cost estimate is included.</li>
+    </ul>
+
+    <h2>Sources</h2>
+    <ul class="sources">
+      <li><a href="https://www.mapwv.gov/Assessment/Detail/?PID=31130029008400000000">WV Real Estate Assessment record, parcel 31-13-0029-0084-0000</a></li>
+      <li><a href="https://mapwv.gov/assessment/Sales_Description.pdf">Assessor sales code definitions</a></li>
+      <li><a href="https://data.wvgis.wvu.edu/pub/Clearinghouse/planningLanduseCadastres/wv_tax_maps/PDF/31_Monongalia_County/09-15_Morgantown_Corp/09-0029.pdf">Monongalia County tax map 09-0029</a></li>
+      <li><a href="https://www.morgantownwv.gov/555/Morgantown-Zoning-Map">City of Morgantown zoning map</a></li>
+      <li><a href="https://www.morgantownwv.gov/DocumentCenter/View/2705/2019-Planning-and-Zoning-Code">Morgantown Planning and Zoning Code, 2019 edition</a></li>
+      <li><a href="https://www.morgantownwv.gov/AgendaCenter/ViewFile/Agenda/_12182024-3244">Board of Zoning Appeals agenda, 18 Dec 2024</a></li>
+      <li>WV statewide parcel service, 1 m LiDAR DEM and 2026 orthophoto, WV GIS Technical Center</li>
+    </ul>
+    <footer>Records retrieved 21 November 2026. Elevations are NAVD88 feet from state LiDAR.</footer>
+  </div>
+</div>
+
+<script>
+const SHEETS = [
+  ["G-001", "Cover and summary", "Property record, zoning, findings and a key plan on one page."],
+  ["C-101", "Existing site conditions", "Record lot dimensions on LiDAR contours, with the existing house and neighbours. Scale 1 in = 10 ft."],
+  ["C-102", "Zoning envelope and site plan", "The red tint is all the R-2 setbacks leave. The heavy outline is the 36 x 22 ft concept footprint."],
+  ["A-101", "Lower level: garage + storage", "Two cars behind a 16 ft door, a storage room with a truck-height loading door, and the retaining walls."],
+  ["A-102", "Main level: living", "Living, dining and kitchen, a covered porch over the garage door, and a rear door at grade."],
+  ["A-103", "Upper level: bedrooms", "Two bedrooms, a study and two baths."],
+  ["A-201", "Street elevation", "From Baird Street looking north. The dashed blue line is the pavement falling to the east."],
+  ["A-301", "Building section", "Cut through the garage. The dashed brown line is the existing ground."],
+  ["A-401", "Parking and storage options", "The same shell arranged for two cars, one car, or three."]
+];
+const host = document.getElementById("sheets");
+for (const [no, title, note] of SHEETS) {
+  const sec = document.createElement("section");
+  sec.className = "sheet";
+  sec.id = no.toLowerCase();
+  const head = document.createElement("div");
+  head.className = "sheet-head";
+  const a = document.createElement("span"); a.className = "sheet-no"; a.textContent = no;
+  const b = document.createElement("span"); b.className = "sheet-title"; b.textContent = title;
+  const btn = document.createElement("button"); btn.className = "zoomhint"; btn.type = "button"; btn.id = "zoom-" + no.toLowerCase(); btn.textContent = "Enlarge";
+  const c = document.createElement("span"); c.className = "sheet-note"; c.textContent = note;
+  head.append(a, b, btn, c);
+  const paper = document.createElement("div");
+  paper.className = "paper";
+  const img = document.createElement("img");
+  img.src = "sheets/" + no + ".png";
+  img.alt = "Sheet " + no + ": " + title + ". " + note;
+  img.loading = no === "G-001" ? "eager" : "lazy";
+  img.width = 3400; img.height = 2200;
+  paper.append(img);
+  const toggle = () => {
+    const z = paper.classList.toggle("zoom");
+    btn.textContent = z ? "Fit to width" : "Enlarge";
+  };
+  btn.addEventListener("click", toggle);
+  img.addEventListener("click", toggle);
+  sec.append(head, paper);
+  host.append(sec);
+}
+</script>
