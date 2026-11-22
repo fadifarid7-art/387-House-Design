@@ -55,8 +55,8 @@ for _k, _name, _p in _runs:
     _prev = _p
 BR3_LEN = math.dist(S3B, WYE)
 INV["S3"] = dict(name="Base of stack 3 (utility room)", p=S3B, sta=BR3_LEN, inv=INV["D"]["inv"] + BR3_LEN * SLOPE)
-INV_SLEEVE = 923.0                                   # Unit A bath 2 drain through the garage rear wall (approx.)
-FLOOR_DRAIN = (m.CHASE_3[0] + 0.2, (m.WH[0][1] + m.WH[1][1]) / 2)
+INV_SLEEVE = 924.2                                   # Unit A bath 2 drain through the 6 in. upstand on the garage rear wall (approx.)
+FLOOR_DRAIN = (m.CHASE_3[0] + 0.2, (m.UTIL[2] + m.UTIL[3]) / 2)
 
 # storm
 OFFD = 1.0                                           # French drain drawn 12 in. off the wall face (position per S-102)
@@ -88,13 +88,13 @@ def apron_el(x, y):
 # water
 SERV_X = (47.4, 48.4)                                # the two services in the east side yard (A, B)
 SERV_LEN = [abs(m.WATER_METERS[i][0] - SERV_X[i]) + (m.WATER_ENTRY[1] - m.WATER_METERS[i][1]) + (SERV_X[i] - m.XE) for i in (0, 1)]
-HB = (m.XE, m.UTIL[2] + 0.25)                         # frost-proof hose bibb, east wall, in Unit A's floor rim
 EL_HB = m.EL_A - 0.75 * m.IN - m.TRUSS_A / 2
-BOARD_B = (m.UTIL[0] + 0.25, m.UTIL[0] + 2.05)       # manifold boards on the utility room south wall (x0, x1)
-BOARD_A = (m.UTIL[0] + 2.25, m.UTIL[0] + 4.05)
-RISE_A = ((BOARD_A[0] + BOARD_A[1]) / 2, m.UTIL[2] + 0.55)       # Unit A lines go up through the ceiling here
-RISE_B = (m.STACK_3[0] - 1.3, m.B3_Y1 + m.PART + 0.55)           # Unit B lines rise in the bath 3 pipe space
-HM_B = (m.STACK_3[0] + 0.45, m.STACK_3[0] + 1.1)                 # Unit B hot manifold, north wall beside WH-B (x0, x1)
+_EY = m.WATER_ENTRY[1]
+BOARD_A = (_EY - 1.75, _EY - 0.35)                   # shutoff + PRV boards on the utility room east wall (y0, y1)
+BOARD_B = (_EY + 0.35, _EY + 1.75)
+RISE_A = (m.XE_GI - 0.3, BOARD_A[0] - 0.22)          # Unit A's cold riser goes up through the ceiling here
+RISE_B = (m.STACK_3[0] - 1.3, m.B3_Y1 + m.PART + 0.55)           # Unit B's cold riser goes up the bath 3 pipe space
+HB = (m.XE, RISE_A[1])                               # frost-proof hose bibb, east wall, in Unit A's floor rim
 
 # fixture units (2018 IPC Table 709.1 and Table E103.3(2))
 DFU = dict(bath=5, sink=2, dw=2, cw=2, fd=2)
@@ -253,71 +253,55 @@ def small_lines(bg, x, y, lines, fs=5.4, dy=0.135, color=INK):
 # P-101  Garage level and under-slab
 # ----------------------------------------------------------------------------
 def utility_enlarged(fig, bg, left, bottom):
-    """Utility room at 3/8 in. scale: where each piece of equipment stands."""
+    """Utility room at 3/8 in. scale: service entries, shutoffs, risers, floor drain, stack 3."""
     fpi = 12 / 4.5
     view = ((m.UTIL[0] - 1.25, m.XE + 0.55), (m.UTIL[2] - 0.75, m.Y_GR_O + 0.45))
     ax = plan_axes(fig, left, bottom, view[0], view[1], fpi)
     lower_plan(ax, "bg", cars=False)
     strip_texts(ax)
     x0, x1, y0, y1 = m.UTIL
-    # shared pan under both heaters, heaters, expansion tanks
-    pan = (m.WH[0][0] - m.WH_R - 0.1, y0 + 0.03, x1 - 0.02, m.WH[1][1] + m.WH_R + 0.1)
-    rect(ax, pan[0], pan[1], pan[2], pan[3], fc="#fbf6e9", ec=GREY, lw=0.6, z=5.5, ls=(0, (3, 1.5)))
-    for i, (wx, wy) in enumerate(m.WH):
-        ax.add_patch(Circle((wx, wy), m.WH_R, fc=PAPER, ec=INK, lw=0.8, zorder=6))
-        txt(ax, wx + 0.1, wy - 0.12, f"WH-{'AB'[i]}", size=5.0, weight="bold", z=8)
-        txt(ax, wx + 0.1, wy - 0.5, "80 gal", size=4.0, color=GREY, z=8)
-        keynote(ax, wx + 0.1, wy + 0.5, 5)
     # sanitary: stack 3, branch, floor drain
     pipe(ax, [S3B, WYE], SAN, 2.2)
     stack_dot(ax, S3B, SAN, r=0.05)
-    cleanout(ax, S3B[0] + 0.3, S3B[1] - 0.62)
+    cleanout(ax, S3B[0] + 0.62, S3B[1])
     fdx, fdy = FLOOR_DRAIN
     jx = S3B[0] - (S3B[1] - fdy)
     pipe(ax, [(fdx, fdy), (jx, fdy)], SAN, 1.3)
     rect(ax, fdx - 0.25, fdy - 0.25, fdx + 0.25, fdy + 0.25, fc=PAPER, ec=SAN, lw=1.0, z=12)
     line(ax, [(fdx - 0.25, fdy - 0.25), (fdx + 0.25, fdy + 0.25)], color=SAN, lw=0.6, z=13)
     line(ax, [(fdx - 0.25, fdy + 0.25), (fdx + 0.25, fdy - 0.25)], color=SAN, lw=0.6, z=13)
-    # T&P relief lines to the floor drain
-    for (wx, wy) in m.WH:
-        sg = 1 if wy > fdy else -1
-        pipe(ax, [(wx - m.WH_R * 0.9, wy - sg * 0.42), (fdx + 0.3, fdy + sg * 0.12)], HW, 0.8, (0, (1, 1)))
-    # services in, up in the corner behind the heaters, overhead to the boards
-    ey = m.WATER_ENTRY[1]
-    for dy in (-0.11, 0.11):
-        pipe(ax, [(view[0][1], ey + dy), (x1 - 0.22, ey + dy)], CW, 1.5)
-        riser(ax, (x1 - 0.22, ey + dy), CW, 0.022)
-    xo = m.WH[0][0] - 1.3
-    pipe(ax, [(x1 - 0.22, ey - 0.11), (xo, ey - 0.11), (BOARD_A[1] - 0.2, y0 + 0.75), (BOARD_A[1] - 0.2, y0 + 0.3)], CW, 1.0, DASH_UP)
-    pipe(ax, [(x1 - 0.22, ey + 0.11), (xo - 0.25, ey + 0.11), (BOARD_B[1] - 0.2, y0 + 0.85), (BOARD_B[1] - 0.2, y0 + 0.3)], CW, 1.0, DASH_UP)
-    for (b0, b1), nm in ((BOARD_A, "A"), (BOARD_B, "B")):
-        rect(ax, b0, y0, b1, y0 + 0.3, fc="#e9eef6", ec=CW, lw=0.9, z=11)
-        txt(ax, (b0 + b1) / 2, y0 + 0.15, f"BOARD {nm}", size=4.0, color=CW, weight="bold", z=12)
-    rect(ax, HM_B[0], y1 - 0.26, HM_B[1], y1, fc="#f8e4e1", ec=HW, lw=0.9, z=11)
-    txt(ax, (HM_B[0] + HM_B[1]) / 2, y1 - 0.13, "HM", size=3.6, color=HW, weight="bold", z=12)
-    # heater connections (overhead): cold from the board to the heater, hot to the hot manifold
-    pipe(ax, [(BOARD_A[1] - 0.45, y0 + 0.3), (BOARD_A[1] - 0.45, y0 + 0.55), (m.WH[0][0] - 0.3, y0 + 0.55)], CW, 0.9)
-    pipe(ax, [(m.WH[0][0] - 0.75, m.WH[0][1] + 0.2), (BOARD_A[1] - 0.75, m.WH[0][1] + 0.2), (BOARD_A[1] - 0.75, y0 + 0.3)], HW, 0.9, DASH_H)
-    pipe(ax, [(BOARD_B[0] + 0.9, y0 + 0.3), (BOARD_B[0] + 0.9, m.WH[1][1] + 0.1), (m.WH[1][0] - 0.85, m.WH[1][1] + 0.1)], CW, 0.9)
-    pipe(ax, [(m.WH[1][0] - 0.6, m.WH[1][1] + 0.55), (HM_B[1] - 0.15, y1 - 0.26)], HW, 0.9, DASH_H)
-    # home-runs leaving the room
-    ax.add_patch(Circle(RISE_A, 0.2, fc=PAPER, ec=CW, lw=1.0, zorder=12))
-    txt(ax, RISE_A[0], RISE_A[1], "A", size=4.2, color=CW, weight="bold", z=13)
-    rb = (RISE_B[0], y1 - 0.24)
-    pipe(ax, [(BOARD_B[0] + 0.4, y0 + 0.3), (BOARD_B[0] + 0.4, y1 - 0.5), (rb[0] - 0.2, y1 - 0.5)], CW, 0.9)
-    pipe(ax, [(HM_B[0], y1 - 0.13), (rb[0] + 0.2, y1 - 0.13)], HW, 0.9, DASH_H)
+    # services in; one board per flat on the east wall (main shutoff, PRV, gauge)
+    xb = x1 - 0.32
+    for dy, (b0, b1), nm in ((-0.11, BOARD_A, "A"), (0.11, BOARD_B, "B")):
+        pipe(ax, [(view[0][1], _EY + dy), (xb - 0.2, _EY + dy), (xb - 0.2, b1 if nm == "A" else b0)], CW, 1.5)
+        rect(ax, xb - 0.38, b0, x1, b1, fc="#e9eef6", ec=CW, lw=0.9, z=11)
+        txt(ax, xb - 0.03, (b0 + b1) / 2, f"BOARD {nm}", size=4.0, color=CW, weight="bold", z=12, rot=90)
+    # risers: A up through the ceiling, B overhead along the north wall to the pipe space
+    pipe(ax, [(xb - 0.2, BOARD_A[0]), (xb - 0.2, RISE_A[1])], CW, 1.5)
+    ax.add_patch(Circle((xb - 0.2, RISE_A[1]), 0.2, fc=PAPER, ec=CW, lw=1.0, zorder=12))
+    txt(ax, xb - 0.2, RISE_A[1], "A", size=4.2, color=CW, weight="bold", z=13)
+    rb = (RISE_B[0], y1 - 0.26)
+    pipe(ax, [(xb - 0.2, BOARD_B[1]), (xb - 0.2, y1 - 0.26), rb], CW, 1.5, DASH_UP)
     ax.add_patch(Circle(rb, 0.2, fc=PAPER, ec=CW, lw=1.0, zorder=12))
     txt(ax, rb[0], rb[1], "B", size=4.2, color=CW, weight="bold", z=13)
+    # hose bibb feed and trap primer, both off board A
+    pipe(ax, [(x1 - 0.1, BOARD_A[0]), (x1 - 0.1, RISE_A[1]), (m.XE + 0.25, RISE_A[1])], CW, 0.9)
+    ax.add_patch(Circle((m.XE + 0.25, RISE_A[1]), 0.14, fc=PAPER, ec=CW, lw=0.9, zorder=12))
+    pipe(ax, [(xb - 0.38, BOARD_A[0] + 0.5), (fdx + 0.25, fdy - 0.1)], CW, 0.8, (0, (1, 1)))
+    # pan drains from the two water heaters above
+    pipe(ax, [(fdx + 0.15, y1 - 0.15), (fdx + 0.1, fdy + 0.28)], SAN, 0.9, (0, (4, 1.5, 1, 1.5)))
+    pipe(ax, [(fdx - 0.5, y1 - 0.9), (fdx - 0.12, fdy + 0.28)], SAN, 0.9, (0, (4, 1.5, 1, 1.5)))
     # keys
-    keynote(ax, x1 + 0.3, ey + 0.5, 1, CW)
-    keynote(ax, (BOARD_A[0] + BOARD_A[1]) / 2, y0 - 0.33, 2, CW)
-    keynote(ax, (BOARD_B[0] + BOARD_B[1]) / 2, y0 - 0.33, 2, CW)
-    keynote(ax, RISE_A[0] - 0.5, RISE_A[1] + 0.12, 3, CW)
-    keynote(ax, rb[0] - 0.75, rb[1] + 0.5, 4, CW)
-    keynote(ax, fdx - 0.3, fdy - 0.72, 6, SAN)
-    keynote(ax, S3B[0] + 0.25, S3B[1] + 0.95, 7, SAN)
-    keynote(ax, pan[0] + 0.33, fdy, 8, GREY)
-    keynote(ax, (HM_B[0] + HM_B[1]) / 2 + 0.1, y1 + 0.52, 9, HW)
+    keynote(ax, x1 + 0.3, _EY + 0.5, 1, CW)
+    keynote(ax, xb - 0.75, (BOARD_A[0] + BOARD_A[1]) / 2 + 0.2, 2, CW)
+    keynote(ax, xb - 0.75, (BOARD_B[0] + BOARD_B[1]) / 2, 2, CW)
+    keynote(ax, xb - 0.85, RISE_A[1] + 0.02, 3, CW)
+    keynote(ax, rb[0] - 0.55, rb[1] - 0.1, 4, CW)
+    keynote(ax, m.XE + 0.3, RISE_A[1] - 0.45, 5, CW)
+    keynote(ax, fdx - 0.62, fdy - 0.1, 6, SAN)
+    keynote(ax, S3B[0] + 0.62, S3B[1] - 0.5, 7, SAN)
+    keynote(ax, fdx - 0.95, y1 - 1.2, 8, SAN)
+    txt(ax, x0 + 1.45, y0 + 0.75, "NO WATER HEATERS HERE:\neach is in its own flat", size=4.4, color=GREY, z=8)
     return ax
 
 
@@ -342,9 +326,9 @@ def sheet_p101(pdf):
         ("Water", [
             "NO WATER PIPING IN THE OPEN GARAGE.",
             "The two 1 in. services come in buried,",
-            "through the east wall, straight into the",
-            "heated utility room. Everything after",
-            "that is inside heated space (P-102, P-103).",
+            "through the east wall, into the heated",
+            "utility room: shutoff and PRV per flat.",
+            "The water heaters are up in the flats.",
         ]),
         ("Storm: gravity only", [
             "NO SUMP PUMP. French drain and trench",
@@ -355,7 +339,6 @@ def sheet_p101(pdf):
         ]),
     ]
     fig, bg = new_sheet("P-101", title, "3/16\" = 1'-0\"", notes)
-    fit_title(fig, bg, title)
     L = MARGIN + 0.2
     heading(bg, L, 10.2, "Garage level and under-slab plumbing", "3/16\" = 1'-0\" · sizes and inverts preliminary · true north: see arrow", 8.6)
 
@@ -405,7 +388,7 @@ def sheet_p101(pdf):
     note(ax, 49.4, -3.7, "2 METER PITS\n(MUB), one\nper flat", color=CW, size=4.4, ha="left")
     note(ax, 51.5, 23.0, f"TWO 1 in.\nSERVICES,\nburied 42 in.\nmin. (C-106).\nEnter at\nEL {m.EL_WATER_ENTRY:.1f},\n{elev(m.XE + 1, m.WATER_ENTRY[1]) - m.EL_WATER_ENTRY:.1f} ft below\ngrade, sleeved\nand sealed", color=CW, size=4.4, ha="center")
     ax.add_patch(Circle((HB[0] + 0.3, HB[1]), 0.3, fc=PAPER, ec=CW, lw=1.0, zorder=12))
-    lab(ax, HB[0] + 1.55, HB[1] - 0.75, "HB", CW, size=4.6)
+    lab(ax, HB[0] + 1.6, HB[1] - 0.2, "HB", CW, size=4.6)
     lab(ax, 22.0, 15.6, "NO WATER PIPING IN THE OPEN GARAGE", CW, size=6.4)
     txt(ax, 22.0, 14.55, "It is unheated. Every water line is in the heated utility room or inside the flats.", size=4.6, color=CW, z=14)
 
@@ -459,9 +442,9 @@ def sheet_p101(pdf):
          to=[(A1[0] + 0.3, m.Y_GR_I - 1.17), (A2[0] - 0.5, m.Y_GR_I - 1.17)], color=SAN, size=4.5, frm=(17.6, 20.4))
     note(ax, 10.2, 26.3, "STACK 1 above (3 in.)\noffsets to chase 1 in\nUnit A's floor trusses", to=(m.STACK_1[0] - 0.15, m.STACK_1[1]), color=SAN, size=4.4,
          frm=(14.0, 26.3))
-    note(ax, 26.6, 37.25, f"UNIT A BATH 2 is on the slab on grade: its drains run\nUNDER THAT SLAB (in and tested before the pour, P-102).\n3 in. from stack 2 passes through the 12 in. concrete wall\nin a 6 in. sleeve, sealed both faces, INV about {INV_SLEEVE:.1f},\nthen drops in chase 2. Engineer to place the sleeve",
+    note(ax, 26.6, 37.25, f"UNIT A BATH 2 is on the slab on grade: its drains run\nUNDER THAT SLAB (in and tested before the pour, P-102).\n3 in. from stack 2 passes through the 6 in. concrete\nupstand in a sleeve, sealed, INV about {INV_SLEEVE:.1f}, then\nbetween two trusses over the ledge and down chase 2",
          to=[(s2[0] + 0.3, m.Y_GR_O - 0.3)], color=SAN, size=4.5, frm=(26.5, 36.2))
-    note(ax, 37.2, 34.1, "STACK 3 above (3 in.) offsets 1'-6\" in\nUnit A's floor trusses, over the top of\nthe concrete wall, into the utility\nroom. See the enlarged plan", to=(m.STACK_3[0], m.STACK_3[1] + 0.1), color=SAN, size=4.4, frm=(40.4, 33.0))
+    note(ax, 37.2, 34.1, "STACK 3 above (3 in.) offsets 1'-6\" in\nUnit A's floor trusses, over the truss\nledge of the concrete wall, into the\nutility room. See the enlarged plan", to=(m.STACK_3[0], m.STACK_3[1] + 0.1), color=SAN, size=4.4, frm=(40.4, 33.0))
     note(ax, 22.6, 22.6, "FLOOR CLEANOUT at the turn,\nflush, traffic-rated cover", to=(TURN[0] + 1.0, YM - 0.35), color=SAN, size=4.4, frm=(29.3, 22.9))
     note(ax, 34.4, 18.2, f"4 in. branch from\nstack 3, {fth(BR3_LEN)},\nunder the block\nwall footing in\na sleeve", to=(m.GAR_X1 + 0.3, S3B[1] - (S3B[0] - m.GAR_X1 - 0.3)), color=SAN, size=4.2, frm=(35.8, 19.9))
     note(ax, 21.2, 11.4, "Drain passes 12 in. or more below the trench drain", to=(BLDG[0], TRENCH_Y), color=SAN, size=4.4, frm=(31.2, 11.2))
@@ -502,26 +485,26 @@ def sheet_p101(pdf):
     ], dy=0.152, fs=5.2)
 
     x0, x1, y0, y1 = m.UTIL
-    heading(bg, L, 7.6, "Utility room, enlarged", f"3/8\" = 1'-0\" · heated, {fth(x1 - x0)} x {fth(y1 - y0)} clear · blue dashed = overhead", 7.6)
+    heading(bg, L, 7.6, "Utility room, enlarged", f"3/8\" = 1'-0\" · heated, {fth(x1 - x0)} x {fth(y1 - y0)} clear · blue dashed = at the ceiling", 7.6)
     utility_enlarged(fig, bg, L, 4.93)
     keys = [
         "*1  Two 1 in. services in through the east wall, sleeved and",
-        f"    sealed, EL {m.EL_WATER_ENTRY:.1f} ({ftin(m.EL_WATER_ENTRY - m.EL_GAR)} above the floor). Up the wall",
-        "    in the corner, then overhead to the boards.",
-        "*2  Board A, board B (one per flat) on the south wall: main",
+        f"    sealed, EL {m.EL_WATER_ENTRY:.1f} ({ftin(m.EL_WATER_ENTRY - m.EL_GAR)} above the floor).",
+        "*2  Board A, board B (one per flat) on the east wall: main",
         "    shutoff, pressure-reducing valve (set 60 psi), gauge,",
-        "    3/4 in. cold manifold with a valve on every line.",
-        "*3  Unit A's PEX lines go up through the ceiling into Unit A's",
-        "    floor trusses, above the R-30.",
-        "*4  Unit B's PEX lines cross the ceiling, then rise in the",
-        "    pipe space behind bath 3.",
-        "*5  WH-A, WH-B: 80 gal, 4.5 kW electric, expansion tank on",
-        "    the cold inlet. T&P relief, 3/4 in., to the floor drain.",
-        "*6  Floor drain, 2 in., with trap primer (off Unit A's cold).",
+        "    drain valve. Label each board with its flat.",
+        "*3  Unit A: 3/4 in. cold riser up through the ceiling into",
+        "    Unit A's floor trusses (above the R-30), to its heater.",
+        "*4  Unit B: 3/4 in. cold riser at the ceiling to the north",
+        "    wall, then up the pipe space behind bath 3, to its heater.",
+        "*5  1/2 in. to the hose bibb (HB) in the floor rim, with its",
+        "    own shutoff and drain-down valve on board A.",
+        "*6  Floor drain, 2 in., with trap primer (dotted, off Unit A's",
+        "    cold). It also takes the two heater pan drains.",
         "*7  Stack 3 (3 in.), cleanout at the base. No chase here.",
-        f"*8  One shared pan, {ftin(m.WH_R * 2 + 0.2)} x {ftin(m.WH[1][1] - m.WH[0][1] + 2 * m.WH_R + 0.2)}, 1 in. drain to the floor drain.",
-        "*9  HM: hot manifold beside its heater (WH-A's is on board A),",
-        "    so the hot pipe, and the wait, stay short.",
+        "*8  1 in. pan drains from the two water heaters above, ending",
+        "    over the floor drain with an air gap.",
+        "    The 500 W wall heater (E-101) keeps this room above 40 F.",
     ]
     small_lines(bg, L, 4.84, keys, fs=4.9, dy=0.112)
 
@@ -546,30 +529,39 @@ def sheet_p101(pdf):
 # ----------------------------------------------------------------------------
 YH = m.Y4 + 0.18                      # hot home-runs: just north of the bath 1 plumbing wall, in the floor trusses
 YC = YH + 0.32                        # cold home-runs beside them
-XF_C, XF_H = m.X_ST - 0.85, m.X_ST - 0.55                 # where the home-runs turn into that corridor
-RA_C, RA_H = (RISE_A[0] - 0.11, RISE_A[1]), (RISE_A[0] + 0.24, RISE_A[1] + 0.3)
-RB_C, RB_H = (RISE_B[0] + 0.06, RISE_B[1]), (RISE_B[0] + 0.5, RISE_B[1] + 0.3)
+MAN_X = m.X_C1 - 0.1                  # PEX manifolds on the mechanical closet east wall, above the heater
+MAN_Y = (m.WH_UNIT[1] - 0.8, m.HALL_Y1 - 0.12)
+RISER_X = m.X_C1 + m.PART / 2         # the 3/4 in. cold riser comes up inside that wall
+MAN_H = 5.5                           # manifolds 5'-6" above the floor
 LAV1_X = (m.LAVS[0][0] + m.LAVS[0][2]) / 2
-GAL_HALF, GAL_34 = 0.0092, 0.0184     # gal per ft of 1/2 in. and 3/4 in. PEX (SDR 9)
+GAL_HALF = 0.0092                     # gal per ft of 1/2 in. PEX (SDR 9)
 
 
-def feeds(unit):
-    c0, h0 = (RA_C, RA_H) if unit == "A" else (RB_C, RB_H)
-    return [c0, (XF_C, c0[1]), (XF_C, YC)], [h0, (XF_H, h0[1]), (XF_H, YH)]
+def hot_runs():
+    """Hot-water run lengths (ft) from the hot manifold at the heater, along the routes drawn."""
+    base = MAN_H + 0.9 + (MAN_Y[0] - YH)                       # down the wall into the floor trusses
+    tx1 = (m.TUBS[0][0] + m.TUBS[0][2]) / 2
+    tx3 = (m.TUBS[2][0] + m.TUBS[2][2]) / 2
+    lx2 = (m.LAVS[1][0] + m.LAVS[1][2]) / 2
+    lx3 = (m.LAVS[2][0] + m.LAVS[2][2]) / 2
+    xk = m.ISL_SINK[2] - 0.15
+    return {
+        "bath 1 lavatory": base + (MAN_X - LAV1_X) + 0.2 + 0.9 + 1.75,
+        "tub 1": base + (MAN_X - tx1) + 0.2 + 0.9 + 2.5,
+        "bath 2 lavatory": (7.0 - MAN_H) + (MAN_X - lx2) + 0.8 + (7.0 - 1.75),
+        "bath 3 lavatory": base + (lx3 - MAN_X) + 1.0 + 0.9 + 1.75,
+        "tub 3": base + (tx3 - MAN_X) + (m.B3_Y1 - YH) + 0.9 + 2.5,
+        "kitchen sink": base + (xk - MAN_X) + (YH - m.ISL_SINK[3] + 0.45) + 0.9 + 1.5,
+    }
 
 
-def hot_run(unit):
-    """Longest hot-water run: heater to the bath 1 lavatory. Returns (ft, gal, seconds at 1.5 gpm)."""
-    el_truss_a = m.EL_A - 0.9
-    el_hm = m.EL_GAR + 6.0
-    wh = m.WH[0] if unit == "A" else m.WH[1]
-    first = 3.0 if unit == "A" else math.dist(wh, ((HM_B[0] + HM_B[1]) / 2, m.UTIL[3])) + 1.0     # 3/4 in. heater to manifold
-    run = el_truss_a - el_hm
-    if unit == "B":
-        run += math.dist(((HM_B[0] + HM_B[1]) / 2, m.UTIL[3]), RISE_B) + (m.EL_B - 1.0 - el_truss_a)
-    run += plen(feeds(unit)[1]) + (XF_H - LAV1_X) + 0.3 + 1.0 + 1.75
-    gal = first * GAL_34 + run * GAL_HALF
-    return first + run, gal, gal / 1.5 * 60
+HOT = hot_runs()
+HOT_MAX = max(HOT.items(), key=lambda kv: kv[1])
+HOT_FAUCET = max(((k, v) for k, v in HOT.items() if "tub" not in k), key=lambda kv: kv[1])
+
+
+def wait_s(ft_, gpm=1.5):
+    return ft_ * GAL_HALF / gpm * 60
 
 
 def unit_plumbing(ax, unit):
@@ -659,8 +651,6 @@ def unit_plumbing(ax, unit):
         stack_dot(ax, st_, SAN, r=0.04)
 
     # ---------------- water ----------------
-    cfeed, hfeed = feeds(unit)
-    rc, rh = cfeed[0], hfeed[0]
     WT, WB_ = 1.35, 0.85
 
     def cold(pts, lw=WB_, ls="-"):
@@ -669,299 +659,72 @@ def unit_plumbing(ax, unit):
     def hot(pts, lw=WB_, ls=DASH_H):
         pipe(ax, pts, HW, lw, ls, z=10.4)
 
-    # corridor: home-runs to bath 1, bath 2, kitchen, washer
-    cold(cfeed + [(LAV1_X - 0.2, YC)], WT)
-    hot(hfeed + [(LAV1_X + 0.17, YH)], WT)
-    # bath 1 stubs up into the plumbing wall
-    for x in (LAV1_X - 0.2, m.WCS[0][0] - 0.5, tx1 - 0.15):
+    # 3/4 in. cold riser from the utility room to the heater and manifolds
+    r0 = RISE_A if A else RISE_B
+    ym = MAN_Y[0] + 0.15 if A else MAN_Y[1] - 0.15
+    pipe(ax, [r0, (RISER_X, r0[1]), (RISER_X, ym), (MAN_X, ym)], CW, 2.2, z=10.6)
+    ax.add_patch(Circle(r0, u(ax, 0.05), fc=CW, ec=CW, lw=1.0, zorder=13))
+    rect(ax, MAN_X - 0.11, MAN_Y[0], MAN_X + 0.11, MAN_Y[1], fc="#e9eef6", ec=CW, lw=0.9, z=11)
+    # home-runs in the floor trusses: west to bath 1 (and washer, ice maker), east to bath 3 (and kitchen)
+    xw_c, xw_h = LAV1_X - 0.2, LAV1_X + 0.17
+    xe_c, xe_h = tx3 - 0.15, tx3 + 0.15
+    cold([(xw_c, YC), (xe_c, YC)], WT)
+    hot([(xw_h, YH), (xe_h, YH)], WT)
+    cold([(MAN_X - 0.06, YC), (MAN_X - 0.06, MAN_Y[0])], WT)
+    hot([(MAN_X + 0.06, YH), (MAN_X + 0.06, MAN_Y[0])], WT, "-")
+    for x in (xw_c, m.WCS[0][0] - 0.5, tx1 - 0.15):
         cold([(x, YC), (x, m.Y4)])
         riser(ax, (x, m.Y4 - 0.02), CW)
-    for x in (LAV1_X + 0.17, tx1 + 0.17):
+    for x in (xw_h, tx1 + 0.17):
         hot([(x, YH), (x, m.Y4)], ls="-")
         riser(ax, (x, m.Y4 - 0.02), HW)
-    # ice maker, off the bath 1 cold
     xi, yi = m.E1 + m.PART / 2, m.FRIDGE[3] - 0.5
     cold([(xi, YC), (xi, yi)])
     box_sym(ax, xi, yi, "IM", CW)
-    # washer
     cold([(wbx - 0.13, YC), (wbx - 0.13, m.Y2)])
     hot([(wbx + 0.17, YH), (wbx + 0.17, m.Y2)])
-    # kitchen
     xk = m.ISL_SINK[2] - 0.45
     yk = m.ISL_SINK[3] - 0.45
     cold([(xk, YC), (xk, yk)])
     hot([(xk + 0.3, YH), (xk + 0.3, yk)])
     riser(ax, (xk, yk), CW)
     riser(ax, (xk + 0.3, yk), HW)
-    # bath 2: Unit B in the floor trusses; Unit A rises in the closet partition and runs overhead in the soffit
+    # bath 3 stubs
+    for x, y in ((lx3 - 0.38, m.LAVS[2][1] + 0.4), (m.WCS[2][0] + 0.66, m.B3_Y1 - 0.12), (xe_c, m.B3_Y1 - 0.12)):
+        cold([(x, YC), (x, y)])
+        riser(ax, (x, y), CW)
+    for x, y in ((lx3 - 0.08, m.LAVS[2][1] + 0.4), (xe_h, m.B3_Y1 - 0.12)):
+        hot([(x, YH), (x, y)])
+        riser(ax, (x, y), HW)
+    # bath 2: from the manifolds OVERHEAD in the soffit, dropping in the walls (never under Unit A's slab)
     xbc, xbh = tx2 - 0.17, tx2 + 0.13
     yoc = m.B2_Y0 - m.PART - 0.27
     yoh = yoc - 0.3
-    yr2 = m.AH_Y1 + m.PART / 2
     xwc = m.WCS[1][0] + 0.5
-    ls_c = DASH_OH if A else "-"
-    ls_h = DASH_OH if A else DASH_H
-    cold([(xbc, YC), (xbc, yr2)], WT)
-    hot([(xbh, YH), (xbh, yr2)])
-    cold([(xbc, yr2), (xbc, yoc), (lx2 - 0.18, yoc)], WT, ls_c)
-    hot([(xbh, yr2), (xbh, yoh), (lx2 + 0.17, yoh)], WB_, ls_h)
-    cold([(xwc, yoc), (xwc, m.B2_Y1 + m.B2_FUR + 0.12)], WB_, ls_c)
+    cold([(MAN_X, yoc), (lx2 - 0.18, yoc)], WT, DASH_OH)
+    hot([(MAN_X, yoh), (lx2 + 0.17, yoh)], WB_, DASH_OH)
+    cold([(xwc, yoc), (xwc, m.B2_Y1 + m.B2_FUR + 0.12)], WB_, DASH_OH)
     for x in (xbc, lx2 - 0.18):
-        cold([(x, yoc), (x, yw2)], WB_, ls_c)
+        cold([(x, yoc), (x, yw2)], WB_, DASH_OH)
         riser(ax, (x, yw2), CW)
     for x in (xbh, lx2 + 0.17):
-        hot([(x, yoh), (x, yw2)], WB_, ls_h)
+        hot([(x, yoh), (x, yw2)], WB_, DASH_OH)
         riser(ax, (x, yw2), HW)
     riser(ax, (xwc, m.B2_Y1 + m.B2_FUR + 0.12), CW)
+    # heater pan drain, 1 in., in the floor trusses to the utility-room floor drain
+    yp = m.WH_UNIT[1]
+    pend = FLOOR_DRAIN if A else (RISE_B[0] - 0.55, RISE_B[1] + 0.12)
+    pipe(ax, [(m.WH_UNIT[0] + m.WH_PAN_R, yp), (m.X_ST + 0.9, yp), pend], SAN, 0.9, (0, (4, 1.5, 1, 1.5)), z=9.5)
     if A:
-        for x, c in ((xbc, CW), (xbh, HW)):
-            ax.add_patch(Circle((x, yr2), u(ax, 0.036), fc=PAPER, ec=c, lw=1.0, zorder=13))
-    # bath 3
-    cold([rc, (rc[0], YC)], WT)
-    hot([rh, (rh[0], YH)])
-    cold([(lx3 - 0.38, YC), (tx3 - 0.15, YC)], WT)
-    hot([(lx3 - 0.08, YH), (tx3 + 0.15, YH)])
-    for x, y in ((lx3 - 0.38, m.LAVS[2][1] + 0.4), (m.WCS[2][0] + 0.66, m.B3_Y1 - 0.12), (tx3 - 0.15, m.B3_Y1 - 0.12)):
-        cold([(x, YC), (x, y)])
-        riser(ax, (x, y), CW)
-    for x, y in ((lx3 - 0.08, m.LAVS[2][1] + 0.4), (tx3 + 0.15, m.B3_Y1 - 0.12)):
-        hot([(x, YH), (x, y)])
-        riser(ax, (x, y), HW)
-    # riser from the utility room / pipe space
-    for p, c in ((rc, CW), (rh, HW)):
-        ax.add_patch(Circle(p, u(ax, 0.045), fc=c, ec=c, lw=1.0, zorder=13))
-    if A:
-        cold([(rc[0], rc[1]), (rc[0], HB[1]), (m.XE, HB[1])])
-        ax.add_patch(Circle((HB[0] + 0.3, HB[1]), 0.3, fc=PAPER, ec=CW, lw=1.0, zorder=12))
-    # access panels
+        rect(ax, pend[0] - 0.25, pend[1] - 0.25, pend[0] + 0.25, pend[1] + 0.25, fc=PAPER, ec=SAN, lw=0.9, z=12)
+        cold([(RISE_A[0] + 0.12, RISE_A[1] - 0.12), (m.XE, HB[1] - 0.12)])
+        ax.add_patch(Circle((HB[0] + 0.3, HB[1] - 0.12), 0.3, fc=PAPER, ec=CW, lw=1.0, zorder=12))
+    else:
+        riser(ax, pend, SAN, 0.035)
+    # access
     access_panel(ax, tx1, m.Y4 + 0.1)
-    access_panel(ax, tx2, m.B2_Y0 - m.PART - 0.1)
     access_panel(ax, m.X_ST - 0.1, (m.B3_Y1 + m.PART + m.yr_i(m.X_ST)) / 2 - 0.1, w=1.33, horiz=False)
     return dict(wc1=wc1, wc2=wc2, wc3=wc3, tx1=tx1, tx2=tx2, tx3=tx3, lx2=lx2, lx3=lx3, sd=sd, wb=(wbx, wby), im=(xi, yi),
-                rc=rc, rh=rh, xk=xk, yk=yk, xbc=xbc, yr2=yr2, yoc=yoc, yoh=yoh, xwc=xwc, yw2=yw2, xv2=xv2)
+                xk=xk, yk=yk, xbc=xbc, yoc=yoc, yoh=yoh, xwc=xwc, yw2=yw2, xv2=xv2, yp=yp, pend=pend)
 
 
-def unit_sheet(pdf, number, unit):
-    A = unit == "A"
-    title = f"Plumbing: Unit {unit}"
-    ft_, gal, sec = hot_run(unit)
-    el = m.EL_A if A else m.EL_B
-    trunk = plen([(26.5, 17.33), (m.STACK_2[0], 17.33), (m.STACK_2[0], A2[1] if A else m.STACK_2[1])])
-    drains = ("Unit " + unit + " drains", [
-        "Bath 1 to stack 1. Bath 2, kitchen and",
-        "washer to stack 2. Bath 3 to stack 3.",
-        "Toilets 3 in., tubs and washer standpipe",
-        "2 in., lavatories 1 1/2 in. All at 1/4 in.",
-        "per ft. PVC schedule 40 DWV.",
-    ])
-    wait = ("Hot water wait", [
-        f"Longest run: {ft_:.0f} ft, heater to the bath 1",
-        f"lavatory, nearly all 1/2 in. PEX. It holds",
-        f"about {gal:.1f} gal: about {sec:.0f} s at a 1.5 gpm",
-        "faucet. No recirculation pump needed.",
-    ])
-    if A:
-        notes = [drains,
-                 ("Slab on grade (shaded)", [
-                     "North of the garage rear wall the floor",
-                     "is a slab on grade. Bath 2's drains are",
-                     "UNDER that slab: lay, test and inspect",
-                     "them BEFORE the slab is poured. No water",
-                     "line goes under the slab: bath 2 is fed",
-                     "overhead in the 7'-0\" soffit.",
-                 ]),
-                 ("Water", [
-                     "PEX home-runs from Unit A's manifolds",
-                     "in the utility room, run in Unit A's own",
-                     "floor trusses ABOVE the R-30 garage",
-                     "ceiling insulation. 1/2 in. to every",
-                     "fixture, with a stop at each fixture.",
-                 ]),
-                 wait]
-    else:
-        notes = [drains,
-                 ("Vents through the roof", [
-                     "Each stack continues 3 in. through the",
-                     "roof (VTR), 12 in. above it, flashed.",
-                     "All three come out on the rear slope.",
-                     "Unit A's vents join in above Unit B's",
-                     "fixtures. No water pipe in the attic.",
-                 ]),
-                 ("Water", [
-                     "PEX home-runs from Unit B's manifolds",
-                     "in the utility room, up the pipe space",
-                     "behind bath 3 (inside the insulation),",
-                     "then in Unit B's own 24 in. floor trusses.",
-                     "1/2 in. to every fixture, stop at each.",
-                 ]),
-                 wait]
-    fig, bg = new_sheet(number, title, "1/4\" = 1'-0\"", notes)
-    fit_title(fig, bg, title)
-    L = MARGIN + 0.2
-    heading(bg, L, 10.22, f"Unit {unit} plumbing plan",
-            f"1/4\" = 1'-0\" · floor EL {el:.1f} · " + ("pipes shown are in or under this floor unless marked overhead" if A else
-                                                       "pipes shown are in this flat's floor trusses and walls") + " · preliminary", 8.6)
-    fpi = 4.0
-    view = ((5.2, 57.6), (4.6, 44.4))
-    ax = frame(fig, view, 0.5, 0.5, fpi=fpi, street=False, lot=False, north=(55.4, 42.4), bar=(6.0, 5.5))
-    unit_plan(ax, "bg", unit, furniture=False)
-    if A:
-        from shapely.geometry import Polygon as SP
-        sog = SP(m.SOG).intersection(SP(m.IN_U))
-        poly(ax, list(sog.exterior.coords), fc="#f1e4cc", ec="none", z=4.1, alpha=0.75)
-        line(ax, [(m.xw_i(m.Y_GR_O), m.Y_GR_O), (m.XEI, m.Y_GR_O)], color=EARTH, lw=0.9, ls=(0, (5, 2)), z=6.6)
-        line(ax, [(m.xw_i(m.Y_GR_I), m.Y_GR_I), (m.XEI, m.Y_GR_I)], color=EARTH, lw=0.5, ls=(0, (2, 2)), z=6.6)
-    g = unit_plumbing(ax, unit)
-    s1, s2, s3 = m.STACK_1, m.STACK_2, m.STACK_3
-    vtr = ", VTR" if not A else ""
-
-    # ---------------- labels on the plan ----------------
-    note(ax, 13.3, 29.2, f"STACK 1, 3 in.{vtr}\nin the 2x6 wall", to=(s1[0], s1[1] + 0.15), color=SAN, size=4.6, weight="bold", frm=(15.2, 28.7))
-    note(ax, 12.2, 37.3, f"STACK 2, 3 in.{vtr}\nin the pipe space behind\nthe furred wall", to=(s2[0] - 0.15, s2[1]), color=SAN, size=4.6, weight="bold", frm=(17.3, 37.0))
-    note(ax, 41.6, 32.9, f"STACK 3, 3 in.{vtr}\nin the pipe space behind bath 3", to=(s3[0] + 0.05, s3[1] + 0.15), color=SAN, size=4.6, weight="bold", frm=(42.2, 32.4))
-    note(ax, 29.0, 16.2, "ISLAND SINK + DISHWASHER\n2 in. drain down through the floor.\nAAV (air admittance valve) in the\ncabinet, 4 in. min. above the trap arm.\nDishwasher: high loop to the sink\ntailpiece; hot from the sink supply",
-         to=(g["sd"][0] + 0.25, g["sd"][1] + 0.7), color=SAN, size=4.4, frm=(28.9, 17.6))
-    txt(ax, s2[0] - 0.42, 24.6, f"2 in. KITCHEN + WASHER DRAIN IN THE FLOOR TRUSSES, {trunk:.0f} ft, FALLS {trunk * 3:.0f} in." if not A else
-        f"2 in. KITCHEN + WASHER DRAIN, {trunk:.0f} ft, FALLS {trunk * 3:.0f} in.", size=4.0, color=SAN, weight="bold", rot=90, z=14,
-        bbox=dict(fc=PAPER, ec="none", pad=0.3)) if False else None
-    note(ax, 21.3, 19.6, f"2 in. kitchen + washer drain in the\nfloor trusses to {'chase 2' if A else 'stack 2'}: {trunk:.0f} ft,\nfalls {trunk / 4:.0f} in. at 1/4 in. per ft",
-         to=(s2[0], 19.9), color=SAN, size=4.4, frm=(21.2, 19.9))
-    note(ax, 27.4, 20.4, "WB: recessed washer box, hot + cold\n1/4-turn valves, 2 in. standpipe and\ntrap in the wall, 1 1/2 in. vent",
-         to=(g["wb"][0] + 0.2, g["wb"][1] - 0.25), color=SAN, size=4.4, frm=(27.3, 20.6))
-    note(ax, 12.9, 18.9, "IM: recessed ice-maker box behind\nthe refrigerator, 1/2 in. cold\nwith a stop", to=(g["im"][0] - 0.3, g["im"][1]), color=CW, size=4.4, frm=(18.1, 18.3))
-    txt(ax, 31.4, YC + 0.3, "COLD HOME-RUNS:  3/4\" bath 1  ·  3/4\" bath 2  ·  1/2\" kitchen  ·  1/2\" washer", size=4.2, color=CW, weight="bold", z=14,
-        bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, 31.4, YH - 0.32, "HOT HOME-RUNS:  1/2\" to each (dashed red)", size=4.2, color=HW, weight="bold", z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, 16.9, YC + 0.32, "3/4\" C  ·  1/2\" H  to bath 1", size=4.2, color=CW, weight="bold", z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, g["xk"] + 0.75, 23.6, "1/2\" C + 1/2\" H  kitchen", size=4.0, color=CW, weight="bold", rot=90, z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, g["wb"][0] - 0.55, 25.6, "1/2\" C + H", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, g["xwc"] + 0.4, 33.6, "1/2\" C", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, g["im"][0] + 0.0, 21.0, "1/2\" C", size=3.8, color=CW, weight="bold", rot=90, z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    txt(ax, 42.0, YH - 0.32, "3/4\" C · 1/2\" H  bath 3", size=4.0, color=CW, weight="bold", z=14, bbox=dict(fc=PAPER, ec="none", pad=0.3))
-    lab(ax, g["tx1"], m.Y4 + 0.62, "AP 1", APC, size=4.4)
-    lab(ax, g["tx2"] + 0.2, m.HALL_Y1 - 0.62, "AP 2", APC, size=4.4)
-    note(ax, 32.2, 31.1, "AP 3", to=(m.X_ST - 0.25, 30.6), color=APC, size=4.4, weight="bold", ha="right", frm=(32.3, 31.1))
-    if A:
-        note(ax, 27.2, 29.0, "BATH 2 WATER: 3/4\" C + 1/2\" H rise in this\npartition, run OVERHEAD in the 7'-0\" soffit\nand drop in the walls. Never under the slab",
-             to=(g["xbc"] + 0.35, g["yr2"]), color=CW, size=4.4, frm=(27.1, 28.4))
-        note(ax, 28.3, 38.3, "SLAB ON GRADE (shaded), EL 925.5. Bath 2's toilet, tub and lavatory drains and the\n3 in. from stack 2 are under it: IN, TESTED AND INSPECTED BEFORE THE SLAB IS POURED.",
-             to=(24.6, 34.6), color=EARTH, size=4.6, weight="bold", frm=(28.2, 37.7))
-        txt(ax, 33.0, m.Y_GR_O + 0.3, "EDGE OF THE SLAB ON GRADE  (outside face of the garage rear wall below)", size=3.9, color=EARTH, z=7)
-        txt(ax, 33.0, m.Y_GR_I - 0.28, "inside face of the 12 in. concrete wall below", size=3.7, color=EARTH, z=7)
-        note(ax, 13.0, 31.4, "3 in. from stack 2 under the slab,\nthrough the 12 in. wall in a 6 in.\nsleeve, then DOWN IN CHASE 2",
-             to=[(s2[0] - 0.32, m.Y_GR_O - 0.5), (A2[0] - 0.3, A2[1])], color=SAN, size=4.4, frm=(18.6, 30.9))
-        note(ax, 46.3, 23.0, f"HB: frost-proof hose bibb, 12 in.\nstem, vacuum breaker, in the floor\nrim at EL {EL_HB:.1f}. 1/2 in. cold on\nits own manifold valve",
-             to=(HB[0] + 0.6, HB[1] - 0.1), color=CW, size=4.4, frm=(46.4, 23.9))
-        note(ax, 45.6, 27.0, "UP from Unit A's manifolds\nin the utility room below,\ninto the floor trusses",
-             to=(g["rc"][0] + 0.15, g["rc"][1] + 0.05), color=CW, size=4.4, frm=(45.5, 26.6))
-    else:
-        note(ax, 45.6, 33.0, "UP from Unit B's manifolds in the\nutility room: 4 cold + 4 hot PEX\nrise in this pipe space, on the\nroom side of the wall insulation",
-             to=(g["rh"][0] + 0.2, g["rh"][1] + 0.05), color=CW, size=4.4, frm=(45.5, 32.2))
-        note(ax, 27.0, 39.0, "VTR: each stack continues 3 in. through the roof, 12 in. above it, on the rear slope.\nUnit A's 2 in. vent risers come up beside each stack and join it 42 in. above this floor.",
-             color=SAN, size=4.6, weight="bold")
-
-    # ---------------- stack table, legend and keyed notes ----------------
-    per = [("Stack 1", "Bath 1: toilet, tub, lavatory", DFU["bath"]),
-           ("Stack 2", "Bath 2 + island sink + dishwasher + washer", DFU["bath"] + DFU["sink"] + DFU["dw"] + DFU["cw"]),
-           ("Stack 3", "Bath 3: toilet, tub, lavatory", DFU["bath"])]
-    rows = [["Stack", f"Unit {unit} fixtures on it", "DFU"]] + [[a_, b_, str(c_)] for a_, b_, c_ in per] + [["", "This flat, total", str(DFU_FLAT)]]
-    table(bg, 6.55, 10.47, [0.55, 2.6, 0.4], rows, fs=5.2, rh=0.165)
-
-    def s_v(b, x, y):
-        b.add_patch(Circle((x, y), 0.028, fc=PAPER, ec=VENT, lw=0.8))
-
-    def s_st(b, x, y):
-        stack_dot(b, (x, y), SAN, r=0.04)
-
-    def s_ap(b, x, y):
-        b.add_patch(Rectangle((x - 0.15, y - 0.035), 0.3, 0.07, fc=APC, ec=APC))
-
-    def s_r(b, x, y):
-        riser(b, (x - 0.1, y), CW)
-        riser(b, (x + 0.1, y), HW)
-
-    def s_aav(b, x, y):
-        b.add_patch(MPoly([(x - 0.07, y - 0.05), (x + 0.07, y - 0.05), (x, y + 0.07)], closed=True, fc=PAPER, ec=VENT, lw=0.9))
-
-    def s_sog(b, x, y):
-        b.add_patch(Rectangle((x - 0.2, y - 0.055), 0.4, 0.11, fc="#f1e4cc", ec=EARTH, lw=0.5))
-
-    LX = 10.92
-    rows_l = [
-        ("line", SAN, 2.2, "-", "Drain: 3\" thick, 2\" medium, 1-1/2\" thin"),
-        ("sym", s_st, "Stack, 3 in."),
-        ("line", VENT, 0.8, DASH_V, "Vent, 1-1/2 in., in the wall or ceiling"),
-        ("sym", s_v, "Vent riser in the wall (V)"),
-        ("sym", s_aav, "Air admittance valve (island)"),
-        ("line", CW, 1.35, "-", "Cold PEX: 3/4\" thick, 1/2\" thin"),
-        ("line", HW, 0.85, DASH_H, "Hot PEX, 1/2 in."),
-        ("sym", s_r, "Stub up in the wall or cabinet, 1/2 in."),
-        ("sym", s_ap, "Access panel (AP), 14 x 14 in."),
-    ]
-    if A:
-        rows_l.insert(7, ("line", CW, 1.35, DASH_OH, "Dotted: OVERHEAD in the soffit"))
-        rows_l.append(("sym", s_sog, "Slab on grade"))
-    yl = legend(bg, LX, 9.42, rows_l, dy=0.152, fs=5.2)
-    common_k = [
-        "*DRAINS AND VENTS",
-        "Each bath: the lavatory drain joins the toilet branch, so",
-        "the lavatory vent also vents the toilet (wet vent, IPC 912).",
-        "Tub and lavatory each have a 1 1/2 in. vent in the wall (V).",
-        "Vents shown are one workable scheme: the plumber may",
-        "propose another that the code official accepts.",
-        "Washer vent runs in the ceiling to the bath 2 vent.",
-        "Cleanout at the top of every horizontal run over 5 ft.",
-        "Firestop every pipe through the 1-hour floor and walls.",
-        "",
-        "*WATER",
-        "Every home-run is one unbroken PEX line from its",
-        "manifold valve: no fittings under the floor except the",
-        "ice-maker tee. Label each valve at the manifold.",
-        "Stops at every fixture; main shutoff on the flat's board in",
-        "the utility room (key for both tenants and the owner).",
-        "Hot pipe from heater to manifold: R-3 insulation.",
-        "",
-        "*ACCESS PANELS",
-        "AP 1: bedroom 2 wall, behind the tub 1 valve.",
-        "AP 2: linen closet, behind the tub 2 valve.",
-        "AP 3: 16 x 24 in. door from bedroom 3 into the pipe space:",
-        "stack 3 cleanout" + (" and Unit B's riser." if A else " and the water riser."),
-        "Tub 3's valve backs onto a pipe space only 5 to 10 in. deep:",
-        "no rear access. All tub valves: pressure-balance with",
-        "integral stops, serviced from the tub side; glued (not",
-        "slip-joint) waste and overflow. Limit 120 deg F.",
-        "",
-    ]
-    if A:
-        unit_k = [
-            "*UNIT A ONLY",
-            "Stack 1 offsets 1'-8\" in the floor trusses to chase 1.",
-            "Stack 3 and Unit B's water lines pass between two trusses",
-            "over the top of the 12 in. concrete wall: truss maker to",
-            "leave that bay clear; engineer to confirm the bearing.",
-            "Bath 3's plumbing wall stands on that concrete wall:",
-            "stub up through the plate between the truss ends.",
-            "Keep every pipe in the trusses ABOVE the R-30 batts.",
-        ]
-    else:
-        unit_k = [
-            "*UNIT B ONLY",
-            "Pipes cross the trusses through the open webs: keep",
-            "the 2 in. drain's fall (" + f"{trunk / 4:.0f}" + " in.) inside the 24 in. depth and",
-            "clear of the duct soffits below. Acoustic: wrap drains",
-            "over Unit A's bedrooms. Pipe space behind bath 3 is on",
-            "an outside wall: pipes on the room side, R-20 behind.",
-        ]
-    small_lines(bg, LX, yl - 0.08, common_k + unit_k, fs=4.9, dy=0.118)
-    save(fig, number, pdf)
-
-
-def sheet_p102(pdf):
-    unit_sheet(pdf, "P-102", "A")
-
-
-def sheet_p103(pdf):
-    unit_sheet(pdf, "P-103", "B")
-
-
-SHEETS = [("P-101", sheet_p101), ("P-102", sheet_p102), ("P-103", sheet_p103)]

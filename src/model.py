@@ -126,7 +126,7 @@ CAR_W, CAR_L = 6.17, 16.0                                           # design car
 _c0, _c2 = OPEN[0] + 0.5, OPEN[1] - 1.25 - CAR_W
 CARS = [_c0, (_c0 + _c2) / 2, _c2]                                 # west side of each car
 COL_X = [OPEN[0] - 0.25, (CARS[1] + CAR_W + CARS[2]) / 2, OPEN[1] + CMU / 2]   # beam B1 supports along the open front
-CAR_Y0 = YF + 2.0
+CAR_Y0 = YF + 1.5
 STALL_LINES = [(CARS[0] + CAR_W + CARS[1]) / 2, (CARS[1] + CAR_W + CARS[2]) / 2]
 ENTRY = (39.5, 42.5)                  # 3'-0" street door into the stair
 UTIL_DOOR = (UTIL[3] - 0.25 - 2.667, UTIL[3] - 0.25)                # 2'-8" door, west wall, swings INTO the room
@@ -154,7 +154,7 @@ WALK = [(apron_x(LAND_Y0, 1), LAND_Y0), (XE, LAND_Y0), (XE, YF), (OPEN[1], YF)]
 TRASH = (38.0, 0.5, XE, LAND_Y0)                                    # screened bay for 4 carts, opens onto the landing
 WING_W = [(OPEN[0], YF), (apron_x(0.5, 0), 0.5)]                    # west wing wall beside the apron (retains the front yard)
 WING_E = [(apron_x(0.5, 1) + 0.2, 0.5), (XE + 0.35, 0.5), (XE + 0.35, YF)]   # low wall around the trash bay and landing
-HP = [(xw_o(20.5) - 1.1, 20.5), (xw_o(24.6) - 1.1, 24.6)]           # heat-pump pads A, B: side-discharge units 38 x 15 in.
+HP = [(xw_o(20.5) - 1.1, 20.5), (xw_o(25.8) - 1.1, 25.8)]           # heat-pump pads A, B: side-discharge units 38 x 15 in.
 HP_SIZE = (38 * IN, 15 * IN)
 
 # ---- coordination points shared by every trade ----
@@ -235,7 +235,8 @@ PARTITIONS = [
     (X_ST, YFI, SHAFT_X0, yr_i(X_ST) + 0.1, "r"),                # stair west wall, continued as bedroom 3 / bath 3
     (SHAFT_X0, SHAFT_U[3], XEI, Y_ST, "r"),          # stair north wall
     (SHAFT_X0, B3_Y1, XEI, B3_Y1 + PART, "p"),       # bath 3 north wall (pipe chase behind it)
-    (X_H0, B2_Y1 + B2_FUR, X_C1 - 2.5, B2_Y1 + B2_FUR + PART, "f"),   # furred square wall behind the bath 2 toilet
+    (X_H0, B2_Y1 + B2_FUR, X_C1 - 2.5, B2_Y1 + B2_FUR + PART, "f"),
+    (X_C1 - 2.5, B2_Y1, X_C1, B2_Y1 + PART, "f"),    # square end wall at the north end of the bath 2 tub   # furred square wall behind the bath 2 toilet
 ]
 HALL_OPENING = (X_H0, X_H1)                          # cased opening, hall <-> living, in the Y1..Y2 wall
 
@@ -278,7 +279,7 @@ WINDOWS = [
 ]
 WINDOW_TYPES = {
     "W1": "2'-4\" x 5'-0\" vinyl casement, escape: clear opening 5.7 sf min., sill 30 in.",
-    "W2": "5'-0\" x 5'-0\" vinyl slider, sill 30 in.",
+    "W2": "5'-0\" x 5'-0\" vinyl slider, west sash fixed (range hood cap beside it), tempered, sill 30 in.",
     "W3": "3'-0\" x 4'-0\" vinyl fixed, tempered",
     "W4": "2'-6\" x 4'-0\" vinyl single-hung, sill 42 in.",
     "W5": "3'-0\" x 2'-6\" vinyl awning, sill 54 in.",
@@ -334,7 +335,7 @@ SIZES = {
     "Dishwasher": "24 in.",
     "Sink base": "33 in.",
     "Base cabinets": "24 in. deep, counter 25 in.",
-    "Island": "5'-0\" x 2'-1\" with a 12 in. seating overhang, sink and dishwasher",
+    "Island": "5'-0\" x 2'-1\" with a 12 in. seating overhang (2 stools), sink and dishwasher",
     "Queen bed": "60 x 80 in.",
     "Desk": "48 x 24 in. with chair space",
     "Dresser": "36 x 18 in.",
@@ -346,7 +347,7 @@ TUBS = [(E1 - 2.5, Y2, E1, Y3), (X_C1 - 2.5, B2_Y0, X_C1, B2_Y1), (XEI - 2.5, Y_
 WCS = [(E1 - 2.5 - 1.25, Y3, "S"), (X_C1 - 2.5 - 1.25, B2_Y1 + B2_FUR, "S"), (XEI - 2.5 - 1.25, B3_Y1, "S")]
 WC_D, WC_W = 28 * IN, 30 * IN
 LAVS = [(B1_X0, Y3 - 1.75, B1_X0 + 2.0, Y3), (X_H0 + 0.35, B2_Y0, X_H0 + 2.85, B2_Y0 + 1.5), (SHAFT_X0 + 0.08, B3_Y1 - 1.5, SHAFT_X0 + 0.08 + 1.667, B3_Y1)]
-WD = (X_C0 + 0.29, Y2 + 0.2, X_C0 + 0.29 + 2.25, Y2 + 0.2 + 2.583)        # 27 x 31 in.
+WD = (X_C0 + 0.04, Y2 + 0.12, X_C0 + 0.04 + 2.583, Y2 + 0.12 + 2.25)      # stacked unit, 31 in. deep x 27 in. wide, door side west
 AHU = (X_C0 + 0.5, AH_Y0 + 0.375, X_C0 + 2.25, AH_Y0 + 2.125)             # 21 x 21 in.
 PANEL = (X_H0, Y2 + 1.2, X_H0 + 0.33, Y2 + 2.4)                           # load centre, hall west wall
 WH_UNIT = (X_C0 + 1.45, HALL_Y1 - 1.2)                                    # water heater centre, in each flat's mechanical closet
@@ -357,7 +358,7 @@ ISLAND = (X_H0 + 2.083 + 3.5, YFI + 3.0, X_H0 + 2.083 + 3.5 + 2.083, YFI + 8.0)
 ISLAND_TOP = (ISLAND[0], ISLAND[1], ISLAND[2] + 1.0, ISLAND[3])
 ISL_SINK = (ISLAND[0] + 0.15, ISLAND[1] + 2.25, ISLAND[2] - 0.15, ISLAND[1] + 5.0)
 ISL_DW = (ISLAND[0], ISLAND[1] + 0.25, ISLAND[2], ISLAND[1] + 2.25)
-STOOLS = [(ISLAND_TOP[2] + 0.75, ISLAND[1] + 0.85 + i * 1.65) for i in range(3)]
+STOOLS = [(ISLAND_TOP[2] + 0.75, ISLAND[1] + 1.25 + i * 2.5) for i in range(2)]      # 24 in. per seat on a 5 ft island
 
 def _along_rear(x_start, length, depth, gap=0.05):
     """Rectangle with its back against the (angled) rear wall, starting at plan station x_start."""
@@ -398,8 +399,10 @@ CHAIRS = {"BEDROOM 1": _r(E1 - 4.5, YFI + 1.05, E1 - 2.0, YFI + 3.55),
 STACK_1 = (E1 - 3.75, Y3 + WET / 2)                     # bath 1 stack (in the 2x6 wall behind the toilet)
 STACK_2 = (X_H0 + 0.55, B2_Y1 + B2_FUR + PART + 0.3)    # bath 2 stack (pipe space behind the furred wall, west of the toilet)
 STACK_3 = (XEI - 3.75, B3_Y1 + PART + 0.45)             # bath 3 stack (pipe space behind bath 3)
-CHASE_1 = (STACK_1[0], Y_GR_I - 0.67)                   # insulated 1-hour chase on the garage rear wall
-CHASE_2 = (STACK_2[0], Y_GR_I - 0.67)
+_gap = (CARS[0] + CAR_W + CARS[1]) / 2                  # both chases stand in the gap between cars 1 and 2
+CHASE_1 = (_gap - 0.45, Y_GR_I - 0.67)                  # insulated 1-hour chases on the garage rear wall (stacks offset
+CHASE_2 = (_gap + 0.45, Y_GR_I - 0.67)                  # to them in the Unit A truss space)
+CHASE_BOX = (_gap - 0.95, Y_GR_I - 1.33, _gap + 0.95, Y_GR_I)   # one framed chase, 1'-11" x 1'-4", for both stacks
 CHASE_3 = (STACK_3[0], Y_GR_I - 0.5)                    # in the heated utility room (no chase needed)
 
 
@@ -532,6 +535,11 @@ def check(verbose=False):
             ok(a.intersection(b).area < 0.02, f"{ra} {ka} overlaps {rb} {kb}")
         for tag, s in sectors:
             ok(a.intersection(s).area < 0.02, f"{ra} {ka} blocks door {tag}")
+    for (sx_, sy_) in STOOLS:
+        st_ = Point(sx_, sy_).buffer(0.55)
+        for (ra, ka, a) in furn:
+            ok(a.intersection(st_).area < 0.01, f"island stool overlaps {ra} {ka}")
+    ok(CHASE_BOX[0] >= CARS[0] + CAR_W + 0.1 and CHASE_BOX[2] <= CARS[1] - 0.1, "drain chase is behind a car")
     for tag, s in sectors:
         for b in solid:
             ok(s.intersection(b).area < 0.02, f"door {tag} hits a fixture")

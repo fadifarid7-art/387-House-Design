@@ -43,7 +43,7 @@ def circuits(unit):
     c = [
         ("range", (1, 3), "Range, 240 V", 40, 2, "#8", ""),
         ("dryer", (5, 7), "Dryer, 240 V", 30, 2, "#10", "G"),
-        ("wh", (9, 11), f"Water heater WH-{unit} (utility room)", 30, 2, "#10", ""),
+        ("wh", (9, 11), f"Water heater WH-{unit} (mech. closet)", 30, 2, "#10", ""),
         ("ahu", (13, 15), "Air handler with 5 kW strip heat", 30, 2, "#10", ""),
         ("hp", (17, 19), f"Heat pump HP-{unit} (west side yard)", 20, 2, "#12", "G*"),
         ("sa1", (21,), "Kitchen counter receptacles (SA-1)", 20, 1, "#12", "AG"),
@@ -90,7 +90,7 @@ FEEDER = {150: ("3 #1 Cu + #6 Cu ground", "3 #2/0 Al + #4 Al ground"),
 # ----------------------------------------------------------------------------
 YL = m.Y_GR_I - 10.0                                            # garage strips: 10'-0" off the rear wall
 G_STRIPS = [(m.xw_gi(YL) + 2.0, YL, "v"), (m.STALL_LINES[0], YL, "v"), (m.STALL_LINES[1], YL, "v"),
-            (m.GAR_X1 - 3.5, m.Y_GR_I - 2.5, "h")]
+            (m.GAR_X1 - 3.5, m.Y_GR_I - 3.5, "h")]
 G_REC = [m.GAR_X1 - d for d in (24.0, 13.0, 2.0)]               # one receptacle per stall, on the rear wall
 EV_STUB = {"A": m.GAR_X1 - 19.0, "B": m.GAR_X1 - 6.5}           # empty conduit stubs: stall 1 (PA), stall 3 (PB)
 EXT_AL = [(41.0, 8.9), (41.4, 6.75)]                            # under the porch soffit: street door; landing + trash bay
@@ -117,7 +117,7 @@ REC = {
     "br2": [(14.5, Y4, "n", "R"), (W(29.0), 29.0, "o", "R"), (W(34.75), 34.75, "o", "R"), (12.4, R(12.4), "r", "R"),
             (17.5, R(17.5), "r", "R"), (E1, 31.2, "w", "R")],
     "br3": [(XB3, 27.6, "e", "R"), (29.85, Y2, "n", "R"), (35.95, Y2, "n", "R"), (XST, 29.2, "w", "R"), (31.3, R(31.3), "r", "R")],
-    "liv": [(25.7, Y1, "s", "R"), (30.3, Y1, "s", "R"), (XST, 16.5, "w", "R"), (32.1, YFI, "n", "R"), (31.0, YF, "s", "W")],
+    "liv": [(26.1, Y1, "s", "R"), (30.3, Y1, "s", "R"), (XST, 16.5, "w", "R"), (32.1, YFI, "n", "R"), (31.0, YF, "s", "W")],
     "sa1": [(21.3, YFI, "n", "G", None, (22.0, YFI + 0.42, "left")), (XH0, 12.2, "e", "G", None, (XH0 + 0.95, 12.2, "left"))],
     "sa2": [(26.5, m.ISLAND[3], "n", "G", None, (27.25, m.ISLAND[3] + 0.42, "left")),
             (26.5, m.ISLAND[1], "s", "G", None, (27.25, m.ISLAND[1] - 0.42, "left")), (24.2, YFI, "n", "G")],
@@ -128,10 +128,11 @@ REC = {
     "washer": [(XC1, 22.3, "w", "G", "W", (XC1 - 0.95, 22.3, "right"))],
     "dryer": [(XC1, 23.6, "w", "2", "D", (XC1 - 0.95, 23.6, "right"))],
     "ahu": [(XC1, 26.2, "w", "C", "AHU", (XC1 - 0.95, 26.2, "right"))],
+    "wh": [(25.6, m.HALL_Y1, "s", "C", "WH", (25.1, m.HALL_Y1 - 0.42, "right"))],          # in the flat's mechanical closet
     "b1": [(14.85, Y3, "s", "G")],
     "b2": [(23.15, m.B2_Y0, "n", "G")],
     "b3": [(39.55, m.B3_Y1, "s", "G")],
-    "hall": [(XH0, 26.3, "e", "R"), (25.4, m.HALL_Y1, "s", "R", "MEDIA", (24.45, m.HALL_Y1 - 0.42, "right"))],
+    "hall": [(XH0, 26.3, "e", "R"), (23.95, m.WD_Y1, "s", "R", "MEDIA", (22.8, 25.0, "right"))],
 }
 ROOM_C = {"br1": (13.5, 16.0), "br2": (14.3, 32.5), "br3": (32.0, 26.5), "liv": (31.0, 15.5), "sa1": (22.5, 13.0), "sa2": (24.6, 16.0)}
 HOME = {"br1": (0.9, -0.45), "br2": (0.9, 0.45), "br3": (0.35, -0.94), "liv": (-0.25, -0.97), "sa1": (0.8, 0.6), "sa2": (-0.9, 0.42)}
@@ -140,13 +141,13 @@ ALARMS = [("SD", 16.8, 18.2), ("SD", 14.3, 29.6), ("SD", 33.6, 29.0), ("SD", 29.
 RANGE_C = ((m.RANGE[0] + m.RANGE[2]) / 2, (m.RANGE[1] + m.RANGE[3]) / 2)
 
 # lighting: (type, x, y, circuit key)
-FIX = [("A", 13.4, 16.0, "lt1"), ("A", 14.3, 32.6, "lt1"), ("A", 31.9, 25.9, "lt2"), ("A", 32.6, 16.2, "lt2"),
+FIX = [("A", 13.4, 15.2, "lt1"), ("A", 14.3, 31.4, "lt1"), ("A", 31.9, 24.9, "lt2"), ("A", 32.6, 15.0, "lt2"),
        ("D", 35.3, 12.7, "lt2"), ("D", 23.7, 13.0, "lt2"), ("D", 23.7, 16.9, "lt2"), ("P", 27.0, 15.0, "lt2"),
        ("P", 27.0, 17.5, "lt2"), ("D", 21.4, 24.5, "hall"), ("U", 20.9, 11.25, "lt2"),
        ("F", *FANS[0], "bath"), ("V", 13.5, Y3 - 0.3, "bath"), ("F", *FANS[1], "bath"), ("V", 21.5, m.B2_Y0 + 0.3, "bath"),
        ("F", *FANS[2], "bath"), ("V", 38.4, m.B3_Y1 - 0.3, "bath"),
        ("C", 10.4, 22.7, "lt1"), ("C", 10.5, 25.3, "lt1"), ("C", 28.0, 32.2, "lt2"),
-       ("E", 24.75, 23.1, "hall"), ("E", 24.7, 26.2, "hall"), ("X", 30.55, YF - 0.45, "lt2")]
+       ("E", 24.75, 23.1, "hall"), ("E", 23.75, 27.45, "hall"), ("X", 30.55, YF - 0.45, "lt2")]
 # switches: (x, y, wall side, symbol, fixtures controlled in chain order)
 SWITCHES = [(E1, 18.0, "w", "S", [0]), (E1, 30.15, "w", "S", [1]), (29.85, Y2, "n", "S", [2]),
             (XST, 14.35, "w", "S", [3]), (XST, 14.95, "w", "S", [4]),
@@ -155,10 +156,10 @@ SWITCHES = [(E1, 18.0, "w", "S", [0]), (E1, 30.15, "w", "S", [1]), (29.85, Y2, "
             (SX0, 27.05, "e", "S", [15]), (SX0, 27.6, "e", "S", [16]),
             (W(19.5), 19.5, "o", "S", [17]), (W(28.85), 28.85, "o", "S", [18]), (m.C3_X + m.PART, 30.75, "e", "S", [19]),
             (30.3, YFI, "n", "S", [22])]
-MEDIA = (25.45, m.HALL_Y1 - 0.45)                                              # media box, linen closet north wall
+MEDIA = (23.85, m.WD_Y1 - 0.45)                                                # media box, W/D closet side wall
 DATA = [("TV", 32.75, YFI, "n", "C6+RG6"), ("BR1", E1, 13.7, "w", "C6"), ("BR2", 13.6, R(13.6), "r", "C6"), ("BR3", 32.5, R(32.5), "r", "C6")]
 TSTAT = (XH0, 25.0)
-CHIME = (XH0, 27.0)
+CHIME = (22.3, m.HALL_Y1)                                                      # hall end wall
 
 # no receptacle may sit inside a door swing
 for _k, _devs in REC.items():
@@ -183,7 +184,7 @@ def load_calc():
     area = m.net_area()
     gen = [(f"General lighting + receptacles, {area:.0f} sf x 3 VA", 3 * area),
            ("Two small-appliance circuits", 3000), ("Laundry circuit", 1500), ("Range (8 kW unit assumed)", 8000),
-           ("Dryer", 5000), ("Water heater, 4.5 kW", 4500), ("Dishwasher", 1200), ("Microwave / hood", 1500),
+           ("Dryer", 5000), ("Water heater, 4.5 kW (in the flat)", 4500), ("Dishwasher", 1200), ("Microwave / hood", 1500),
            ("Bath fans, air-handler blower, misc.", 600)]
     tot = sum(v for _, v in gen)
     rem = 0.4 * (tot - 10000)
@@ -225,14 +226,15 @@ def fit_notes(notes, name):
     return notes
 
 
-def frame(fig, view, title, sub, left=None, bottom=0.72, street=False, north=None, lot_label=None, bar=True):
+def frame(fig, view, title, sub, left=None, bottom=0.72, street=False, north=None, lot_label=None, bar=True, lot=True):
     (vx, vy) = view
     w = (vx[1] - vx[0]) / FPI
     if left is None:
         left = MARGIN + (SHEET_W - 2 * MARGIN - TB_W - w) / 2
     ax = plan_axes(fig, left, bottom, vx, vy, FPI)
     ax.left, ax.bottom, ax.view = left, bottom, view
-    line(ax, [LOT_NW, LOT_SW, LOT_SE, LOT_NE, LOT_NW], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=5.25)
+    if lot:
+        line(ax, [LOT_NW, LOT_SW, LOT_SE, LOT_NE, LOT_NW], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=5.25)
     if lot_label:
         txt(ax, lot_label[0], lot_label[1], "LOT LINE", size=5.0, color=ACCENT, rot=90, box=True)
     if street:
@@ -453,24 +455,23 @@ def sheet_e101(pdf):
             kn(1, "AUTOMATIC GARAGE LIGHT: 4 ft LED strip, wet-rated, 40 W. Its own occupancy sensor and photocell "
                   "turn it on only when someone is there and it is dark. NO wall switch. CL-1."),
             kn(2, "AUTOMATIC OUTSIDE LIGHT under the porch soffit, full cut-off, same control: street door, landing, trash bay."),
-            kn(3, "AUTOMATIC STAIR LIGHT with battery pack at every landing (E-104). CL-1."),
+            kn(3, "AUTOMATIC STAIR LIGHT with battery pack at every landing (E-104), and the utility room light. CL-1."),
             kn(4, "GARAGE RECEPTACLE, one per stall: 20 A GFCI, weather-resistant, lockable in-use cover, 48 in. up. CL-2R."),
             kn(5, "WALL HEATER with thermostat, 240 V: stair 1,500 W, utility room 500 W. CL-2H."),
-            kn(6, "WATER HEATER DISCONNECTS, 30 A: WH-A is fed from panel PA, WH-B from panel PB."),
-            kn(7, "FUTURE CAR CHARGER: empty 1 in. conduit, pull string, blank cover. Stall 1 to PA, stall 3 to PB."),
-            kn(8, "METER STACK: 2 meters, 2 main breakers. Keep 3 ft clear in front."),
-            kn(9, f"SERVICE LATERAL underground in conduit. Pole location unknown: set the route with {UTILITY}."),
-            kn(10, "GROUNDING ELECTRODE in the footing: place it BEFORE the footing pour."),
-            kn(11, "FEEDERS to panels PA and PB. Sizes: E-201."),
-            kn(12, "HEAT PUMP DISCONNECTS, 30 A, and a GFCI service receptacle at the pads."),
-            kn(13, "LEASE: CL-1, CL-2R and CL-2H run on Unit A's meter. Unit A's lease must disclose the common load and credit it."),
+            kn(6, "FUTURE CAR CHARGER: empty 1 in. conduit, pull string, blank cover. Stall 1 to PA, stall 3 to PB."),
+            kn(7, "METER STACK: 2 meters, 2 main breakers. Keep 3 ft clear in front."),
+            kn(8, f"SERVICE LATERAL underground in conduit. Pole location unknown: set the route with {UTILITY}."),
+            kn(9, "GROUNDING ELECTRODE in the footing: place it BEFORE the footing pour."),
+            kn(10, "FEEDERS to panels PA and PB. Sizes: E-201."),
+            kn(11, "HEAT PUMP DISCONNECTS, 30 A, and a GFCI service receptacle at the pads."),
+            kn(12, "LEASE: CL-1, CL-2R and CL-2H run on Unit A's meter. Unit A's lease must disclose the common load and credit it."),
         ]),
     ], "E-101")
     fig, bg = new_sheet("E-101", "Electrical: garage level and service", SCALE, notes)
     view = ((-12.0, 58.0), (-8.5, 41.0))
     ax = frame(fig, view, "Garage level: power, lighting and service",
-               f"Garage floor EL {m.EL_GAR:.1f} · everything common is on Unit A's panel PA (circuits CL) · numbers in hexagons are keynotes · preliminary",
-               street=True, north=(55.3, 37.6), lot_label=(50.0, 30.6))
+               f"Garage floor EL {m.EL_GAR:.1f} · common loads on Unit A's panel PA (CL)",
+               street=True, north=(55.3, 37.6), lot_label=(50.0, 29.3))
     site_work(ax, bg=True)
     lower_plan(ax, "bg")
     txt(ax, 24.0, -7.75, "BAIRD STREET", size=5.6, color=GREY, weight="bold")
@@ -486,7 +487,7 @@ def sheet_e101(pdf):
     run = dict(color=LIT, lw=0.5, ls=(0, (1.2, 1.6)))
     wire(ax, (ax_ + 0.24, ay_), (bx_ - 0.24, by_), k=0, **run)
     wire(ax, (bx_ + 0.24, by_), (cx_ - 0.24, cy_), k=0, **run)
-    wire(ax, (cx_ + 0.24, cy_ + 1.0), (dx_ - 2.0, dy_), toward=(24, 30), k=0.12, **run)
+    wire(ax, (cx_ + 0.24, cy_ + 1.0), (dx_ - 2.0, dy_), k=0, **run)
     wire(ax, (dx_ + 2.9, dy_), (UTIL_AL[0] - 0.4, UTIL_AL[1]), k=0, **run)
     wire(ax, (UTIL_AL[0], UTIL_AL[1] - 0.4), (STAIR_AL[1][0], STAIR_AL[1][1] + 0.4), k=0, **run)
     wire(ax, (STAIR_AL[1][0], STAIR_AL[1][1] - 0.4), (STAIR_AL[0][0], STAIR_AL[0][1] + 0.4), k=0, **run)
@@ -497,66 +498,59 @@ def sheet_e101(pdf):
     keynote(ax, ax_ + 1.25, ay_ - 1.0, 1)
     keynote(ax, bx_ + 1.25, by_ - 1.0, 1)
     keynote(ax, cx_ + 1.25, cy_ - 1.0, 1)
-    keynote(ax, dx_, dy_ - 1.15, 1)
+    keynote(ax, dx_ - 0.8, dy_ + 1.05, 1)
     keynote(ax, 42.9, 7.8, 2)
     keynote(ax, 42.6, 22.4, 3)
     keynote(ax, 38.75, 12.6, 3)
-    dim(ax, (m.xw_gi(YL + 2.0), YL + 2.0), (ax_, YL + 2.0), 1.3, size=5.2)
-    dim(ax, (bx_ + 0.24, YL), (bx_ + 0.24, m.Y_GR_I), -1.6, label="10'-0\" TO STRIP CENTRES", size=5.0)
+    dim(ax, (m.xw_gi(YL), YL - 2.0), (ax_, YL - 2.0), -0.7, size=5.2)
+    dim(ax, (ax_ + 0.24, YL), (ax_ + 0.24, m.Y_GR_I), -0.75, size=5.2)
     txt(ax, bx_ - 2.9, YL - 2.75, "ON THE STALL LINE", size=4.4, color=LIT, weight="bold", box=True)
     txt(ax, cx_ - 2.9, YL - 2.75, "ON THE STALL LINE", size=4.4, color=LIT, weight="bold", box=True)
-    txt(ax, dx_ - 0.2, dy_ + 0.85, "2'-6\" OFF THE REAR WALL", size=4.2, color=LIT, weight="bold", box=True)
+    txt(ax, bx_ + 4.3, YL + 0.75, f"STRIP CENTRES {ftin(m.Y_GR_I - YL)} OFF THE REAR WALL", size=4.4, color=LIT, weight="bold", box=True)
+    txt(ax, dx_, dy_ - 0.72, f"{ftin(m.Y_GR_I - dy_)} OFF THE REAR WALL", size=4.2, color=LIT, weight="bold", box=True)
     # home run of CL-1 to the panel above
     rect(ax, PANEL_C[0] - 0.55, m.PANEL[1], PANEL_C[0] + 0.25, m.PANEL[3], fc=PAPER, ec=PWR, lw=0.9, z=11, ls=(0, (2, 1.2)))
     arrow(ax, (bx_, by_ + 2.95), (PANEL_C[0] - 0.15, m.PANEL[1] - 0.05), color=LIT)
     tag(ax, bx_ + 1.35, by_ + 2.75, "CL-1", LIT)
-    tag(ax, 14.9, 23.35, "PANEL PA ABOVE\n(Unit A hall; PB is over it)", PWR, size=4.4)
-    leader(ax, [(17.9, 23.4), (PANEL_C[0] - 0.6, 23.4)], color=PWR, dot=False)
+    tag(ax, 14.4, 21.7, "PANEL PA ABOVE\n(Unit A hall; PB is over it)", PWR, size=4.4)
+    leader(ax, [(16.6, 22.3), (PANEL_C[0] - 0.6, 23.2)], color=PWR, dot=False)
 
-    # ---- CL-2R: receptacles ----
+    # ---- CL-2R: receptacles; empty conduit stubs ----
     yrw = m.Y_GR_I
     for x in G_REC:
         recept(ax, (x, yrw - 0.45), "W")
         keynote(ax, x, yrw - 1.75, 4)
-        tag(ax, x, yrw - 2.75, "CL-2R")
+        tag(ax, x + 1.2, yrw - 0.45, "CL-2R")
     for u, x in EV_STUB.items():
         rect(ax, x - 0.36, yrw - 0.8, x + 0.36, yrw - 0.08, fc=PAPER, ec=PWR, lw=0.9, z=11, ls=(0, (2, 1.2)))
-        keynote(ax, x, yrw - 1.75, 7)
-        tag(ax, x, yrw - 2.75, f"TO P{u}")
+        keynote(ax, x, yrw - 1.75, 6)
     xs = [m.xw_gi(yrw)] + sorted(G_REC + list(EV_STUB.values())) + [m.GAR_X1]
     for a, b in zip(xs[:-1], xs[1:]):
         dim(ax, (a, m.Y_GR_O), (b, m.Y_GR_O), 1.1, size=5.2)
     txt(ax, 23.0, m.Y_GR_O + 2.25, "RECEPTACLES AND CONDUIT STUBS ON THE REAR WALL, 48 in. ABOVE THE FLOOR (clear of the pipe chases, P-101)",
         size=4.4, color=PWR)
-    # empty conduits to the panels (in the truss space)
     ec = dict(color=PWR, lw=0.7, ls=(0, (5, 1.5, 1, 1.5)))
     line(ax, [(PANEL_C[0] - 0.55, 23.75), (EV_STUB["A"], 23.75), (EV_STUB["A"], yrw - 0.8)], z=9.5, **ec)
     line(ax, [(PANEL_C[0] + 0.25, 23.0), (EV_STUB["B"], 23.0), (EV_STUB["B"], yrw - 0.8)], z=9.5, **ec)
-    tag(ax, 25.3, 22.45, "EMPTY 1 in. CONDUIT, PB TO STALL 3 (drops through Unit A's hall wall)", PWR, size=4.2, weight="normal")
+    tag(ax, 25.7, 22.4, "EMPTY CONDUIT, PB TO STALL 3", PWR, size=4.2, weight="normal")
+    tag(ax, 14.9, 25.3, "EMPTY CONDUIT,\nPA TO STALL 1", PWR, size=4.2, weight="normal")
     # street-door receptacle
     recept(ax, (43.75, YF - 0.45), "W")
     tag(ax, 46.6, YF - 0.45 - 0.9, "CL-2R", PWR)
     leader(ax, [(45.9, YF - 1.25), (44.1, YF - 0.6)], color=PWR, dot=False)
 
-    # ---- CL-2H: heaters ----
+    # ---- CL-2H: heaters; utility room ----
     heater(ax, (m.XE_GI - 0.2, 12.25), "v")
     keynote(ax, 42.55, 11.75, 5)
     heater(ax, (SX0 + 0.2, 25.4), "v", 1.1)
-
-    # ---- utility room ----
-    recept(ax, (38.55, m.UTIL[2] + 0.42), "G")
-    for i, x in enumerate((39.75, 40.6)):
-        conn(ax, (x, m.UTIL[2] + 0.42))
-        tag(ax, x, m.UTIL[2] + 1.2, "AB"[i], PWR, box=False)
+    recept(ax, (38.6, m.UTIL[2] + 0.42), "G")
     ux = 38.2
-    txt(ax, ux - 0.5, 35.25, "UTILITY ROOM (heated, locked)", size=5.0, weight="bold", ha="left", color=PWR)
-    for j, (n, s) in enumerate([(6, f"Disconnect A: WH-A from PA cct {NUM['wh']} · disconnect B: WH-B from PB cct {NUM['wh']}"),
-                                (5, "500 W heater, CL-2H (keeps the room above freezing: set 50 °F)"),
+    txt(ax, ux - 0.5, 34.5, "UTILITY ROOM (heated, locked)", size=5.0, weight="bold", ha="left", color=PWR)
+    for j, (n, s) in enumerate([(5, "500 W wall heater, CL-2H: keeps the room above freezing"),
                                 (3, "Automatic light and GFCI receptacle, CL-1")]):
-        keynote(ax, ux, 34.15 - j * 1.12, n, r=0.5)
-        txt(ax, ux + 0.85, 34.15 - j * 1.12, s, size=4.4, ha="left")
-    leader(ax, [(40.2, 31.4), (40.2, 29.9), (40.15, m.UTIL[2] + 0.95)], color=PWR)
-    txt(ax, 40.2, 31.75, "see above", size=4.2, color=PWR)
+        keynote(ax, ux, 33.4 - j * 1.12, n, r=0.5)
+        txt(ax, ux + 0.85, 33.4 - j * 1.12, s, size=4.4, ha="left")
+    leader(ax, [(40.6, 31.6), (40.6, 29.9), (39.6, 25.9)], color=PWR)
 
     # ---- service: meter stack, lateral, grounding, feeders ----
     rect(ax, m.XE, METER[1] - 1.15, m.XE + 0.6, METER[1] + 1.15, fc=PWR, ec=PWR, z=11)
@@ -569,18 +563,17 @@ def sheet_e101(pdf):
     line(ax, [(m.XE - 0.75, m.WATER_ENTRY[1] - 0.2), (m.XE_GI - 0.25, m.WATER_ENTRY[1] - 0.2)], color=GRN, lw=1.1, z=10)
     ax.add_patch(plt.Circle((m.XE_GI - 0.25, m.WATER_ENTRY[1] - 0.2), 0.16, fc=GRN, ec=GRN, zorder=11))
     line(ax, FEED_PATH, color=PWR, lw=1.3, ls=(0, (3, 1.6)), z=10)
-    keynote(ax, 27.2, FEED_PATH[2][1], 11)
-    tag(ax, 27.2, FEED_PATH[2][1] + 1.25, f"FEEDERS PA + PB, in the floor trusses above (about {FEED_A:.0f} ft and {FEED_B:.0f} ft)",
-        PWR, size=4.2, weight="normal")
+    keynote(ax, 28.4, FEED_PATH[2][1], 10)
+    tag(ax, 23.4, FEED_PATH[2][1] + 0.72, "FEEDERS PA + PB, in the floor trusses above", PWR, size=4.2, weight="normal")
     tx = 52.4
     for (n, y, target, lines) in [
-        (8, 17.6, (m.XE + 0.6, METER[1] + 0.7),
+        (7, 17.6, (m.XE + 0.6, METER[1] + 0.7),
          ["METER STACK", "2 meters + 2 main breakers", f"A {m.PANEL_A_AMPS} A · B {m.PANEL_B_AMPS} A, NEMA 3R",
           f"{ftin(METER[1] - YF)} from the corner,", "centre 4 to 6 ft above grade", f"(grade about EL {g_meter:.1f})"]),
-        (10, 25.4, (m.XE - 0.75, 24.6),
+        (9, 25.4, (m.XE - 0.75, 24.6),
          ["GROUNDING", "20 ft of bare #4 Cu in the", "east-wall footing, stubbed", "up at the meter. #4 Cu bond",
           "to the metal water piping", "in the utility room."]),
-        (9, 6.6, (xl, 5.6),
+        (8, 6.6, (xl, 5.6),
          ["SERVICE LATERAL", "underground in conduit,", "24 in. min. cover. Shown", "1'-0\" inside the lot line:",
           "pole, route and depth to be", f"set with {UTILITY}.", "Keep 12 in. off the water", "services (C-106)."]),
     ]:
@@ -597,13 +590,13 @@ def sheet_e101(pdf):
     pr = (m.xw_o(27.0) - 0.42, 27.0)
     recept(ax, pr, "W")
     tag(ax, pr[0] - 0.65, 27.0, "SERVICE RECEPT. · CL-2R", PWR, ha="right")
-    keynote(ax, 3.9, 24.7, 12)
+    keynote(ax, 3.9, 24.7, 11)
     for i, (hx, hy) in enumerate(m.HP):
         txt(ax, hx, hy, f"HP\n{'AB'[i]}", size=4.2, color=GREY, z=8)
-    txt(ax, 5.0, 29.6, f"WEST SIDE YARD\ngrade about EL {g_hp:.1f},\n{g_hp - m.EL_GAR:.0f} ft above the garage floor", size=4.4, color=PWR)
+    txt(ax, 4.45, 14.6, f"WEST SIDE YARD\ngrade EL {g_hp:.1f}:\n{g_hp - m.EL_GAR:.0f} ft above the\ngarage floor", size=4.3, color=PWR)
 
     # ---- legend, common-circuit table, general notes ----
-    legend(ax, -11.2, 32.2, [
+    legend(ax, -11.2, 33.0, [
         (lambda a, p: auto_strip(a, (p[0], p[1] - 0.3), "v", 1.5), "AUTOMATIC LIGHT, 4 ft LED strip: built-in\noccupancy sensor + photocell, no switch"),
         (auto_light, "AUTOMATIC LIGHT, ceiling, wall or soffit"),
         (lambda a, p: recept(a, p, "W"), "GFCI receptacle, weather-resistant,\nlockable in-use cover"),
@@ -618,24 +611,27 @@ def sheet_e101(pdf):
         (_l_wire(GRN, (0, (3, 1.5)), 1.1), "Grounding electrode and bonds"),
         (_l_wire(LIT, (0, (1.2, 1.6)), 0.6), "Circuit CL-1 run (in the truss space)"),
         (lambda a, p: keynote(a, p[0], p[1], 1, r=0.5), "Keynote: see the list at right"),
-    ], dy=1.42)
-    block(ax, -11.8, 10.2, "GENERAL", [
-        "All of this level is fed from Unit A's panel PA, except WH-B and HP-B (panel PB).",
+    ], dy=1.3)
+    block(ax, -11.8, 12.4, "GENERAL", [
+        "All of this level is fed from Unit A's panel PA, except heat pump HP-B (panel PB).",
+        "Water heaters are in the flats (E-102, E-103): nothing for them at this level.",
+        "Feeders: through the wall at the meter, up in the stair east wall, north to the end",
+        f"of the stair shaft, then west in each flat's own floor trusses (about {FEED_A:.0f} and {FEED_B:.0f} ft).",
         "Open garage = damp / wet location: wet-rated fixtures, in-use covers.",
         "On the concrete walls: surface EMT or schedule 80 PVC with cast boxes.",
-        "Above the ceiling: in the floor trusses, over the R-30. The ceiling is 5/8 in.",
-        "Type X under a 1-hour floor: listed boxes, seal every hole.",
+        "Above the ceiling: in the floor trusses, over the R-30. The ceiling is the rated",
+        "garage ceiling (5/8 in. Type X): listed boxes, seal every hole.",
         "Not included, not wired: cameras, door operators, heat cable, sump pump.",
-        "Confirm with the inspector: GFCI on the outdoor heat-pump circuits",
-        "(NEC 210.8(F)) and outdoor receptacles for the flats (210.52(E)).",
-    ], fs=4.5, lh=0.72)
-    x_in, y_in = inch(ax, 9.0, 40.4)
+        "Confirm with the inspector: GFCI on the outdoor heat-pump circuits (NEC 210.8(F))",
+        "and outdoor receptacles for the flats (210.52(E)).",
+    ], fs=4.5, lh=0.7)
+    x_in, y_in = inch(ax, 5.6, 37.6)
     bg.text(x_in, y_in + 0.05, "COMMON CIRCUITS, ALL ON UNIT A'S PANEL PA (no house meter)", fontsize=6.2, fontweight="bold", color=INK, va="bottom")
-    table(bg, x_in, y_in, [0.55, 1.35, 3.95, 0.95], [
+    table(bg, x_in, y_in, [0.5, 1.2, 3.6, 0.85], [
         ["Circuit", "Breaker, wire", "Serves", "Load"],
         ["CL-1", "15 A 1-pole, #14 Cu", f"Automatic lights: garage {len(G_STRIPS)}, stair {N_STAIR_AL}, outside {len(EXT_AL)}, utility room 1; utility receptacle",
          f"{CL1_W} W + 180 VA"],
-        ["CL-2R", "20 A 1-pole GFCI, #12", f"{len(G_REC)} garage receptacles (their own circuit, NEC 210.11(C)(4)), street-door and heat-pump receptacles",
+        ["CL-2R", "20 A 1-pole GFCI, #12", f"{len(G_REC)} garage receptacles (own circuit, NEC 210.11(C)(4)), street-door + heat-pump receptacles",
          f"{N_CL2R} x 180 VA"],
         ["CL-2H", "20 A 2-pole, #12 Cu", f"Stair heater {HTR_STAIR:,} W and utility-room heater {HTR_UTIL} W, 240 V", f"{HTR_STAIR + HTR_UTIL:,} W"],
     ], fs=5.2, rh=0.175)
@@ -677,26 +673,24 @@ def power_plan(ax, unit):
     for (x, y) in FANS:
         fanlight(ax, (x, y), PWR)
         tag(ax, x + 1.05, y, num["bath"])
-    for s, x, y in ALARMS:
+    for i, (s, x, y) in enumerate(ALARMS):
         alarm(ax, (x, y), s)
-        tag(ax, x + 1.1, y, num["hall"])
+        tag(ax, x + (-1.1 if i == 3 else 1.1), y, num["hall"])
     # circuits that leave the floor: keynotes at the panel
     ky = 19.45
-    leader(ax, [(21.3, ky + 0.62), (px0 + 0.6, py0 - 0.25)], color=PWR, dot=False)
+    leader(ax, [(21.2, ky + 0.62), (px0 + 0.6, py0 - 0.25)], color=PWR, dot=False)
     n_k = 4 if unit == "A" else 3
     for i in range(n_k):
-        keynote(ax, 20.75 + i * 1.36, ky, i + 1)
+        keynote(ax, 20.6 + i * 1.3, ky, i + 1)
 
 
 def unit_power_sheet(pdf, number, unit):
     el = m.EL_A if unit == "A" else m.EL_B
     amps = m.PANEL_A_AMPS if unit == "A" else m.PANEL_B_AMPS
     num = nums(unit)
-    wh_route = ("down in the floor trusses to disconnect WH-A in the utility room" if unit == "A" else
-                "down the pipe space behind bath 3 to disconnect WH-B in the utility room")
     keys = [
-        kn(1, f"LEAVE THIS FLOOR AT THE PANEL: water heater, cct {num['wh']}, {wh_route}; heat pump, cct {num['hp']}, "
-              f"west in this flat's floor trusses to the disconnect at pad HP-{unit} (E-101)."),
+        kn(1, f"HEAT PUMP, cct {num['hp']}: leaves this floor at the panel, west in this flat's floor trusses to the disconnect "
+              f"at pad HP-{unit} (E-101)."),
         kn(2, f"FEEDER from Unit {unit}'s main breaker at the meter stack arrives in this flat's floor trusses (E-101, E-201). 4-wire: "
               "neutral bar NOT bonded to the can."),
         kn(3, f"EMPTY 1 in. CONDUIT down to garage stall {'1' if unit == 'A' else '3'} for a future car charger (E-101)."),
@@ -707,12 +701,14 @@ def unit_power_sheet(pdf, number, unit):
     notes = [
         (f"Unit {unit} power", [
             wrap(f"Panel P{unit}: {amps} A, 40 spaces, in the hall, fed from Unit {unit}'s own meter. Keep 30 in. wide x 36 in. deep x "
-                 "6'-6\" high clear in front. Numbers on the plan are the circuits of the panel schedule on E-201."),
+                 "6'-6\" high clear in front. Circuit numbers: see the panel schedule, E-201."),
         ]),
         ("Rules (2020 NEC)", [
-            wrap("Receptacles: no point along a wall more than 6 ft from one (210.52), none behind a door. Tamper-resistant throughout."),
-            wrap("Kitchen: two 20 A small-appliance circuits, GFCI; two receptacles on the island ends (210.52(C))."),
+            wrap("Receptacles: no point along a wall more than 6 ft from one (210.52), none behind a door. Tamper-resistant. "
+                 "Kitchen: two 20 A small-appliance circuits; two receptacles on the island ends (210.52(C))."),
             wrap("AFCI: every 120 V circuit except the bath receptacles. GFCI: kitchen, baths, laundry, dryer, dishwasher, porch."),
+            wrap(f"Mechanical closet: water heater (cct {num['wh']}) and air handler (cct {num['ahu']}), each with a 30 A "
+                 "disconnect in the closet."),
         ]),
         ("Keynotes", keys),
     ]
@@ -721,7 +717,7 @@ def unit_power_sheet(pdf, number, unit):
     fit_notes(notes, number)
     fig, bg = new_sheet(number, f"Electrical: Unit {unit} power", SCALE, notes)
     ax = frame(fig, ((-14.0, 53.0), (3.0, 47.0)), f"Unit {unit} power plan",
-               f"Floor EL {el:.1f} · numbers beside devices are circuits in panel P{unit} (E-201) · arrows are home runs · preliminary",
+               f"Floor EL {el:.1f} · numbers = circuits in panel P{unit} (E-201) · arrows = home runs",
                bottom=0.8, north=(50.0, 43.0), lot_label=(50.0, 22.0))
     unit_plan(ax, "bg", unit)
     power_plan(ax, unit)
@@ -748,7 +744,7 @@ def unit_power_sheet(pdf, number, unit):
         if key in ("spd", "ev", "lt1", "lt2"):
             continue
         txt(ax, -11.3, y, ",".join(str(s) for s in sp), size=4.4, color=PWR, weight="bold", ha="right")
-        txt(ax, -10.8, y, f"{name.replace(' (utility room)', '').replace(' (west side yard)', '')} · {a} A", size=4.4, ha="left")
+        txt(ax, -10.8, y, f"{name.replace(' (mech. closet)', '').replace(' (west side yard)', '')} · {a} A", size=4.4, ha="left")
         y -= 0.83
     txt(ax, -10.8, y, f"Lights: circuits {num['lt1']}, {num['lt2']} (E-104). Spaces 36-40: E-201.", size=4.4, ha="left", color=GREY)
     txt(ax, 26.0, 5.05, "MOUNTING HEIGHTS, to the centre above the floor: receptacles 16 in. · kitchen counter, island and bath receptacles 44 in.\n"
@@ -770,7 +766,7 @@ def sheet_e103(pdf):
 # E-104  Lighting
 # ----------------------------------------------------------------------------
 FIX_TAG = {10: (0, 0.75, 0, -0.75), 12: (-1.6, 0, 1.6, 0), 14: (-1.6, 0, 1.6, 0), 16: (-1.6, 0, 1.6, 0),
-           22: (1.3, -0.1, 2.3, -0.1), 20: (-0.85, 0.35, 0.9, 0.35), 21: (-0.85, 0.3, 0.9, 0.3)}
+           22: (1.3, -0.1, 2.3, -0.1), 20: (-0.85, 0.35, 0.9, 0.35), 21: (0.8, 0, 1.6, 0)}
 
 
 def draw_fixture(ax, t, p):
@@ -789,8 +785,9 @@ def draw_fixture(ax, t, p):
 def sheet_e104(pdf):
     notes = fit_notes([
         ("Lighting, both flats", [
-            wrap("Units A and B are wired alike: one plan. All fixtures LED, surface-mounted on listed boxes. NO recessed cans: "
-                 "Unit A's ceiling is the 1-hour floor/ceiling, Unit B's is the insulated attic floor."),
+            wrap("Units A and B are wired alike: one plan. All fixtures LED. Unit A's ceiling is the rated two-layer ceiling: "
+                 "surface fixtures on listed boxes only, or fixtures in the 7'-0\" soffits. Nothing recessed through it. "
+                 "Unit B: surface fixtures under the insulated attic floor."),
             wrap("Switches 48 in. up, on the latch side of each door, inside the room. Bedrooms 1 and 3 and the kitchen are entered "
                  "from the living room; bedroom 2 from the hall."),
             wrap(f"Ceilings: Unit A {ftin(m.CLG_A)}, Unit B {ftin(m.CLG_B)}, duct soffits {ftin(m.CLG_SOFFIT)} (M-102). Keep fixtures off the soffit registers."),
@@ -806,7 +803,7 @@ def sheet_e104(pdf):
     ], "E-104")
     fig, bg = new_sheet("E-104", "Electrical: lighting, Units A and B", SCALE, notes)
     ax = frame(fig, ((-13.5, 53.0), (5.0, 44.0)), "Lighting plan, typical for Unit A and Unit B",
-               f"Unit A floor EL {m.EL_A:.1f}, Unit B EL {m.EL_B:.1f} · letter = fixture type (schedule below) · number = circuit · dashed arcs = switch legs · preliminary",
+               "Letter = fixture type · number = circuit · dashed arc = switch leg",
                bottom=2.95, north=(50.0, 40.0), lot_label=(50.0, 22.0))
     unit_plan(ax, "bg", "A")
     leg = dict(color=LIT, lw=0.5, ls=(0, (2.2, 1.6)))
@@ -833,7 +830,7 @@ def sheet_e104(pdf):
     keynote(ax, 28.2, 33.6, 4)
     keynote(ax, 38.9, 25.0, 5)
     txt(ax, 21.3, 5.55, "UNDER-CABINET LIGHT (U) has its own switch. The hood light is part of the microwave/hood. "
-        "W/D and air-handler closet lights (E): pull chain.", size=4.4)
+        "W/D and mechanical closet lights (E): pull chain.", size=4.4)
     y = legend(ax, -12.6, 39.0, [
         (light, "Ceiling light (types A, D, C, E), wall light (X)"),
         (pendant, "Pendant over the island (P)"),
@@ -850,8 +847,8 @@ def sheet_e104(pdf):
     block(ax, -13.2, y - 0.6, "UNIT A / UNIT B DIFFERENCES", [
         "Porch light X: Unit A's is on the wall under Unit B's",
         "porch; Unit B's is under the roof overhang.",
-        "Unit A ceiling boxes sit in the 1-hour floor/ceiling:",
-        "listed fire-rated boxes. Unit B ceiling boxes are",
+        "Unit A ceiling boxes sit in the rated two-layer ceiling:",
+        "listed fire-rated boxes only. Unit B ceiling boxes are",
         "under R-49: airtight, insulation-contact rated.",
         "Stair lights G3: common, on PA at every landing.",
         "Everything else is identical, circuit for circuit.",
@@ -863,10 +860,10 @@ def sheet_e104(pdf):
         ["D", "Surface disc light, 6 in.", "Kitchen (2), unit entry, hall", "12 W, 900 lm", "Ceiling; hall: under the 7'-0\" soffit", "Wall switch; hall on two 3-ways", f"{cnt['D']} / flat", f"{NUM['lt2']}, {NUM['hall']}"],
         ["P", "Pendant", "Over the island", "9 W each", "Ceiling, bottom 30-36 in. over the top", "Wall switch", f"{cnt['P']} / flat", NUM["lt2"]],
         ["U", "Under-cabinet strip, 18 in.", "Under the wall cabinet at the counter", "8 W", "Under the cabinet", "Switch on the fixture", f"{cnt['U']} / flat", NUM["lt2"]],
-        ["F", "Bath exhaust fan with light, 80 cfm", "Baths 1, 2, 3 (duct: M-102, M-103)", "15 W light", "Ceiling, listed for a rated ceiling", "Wall switch; fan on a timer", f"{cnt['F']} / flat", NUM["bath"]],
+        ["F", "Bath exhaust fan with light, 80 cfm", "Baths 1, 2, 3 (duct: M-102, M-103)", "15 W light", "Ceiling or soffit, listed for a rated ceiling", "Wall switch; fan on a timer", f"{cnt['F']} / flat", NUM["bath"]],
         ["V", "Vanity light bar, 24 in., damp-rated", "Over the mirror in each bath", "20 W", "Wall, 78 in. to centre", "Wall switch", f"{cnt['V']} / flat", NUM["bath"]],
         ["C", "Closet light, enclosed, low profile", "Bedroom closets 1, 2, 3", "10 W", "Ceiling, clearances per NEC 410.16", "Wall switch beside the closet door", f"{cnt['C']} / flat", f"{NUM['lt1']}, {NUM['lt2']}"],
-        ["E", "Utility light with pull chain", "Washer/dryer and air-handler closets", "10 W", "Ceiling", "Pull chain", f"{cnt['E']} / flat", NUM["hall"]],
+        ["E", "Utility light with pull chain", "Washer/dryer and mechanical closets", "10 W", "Ceiling", "Pull chain", f"{cnt['E']} / flat", NUM["hall"]],
         ["X", "Porch wall light, wet-rated, full cut-off", "Beside each flat's porch door", "12 W", "Wall, 6'-8\" to centre", "Switch inside at the porch door", f"{cnt['X']} / flat", NUM["lt2"]],
         ["G1", "AUTOMATIC strip, 4 ft, wet-rated", "Garage ceiling (E-101)", f"{W_G1} W, 4,000 lm", "Surface, on the 5/8 in. Type X ceiling", "Built-in occupancy sensor + photocell", f"{len(G_STRIPS)} total", "CL-1 (PA)"],
         ["G2", "AUTOMATIC downlight, full cut-off", "Porch soffit: street door, landing / trash bay", f"{W_G2} W", "Soffit over the landing", "Built-in occupancy sensor + photocell", f"{len(EXT_AL)} total", "CL-1 (PA)"],
@@ -895,7 +892,8 @@ def sheet_e105(pdf):
                  "interconnected with each other. None in the open garage or common stair."),
         ]),
         ("Data, doorbell, thermostat", [
-            wrap("Media box in each linen closet: 1 Cat6 + 1 RG6 coax to the TV wall, 1 Cat6 to each bedroom desk, all home runs."),
+            wrap("Media box recessed in the W/D closet side wall of each flat: 1 Cat6 + 1 RG6 coax to the TV wall, 1 Cat6 to each "
+                 "bedroom desk, all home runs."),
             wrap("Doorbell: one lit button per flat at the street door, chime in the hall. Plain push buttons. NO cameras, "
                  "no video doorbell, no intercom."),
             wrap("Thermostat in the hall, 60 in. up: 18/8 cable to the air handler (M-102)."),
@@ -904,7 +902,7 @@ def sheet_e105(pdf):
     fig, bg = new_sheet("E-105", "Alarms, data and doorbell", SCALE, notes)
     bot = 2.75
     ax = frame(fig, ((3.0, 47.5), (5.0, 44.5)), "Units A and B: alarms, data, doorbell chime, thermostat",
-               "Typical for both flats · cables run in the flat's own ceiling and walls · preliminary", left=0.55, bottom=bot, bar=True)
+               "Typical for both flats · cables run in the flat's own ceiling and walls · preliminary", left=0.55, bottom=bot, bar=True, lot=False)
     unit_plan(ax, "bg", "A")
     # alarms and interconnect
     pos = {i: (x, y) for i, (s, x, y) in enumerate(ALARMS)}
@@ -917,7 +915,6 @@ def sheet_e105(pdf):
         alarm(ax, (x, y), s)
     tag(ax, 24.9, 20.2, f"{ftin(d_range)} TO THE RANGE\n(10 ft min.)", ALM, size=4.2, weight="normal")
     leader(ax, [(ALARMS[3][1] - 0.6, ALARMS[3][2] - 0.3), (RANGE_C[0] + 0.6, RANGE_C[1] + 0.4)], color=ALM, lw=0.3)
-    tag(ax, 21.45, 28.6, "SMOKE\n+ CO", ALM, size=4.2, box=False)
     # media box and cables
     for name, x, y, side, cab in DATA:
         p = off((x, y), side, 0.45)
@@ -933,11 +930,11 @@ def sheet_e105(pdf):
     tag(ax, 44.0, 32.6, "SERVICE CABLES UP FROM THE\nTELECOM BOARD (utility room),\nIN THE PIPE SPACE", DAT, size=4.2, weight="normal")
     leader(ax, [(43.2, 31.7), (svc[0] + 0.3, svc[1] + 0.15)], color=DAT, dot=False)
     pt = off(TSTAT, "e", 0.46)
-    pc = off(CHIME, "e", 0.46)
+    pc = off(CHIME, "s", 0.46)
     wire(ax, pt, (m.AHU[0], (m.AHU[1] + m.AHU[3]) / 2), k=0.2, color=DAT, lw=0.6)
     lowv(ax, pt, "T")
     lowv(ax, pc, "CH")
-    wire(ax, (pc[0] + 0.4, pc[1] + 0.3), (MEDIA[0] - 0.46, MEDIA[1]), k=-0.12, color=DAT, lw=0.5, ls=(0, (1.2, 1.4)))
+    wire(ax, (pc[0], pc[1] - 0.38), (MEDIA[0] - 0.46, MEDIA[1]), k=0.12, color=DAT, lw=0.5, ls=(0, (1.2, 1.4)), toward=(21.5, 24.0))
     bw = (XST - 0.3, 15.6)
     lowv(ax, bw, "DB")
     arrow(ax, (bw[0] + 0.5, bw[1]), (bw[0] + 1.9, bw[1]), color=DAT)
@@ -945,11 +942,18 @@ def sheet_e105(pdf):
 
     # garage-level strip
     gl = 0.55 + (47.5 - 3.0) / FPI + 0.25
-    gx = frame(fig, ((33.5, 56.5), (-8.5, 32.5)), "Garage level: entry and telecom", "East end of the garage level", left=gl, bottom=bot,
-               street=True, bar=False, lot_label=(50.0, 20.5))
+    gv = ((33.5, 56.5), (-5.5, 35.5))
+    gx = frame(fig, gv, "Garage level: entry and telecom", "East end of the garage level", left=gl, bottom=bot,
+               bar=False, lot_label=(50.0, 31.6))
     site_work(gx, bg=True)
     lower_plan(gx, "bg")
-    txt(gx, 45.0, -7.75, "BAIRD STREET", size=5.2, color=GREY, weight="bold")
+    for t in list(gx.texts):                    # background labels that fall outside this strip
+        tx_, ty_ = t.get_position()
+        if not (gv[0][0] + 1 < tx_ < gv[0][1] and gv[1][0] < ty_ < gv[1][1] - 3):
+            t.remove()
+    view_title(gx, gv[0][0] + 0.6, gv[1][1] - 1.6, "1", "Garage level: entry and telecom", "East end of the garage level", 9)
+    txt(gx, 40.0, -0.75, "R.O.W. LINE", size=4.4, color=ACCENT)
+    txt(gx, 52.6, -4.6, "to Baird Street", size=4.4, color=DAT)
     for i, x in enumerate((43.05, 43.65)):
         gx.add_patch(plt.Circle((x, YF - 0.4), 0.22, fc=DAT, ec=DAT, zorder=11))
     tag(gx, 48.6, 8.6, "DOORBELL BUTTONS\nA and B, lit, 48 in. up,\nlatch side of the door.\nNo camera.", DAT, size=4.2, weight="normal")
@@ -959,8 +963,8 @@ def sheet_e105(pdf):
     # telecom conduit: street -> joint trench -> pull box at the meter -> truss space -> utility room board
     xt = 49.55
     tc = dict(color=DAT, lw=1.2, ls=(0, (5, 1.6)))
-    line(gx, [(xt, -5.2), (xt, METER[1] - 1.9), (m.XE + 0.35, METER[1] - 1.9)], z=10, **tc)
-    arrow(gx, (xt, -5.0), (xt, -6.5), color=DAT, lw=1.0, scale=7)
+    line(gx, [(xt, -3.6), (xt, METER[1] - 1.9), (m.XE + 0.35, METER[1] - 1.9)], z=10, **tc)
+    arrow(gx, (xt, -3.4), (xt, -5.0), color=DAT, lw=1.0, scale=7)
     rect(gx, m.XE, METER[1] - 2.3, m.XE + 0.7, METER[1] - 1.5, fc=PAPER, ec=DAT, lw=1.0, z=11)
     rect(gx, m.XE, METER[1] - 1.15, m.XE + 0.6, METER[1] + 1.15, fc=PWR, ec=PWR, z=10, alpha=0.45)
     board = (38.4, m.UTIL[2] + 0.2)
@@ -988,7 +992,7 @@ def sheet_e105(pdf):
     items = [(lambda a, p: alarm(a, p, "SD"), "Smoke alarm, hard-wired, battery backup"),
              (lambda a, p: alarm(a, p, "SC"), "Combination smoke + CO alarm"),
              (_l_wire(ALM, (0, (3, 1.5)), 0.6), "Alarm interconnect (14/3, same circuit)"),
-             (lambda a, p: lowv(a, p, "MB"), "Media box, 14 in. plastic, linen closet"),
+             (lambda a, p: lowv(a, p, "MB"), "Media box, 14 in. plastic, W/D closet wall"),
              (lambda a, p: lowv(a, p, "D"), "Data outlet: Cat6 (C6), coax (RG6)"),
              (lambda a, p: lowv(a, p, "T"), "Thermostat"),
              (lambda a, p: lowv(a, p, "CH"), "Doorbell chime"),
@@ -1007,8 +1011,8 @@ def sheet_e105(pdf):
         ["Smoke alarm (SD)", "4", "Each bedroom; living room", f"120 V + battery, photoelectric, interconnected, circuit {NUM['hall']}"],
         ["Smoke + CO alarm (SC)", "1", "Hall outside bedroom 2", "As above. CO not required here: placed as good practice"],
         ["Doorbell button", "1", "Street door, garage level", "Lit push button marked A or B, 18/2 bell wire. No camera"],
-        ["Chime + transformer", "1", "Hall; transformer at the media box", "16 V, 10 VA transformer on the media-box receptacle"],
-        ["Media box (MB)", "1", "Linen closet, top at 66 in.", f"Duplex receptacle inside, circuit {NUM['hall']}; carrier's modem goes here"],
+        ["Chime + transformer", "1", "Hall end wall; transformer at the media box", "16 V, 10 VA transformer on the media-box receptacle"],
+        ["Media box (MB)", "1", "W/D closet side wall, top at 66 in.", f"Duplex receptacle inside, circuit {NUM['hall']}; carrier's modem goes here"],
         ["Cat6 data outlet", "4", "TV wall and each bedroom desk", "Home run to the media box, RJ45 jack, 16 in. up"],
         ["RG6 coax outlet", "1", "TV wall", "Home run to the media box"],
         ["Thermostat", "1", "Hall west wall, 60 in. up", "18/8 to the air handler; outdoor-unit control cable by HVAC"],
@@ -1048,6 +1052,7 @@ def sheet_e201(pdf):
                  "neutral bar is isolated; grounds go to a separate bar."),
             wrap("Concrete-encased electrode in the east footing: tell the concrete crew before the pour. Bond metal water piping "
                  "and the steel beam and post (S-104)."),
+            wrap("Each water heater is in its own flat's mechanical closet, on its own flat's panel."),
         ]),
         ("To confirm", [
             wrap("Sizes here are preliminary and unsealed. The electrician or engineer of record confirms conductor sizes, "
@@ -1127,11 +1132,9 @@ def sheet_e201(pdf):
              ["Spare capacity", f"{m.PANEL_A_AMPS - LC['ampsA']:.0f} A", f"{m.PANEL_B_AMPS - LC['ampsB']:.0f} A"]]
     yb = table(bg, lx, ly - 0.14, [2.75, 0.85, 0.85], rows, fs=5.4, rh=0.148)
     ev = 32 * 240
-    bg.text(lx, yb - 0.07, "\n".join([
-        "Area is the net floor area from the model. If the range nameplate is 12 kW,",
-        "add 1,600 VA (7 A) to each flat. A future 32 A car charger (7,680 VA, taken",
-        f"at 100 %) brings Unit A to {(LC['A'] + ev) / 240:.0f} A of {m.PANEL_A_AMPS} A and Unit B to {(LC['B'] + ev) / 240:.0f} A of {m.PANEL_B_AMPS} A:",
-        "Unit B's charger must be 24 A or load-managed (NEC 625.42). Recalculate then.",
+    bg.text(0.62, 6.93, "\n".join([
+        "LOAD NOTES. Floor area is the net area from the model. Each water heater is in its own flat, on its own flat's panel. If the range nameplate is 12 kW, add 1,600 VA (7 A) to each flat.",
+        f"A future 32 A car charger (7,680 VA at 100 %) brings Unit A to {(LC['A'] + ev) / 240:.0f} A of {m.PANEL_A_AMPS} A and Unit B to {(LC['B'] + ev) / 240:.0f} A of {m.PANEL_B_AMPS} A: Unit B's charger must be 24 A or load-managed (NEC 625.42). Recalculate then.",
     ]), fontsize=5.0, color=INK, va="top", linespacing=1.3)
 
     # ---------------- panel schedules ----------------
@@ -1140,11 +1143,11 @@ def sheet_e201(pdf):
     for i, unit in enumerate("AB"):
         x = 0.62 + i * (pw + 0.33)
         amps = m.PANEL_A_AMPS if unit == "A" else m.PANEL_B_AMPS
-        bg.text(x, 6.42, f"PANEL P{unit} · UNIT {unit}", fontsize=7.6, fontweight="bold", color=INK, va="center")
-        bg.text(x + 1.75, 6.41, f"{amps} A, 120/240 V, 40 spaces, main lugs, recessed in the hall west wall · fed from MAIN {unit}",
+        bg.text(x, 6.30, f"PANEL P{unit} · UNIT {unit}", fontsize=7.6, fontweight="bold", color=INK, va="center")
+        bg.text(x + 1.75, 6.29, f"{amps} A, 120/240 V, 40 spaces, main lugs, recessed in the hall west wall · fed from MAIN {unit}",
                 fontsize=5.2, color=GREY, va="center")
-        yb = table(bg, x, 6.28, wd + wd, panel_rows(unit), fs=5.1, rh=0.176)
-        bg.plot([x + sum(wd), x + sum(wd)], [6.28, yb], color=INK, lw=0.6)
+        yb = table(bg, x, 6.16, wd + wd, panel_rows(unit), fs=5.1, rh=0.176)
+        bg.plot([x + sum(wd), x + sum(wd)], [6.16, yb], color=INK, lw=0.6)
     bg.text(0.62, yb - 0.1, "\n".join([
         "A / P = breaker amps / poles. Wire = copper NM-B branch wiring, minimum size shown: #14 for 15 A, #12 for 20 A, #10 for 30 A, #8 for 40 A. "
         "Prot.: A = AFCI, G = GFCI, AG = dual-function breaker, G* = confirm (see To confirm).",

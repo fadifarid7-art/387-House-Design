@@ -768,7 +768,7 @@ def key_view(fig, bg):
     dim(ax, sw, TERMS[1][2], 2.3, size=4.8)
     tag(ax, TERMS[0][2][0] - 1.7, m.YF - 1.3, "RH-1", EXH, size=4.6, box=True)
     tag(ax, TERMS[1][2][0] - 1.5, TERMS[1][2][1] + 0.9, "EF-1", EXH, size=4.6)
-    for k, dx in ((2, -0.2), (3, 0.3), (4, 0.2)):
+    for k, dx in ((2, -2.8), (3, 1.4), (4, 0.2)):
         p = TERMS[k][2]
         q = (p[0] + 1.55 + dx, p[1] + 5.0)
         line(ax, [(p[0] + 0.3, p[1] + 0.9), q], color=EXH, lw=0.35, z=13)
@@ -940,7 +940,7 @@ def section_closet(fig, bg, L, B):
     txt(ax, 21.4, 4.2, "30 in. CLEAR\nIN THE HALL\nFOR SERVICE", size=4.2)
     lead(ax, (TSTAT[0] + 0.3, 5.0), (20.6, 5.55), "T-STAT 5'-0\" (beyond)", HEAT, size=4.2, weight="bold", ha="left")
     lead(ax, (22.75, (zb + zt) / 2), (21.9, 6.3), "20 x 8 ABOVE\nTHE DOOR", SUP, size=4.2, weight="bold", ha="center")
-    dim(ax, (a0 - 0.28, 0), (a0 - 0.28, STAND_H), 0.0, "2'-0\"", size=4.2, ext=False)
+    dim(ax, (m.X_C1 - 0.2, 0), (m.X_C1 - 0.2, STAND_H), 0.0, "2'-0\"", size=4.2, ext=False, side=-1)
     dim(ax, (m.X_C1 - 0.2, STAND_H), (m.X_C1 - 0.2, STAND_H + AHU_H), 0.0, "ABOUT 4'-0\"", size=4.2, ext=False, side=-1)
     dim(ax, (m.X_H0 + 0.4, 0), (m.X_H0 + 0.4, 7.0), 0.0, "7'-0\"", size=4.6, ext=False)
     txt(ax, 24.4, 8.85, "1-HOUR FLOOR/CEILING ASSEMBLY", size=4.6, color=GREY, weight="bold")
@@ -965,7 +965,7 @@ def closet_plan(fig, bg, L, B):
     txt(ax, TR_CX, 24.75, "16 x 8", size=4.8, color=SUP, weight="bold", rot=90, z=14)
     txt(ax, TR_CX, 28.6, "10 x 8", size=4.6, color=SUP, weight="bold", rot=90, z=14)
     txt(ax, 23.15, AH_CY - 0.35, "20 x 8\nover doors", size=4.2, color=SUP, weight="bold", z=14, rot=90)
-    txt(ax, 20.72, R1_Y + 0.55, "30 x 30 in.\nservice\nspace", size=4.6, z=14)
+    txt(ax, 20.72, R1_Y - 0.55, "30 x 30 in.\nservice\nspace", size=4.6, z=14)
     dim(ax, (m.X_C0, m.HALL_Y1), (m.X_C1, m.HALL_Y1), 0.12, size=4.8, ext=False)
     dim(ax, (m.X_C1 + 0.5, m.AH_Y0), (m.X_C1 + 0.5, m.HALL_Y1), 0.0, size=4.8, ext=False, side=-1)
     dim(ax, (m.X_C0, m.AHU[1] - 0.12), (m.AHU[0], m.AHU[1] - 0.12), 0.0, inch(m.AHU[0] - m.X_C0), size=4.2, ext=False, side=-1)
@@ -974,7 +974,11 @@ def closet_plan(fig, bg, L, B):
     lead(ax, LS_DROP, (24.2, 24.3), "LINE SET\nDOWN", REF, size=4.2, weight="bold", ha="center")
     lead(ax, (m.AHU[2] - 0.3, 24.75), (25.3, 24.3), "COND.", CND, size=4.2, weight="bold", ha="center")
     lead(ax, (m.X_H1 - 0.1, R1_Y + 0.8), (22.5, 29.3), "R-1 in\nleaf D12", RET, size=4.4, weight="bold", ha="center")
-    lead(ax, (TSTAT[0] + 0.3, TSTAT[1]), (20.6, 27.6), "T", HEAT, size=4.6, weight="bold", ha="center")
+    txt(ax, 20.95, T2_Y, "T-2", size=4.6, color=RET, weight="bold", z=14)
+    for t in ax.texts:                                  # keep arrows of items outside the view from spilling over the sheet
+        if getattr(t, "arrow_patch", None) is not None:
+            t.arrow_patch.set_clip_box(ax.bbox)
+            t.arrow_patch.set_clip_on(True)
     return ax
 
 
@@ -1057,6 +1061,13 @@ def sheet_m201(pdf):
             ["UH-1", "Utility room", "500 W wall heater", "none", "Set 45 °F; circuit CL, Unit A"],
             ["UH-2", "Stair, garage level", "1,500 W wall heater", "none", "Set 50 °F; circuit CL, Unit A"]]
     table(bg, X1, y2, [0.45, 1.15, 1.5, 1.9, 1.7], fans, fs=5.0, rh=0.19)
+
+    for i, ln in enumerate([
+        "UNIT B (details 1 and 2 are drawn for Unit A): the ceiling is 8'-1\", so every soffit is 1'-1\" deep instead of 10 in.; duct sizes are the same.",
+        "The board above is the top-floor ceiling with R-49 on it: no duct, fan or vent goes through it or into the attic. Unit B's line set runs in the",
+        "24 in. Unit B floor trusses. UNIT A: nothing goes through the two-layer rated ceiling; all fans and ducts are in the soffits framed below it.",
+    ]):
+        bg.text(X1, 1.52 - i * 0.15, ln, fontsize=5.2, color=INK, va="center", fontweight="bold" if i == 0 else "normal")
 
     X2 = 7.55
     bg.text(X2, YT + 0.06, f"AIR BALANCE, EACH FLAT ({TOTAL_CFM} cfm)", fontsize=7.0, fontweight="bold", color=INK)

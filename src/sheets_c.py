@@ -90,12 +90,13 @@ APRON_STA = [("West edge", m.OPEN[0], m.OPEN[0] - 0.5), ("Middle", (m.OPEN[0] + 
 APRON_SLOPE = [(n, xo, xp, street_el(xp), 100 * (street_el(xp) - m.EL_GAR) / APRON_LEN) for n, xo, xp in APRON_STA]
 
 # ---- excavation for the garage box ----
-FTG_TOE = (m.FTG_W - m.CONC) / 2            # footing shown centred under the 12 in. wall: 1'-6" each side
-WORK = 2.0                                  # working space outside the footing toe
-EXC_OFF = FTG_TOE + WORK                    # face of the excavation: 3'-6" outside the wall face
+FTG_IN = 1.0                                # footing toe toward the garage (as S-101)
+FTG_OUT = m.FTG_W - m.CONC - FTG_IN         # footing heel outside the wall face, toward the soil: 2'-0" (as S-101)
+WORK = 2.0                                  # working space outside the footing heel
+EXC_OFF = FTG_OUT + WORK                    # face of the excavation: 4'-0" outside the wall face
 EL_EXC = m.EL_FTG_TOP - m.FTG_T             # bottom of footing = bottom of the excavation at the walls
 EL_SUBGR = m.EL_GAR - 1.0                   # bottom of the 6 in. stone under the garage slab
-Y_EXC_S = m.YF - FTG_TOE                    # south edge of the deep dig (front footing toe)
+Y_EXC_S = m.YF - 1.5                        # south edge of the deep dig (front footing edge, as S-101)
 Y_EXC_N = m.Y_GR_O + EXC_OFF
 
 
@@ -104,7 +105,7 @@ def xw_exc(y):
 
 
 EXC = [(xw_exc(Y_EXC_S), Y_EXC_S), (m.XE + EXC_OFF, Y_EXC_S), (m.XE + EXC_OFF, Y_EXC_N), (xw_exc(Y_EXC_N), Y_EXC_N)]
-_IN = FTG_TOE + m.CONC                      # inside edge of the footing, from the outside wall face
+_IN = FTG_IN + m.CONC                       # inside edge of the footing, from the outside wall face
 EXC_IN = [(m.xw_o(m.YF + _IN) + _IN / _CW, m.YF + _IN), (m.XE - _IN, m.YF + _IN),
           (m.XE - _IN, m.Y_GR_O - _IN), (m.xw_o(m.Y_GR_O - _IN) + _IN / _CW, m.Y_GR_O - _IN)]
 EL_SOG_SUBGR = m.EL_SLAB_A - (5 + 2 + 4) / 12.0     # Unit A slab 5 in. + R-10 (2 in.) + 4 in. stone
@@ -192,13 +193,13 @@ def stem_ftg_bottom(x, y):
 
 
 # ---- drains ----
-FD_OFF = FTG_TOE + 0.5                      # French drain centre line: beside the footing toe, 2'-0" from the wall face
+FD_OFF = 0.75                               # French drain centre line: 9 in. outside the wall face, on the footing heel (as S-102)
 _fdw = lambda y: m.xw_o(y) - FD_OFF / _CW   # noqa: E731
 FD = [(_fdw(m.YF), m.YF), (_fdw(m.Y_GR_O + FD_OFF), m.Y_GR_O + FD_OFF), (m.XE + FD_OFF, m.Y_GR_O + FD_OFF), (m.XE + FD_OFF, m.YF)]
 TD_Y = m.YF - 0.6                           # trench drain line (brief)
-J1 = (m.XE + FD_OFF, m.YF - 2.6)            # junction cleanout: trench drain and storm line join the solid outlet pipe
+J1 = (46.83, m.YF - 2.6)                    # junction cleanout: trench drain and storm line join the solid outlet pipe
 PIT_R = 0.75                                # 18 in. meter pit
-TAIL = [FD[3], J1, (m.XE + FD_OFF, 2.2), (m.WATER_METERS[0][0] - PIT_R - 0.5, 0.3),
+TAIL = [FD[3], J1, (J1[0], 2.2), (m.WATER_METERS[0][0] - PIT_R - 0.5, 0.3),
         (m.WATER_METERS[0][0] - PIT_R - 0.5, m.WATER_METERS[0][1] - 1.9), m.DRAIN_OUT]     # solid pipe, jogs round the meter pit
 
 
@@ -209,18 +210,24 @@ def _cum(pts):
     return out
 
 
-FD_RUN = FD + TAIL[1:]
-FD_STA = _cum(FD_RUN)
+FD_RUN = FD + [J1]
+FD_STA = _cum(FD + [m.DRAIN_OUT])           # stationing as S-102: corners, then straight to the outlet
 FD_LEN = FD_STA[-1]
 FD_SLOPE = (m.EL_DRAIN_HI - m.EL_DRAIN_OUT) / FD_LEN
 
 
 def fd_inv(i):
+    """Invert at cleanout i (0 to 3 = CO-1 to CO-4, 4 = junction J-1)."""
+    if i == 4:
+        return m.EL_DRAIN_HI - FD_SLOPE * (FD_STA[3] + math.dist(FD[3], J1))
     return m.EL_DRAIN_HI - FD_SLOPE * FD_STA[i]
 
 
-EL_TD_OUT = m.EL_GAR - 1.0                  # trench drain outlet invert: 12 in. below the grate (assumed channel depth)
-X_S1 = 46.35                                # storm line S1 down the east side yard (solid)
+EL_TD = m.EL_GAR - (m.Y_GR_I - (m.YF - 0.6)) / 8 / 12     # slab at the trench drain: 1/8 in./ft down from the rear wall (as S-103)
+
+
+EL_TD_OUT = EL_TD - 1.0                     # trench drain outlet invert: 12 in. below the grate (assumed channel depth)
+X_S1 = 46.65                                # storm line S1 down the east side yard (solid)
 UD_OFF = 1.0                                # upper drain behind the rear stem wall
 UD_DEPTH = 3.0                              # its invert below finish grade (at the stem footing)
 S1 = [rear_pt(m.REAR_WALL_LEN + 1.0, UD_OFF), (X_S1, rear_pt(m.REAR_WALL_LEN + 1.0, UD_OFF)[1] - 1.0), (X_S1, J1[1] + 1.6), J1]
@@ -233,7 +240,7 @@ RL_W = [(m.xw_o(40.0) - RL_OFF / _CW, 40.0), (m.xw_o(m.YF) - RL_OFF / _CW, m.YF)
 X_WA, X_WB = 47.4, m.WATER_METERS[1][0]
 WATER_A = [m.WATER_METERS[0], (m.WATER_METERS[0][0], m.WATER_METERS[0][1] + PIT_R), (X_WA, 0.6), (X_WA, m.WATER_ENTRY[1]), m.WATER_ENTRY]
 WATER_B = [m.WATER_METERS[1], (m.WATER_METERS[1][0], m.WATER_METERS[1][1] + PIT_R), (X_WB, 0.6), (X_WB, m.WATER_ENTRY[1] + 0.67), (m.XE, m.WATER_ENTRY[1] + 0.67)]
-X_ET, X_TEL = 45.9, 45.55                                  # electric and telecom conduits
+X_ET, X_TEL = 46.25, 45.9                                  # electric and telecom conduits
 
 # ---- trash bay: what four carts need (catalogue 96 gal cart, 26 x 34 in.) ----
 CART_W, CART_D = 26 / 12.0, 34 / 12.0
@@ -243,7 +250,7 @@ BAY = m.TRASH if BAY_OK else (m.TRASH[2] - BAY_NEED[0], m.TRASH[1], m.TRASH[2], 
 
 FENCE_H = 6.0
 MEAN_ROOF = ((m.EL_PLATE + m.HEEL) + m.EL_RIDGE_HI) / 2             # mid-height of the roof, highest ridge
-BLDG_H = MEAN_ROOF - m.avg_grade()
+BLDG_H = m.zoning_height()
 PORCH_W = m.PORCH[2] - m.PORCH[0]
 HP_CLEAR = min((hx - m.HP_SIZE[1] / 2 - west_x(hy)) * _CW for hx, hy in m.HP)
 
@@ -469,11 +476,7 @@ def new_building(ax, lw=1.8, fill=PAPER, garage_line=True, z=8):
 
 
 def sheet(number, scale_txt, blocks):
-    fig, bg = new_sheet(number, TITLE[number], scale_txt, notes(blocks))
-    for t in bg.texts:                        # common.new_sheet does not wrap: shrink a long title to fit its box
-        if t.get_text() == TITLE[number].upper() and len(TITLE[number]) > 27:
-            t.set_fontsize(9.6 * 27 / len(TITLE[number]))
-    return fig, bg
+    return new_sheet(number, TITLE[number], scale_txt, notes(blocks))
 
 
 # ----------------------------------------------------------------------------
@@ -549,7 +552,7 @@ def sheet_c101(pdf):
         "1  Remove the house complete. The outline shown is the GIS footprint (about "
         f"{OLD_HOUSE.area:.0f} sf); the survey fixes its true position.",
         "2  Remove all foundations, footings, slabs, steps and walks on the lot to full depth. The new "
-        "excavation goes 5 to 14 ft below this ground (C-104): leave nothing buried.",
+        f"excavation goes {elev(*EXC[1]) - EL_EXC:.0f} to {elev(*EXC[3]) - EL_EXC:.0f} ft below this ground (C-104): leave nothing buried.",
         "3  Water and sewer: MUB shuts off. Cap both services at the street side of the front lot line. "
         "Service positions are not known: locate them first and record the capped ends for C-106.",
         "4  Electric and telecom: the utility removes the service drop and meter before work starts. "
@@ -822,7 +825,7 @@ def sheet_c103(pdf):
             "Three stalls side by side, each one move from the street. No tandem parking, no doors, "
             "no kerbs or wheel stops.",
             f"Opening {ftin(m.OPEN_W)} wide, {ftin(m.OPEN_CLEAR_H)} clear under the steel beam; "
-            f"{ftin(m.CLG_GAR)} clear inside.",
+            "9'-2\" clear inside.",
             "One steel post, on the line between stalls 2 and 3. No wall or column stands in front of any stall.",
             f"Cars back out across the {ftin(APRON_LEN)} apron into the lane: {ftin(m.YF - PAVE_S)} from the opening "
             "to the far pavement edge.",
@@ -930,7 +933,9 @@ def sheet_c103(pdf):
         f"The street falls 11.4 % along the frontage, so the apron is a warped surface. At the west edge the street is "
         f"{APRON_SLOPE[0][3] - m.EL_GAR:.1f} ft ABOVE the garage floor and that side of the apron drains TOWARD the building: "
         "the trench drain across the opening (key 7) must take it. See C-105.",
-        "Street levels are from LiDAR. The survey and the City driveway permit fix the final apron grades.",
+        f"Street levels are from LiDAR and the slopes are taken from EL {m.EL_GAR:.1f}. S-103 sets the slab at the trench drain "
+        f"at EL {EL_TD:.2f}, which changes each slope by about {100 * (m.EL_GAR - EL_TD) / APRON_LEN:.0f} %. The survey and the City "
+        "driveway permit fix the final apron grades.",
     ], fs=5.5, hang="")
     y = block(bg, xr, y, wr, "Keyed notes", [
         f"1  West wing wall. The apron necks from {ftin(m.OPEN_W)} at the opening to {ftin(m.APRON_W_ROW)} at the lot line "
@@ -1051,7 +1056,7 @@ def sheet_c104(pdf):
     for a, b in (STEM_N, STEM_W):
         line(ax, [a, b], color=CUT, lw=3.2, z=5.6, alpha=0.55)
     txt(ax, 24.0, 21.5, f"GARAGE BOX\nsubgrade EL {EL_SUBGR:.1f} under the slab", size=5.4, weight="bold", color=CUT, z=12, box=True)
-    txt(ax, 24.0, 17.6, f"footing trench EL {EL_EXC:.1f} inside the dashed line,\nall round ({ftin(m.FTG_W)} footing + {ftin(WORK)} working space)",
+    txt(ax, 24.0, 17.6, f"footing trench EL {EL_EXC:.1f} inside the dashed line,\nall round ({ftin(FTG_OUT)} footing heel + {ftin(WORK)} working space)",
         size=4.8, color=CUT, z=12, box=True)
     txt(ax, 24.3, 3.0, f"APRON CUT\nto 12 in. below the apron surface", size=4.8, color=CUT, z=12, box=True)
     txt(ax, 19.0, 35.3, f"UNIT A SLAB ON GRADE: cut to EL {EL_SOG_SUBGR:.1f}", size=4.6, color=CUT, z=12, rot=m.REAR_ANGLE, box=True)
@@ -1104,8 +1109,9 @@ def sheet_c104(pdf):
             "386 Forest Ave would allow an open cut at the rear.",
         ]),
         ("For the engineer to decide", [
-            f"The footing is drawn centred ({ftin(FTG_TOE)} toe). A footing with its toe inside (L-shape) on the west, "
-            "east and at the NE corner moves the cut face away from the lot lines.",
+            f"The footing heel stands {ftin(FTG_OUT)} outside the wall (S-101). With {ftin(WORK)} of working space the cut face is "
+            f"{ftin(gap_side)} from the side lot lines and {gap_ne * 12:.0f} in. from the rear line at the NE corner. An L-shaped "
+            "footing (no heel) or less working space on those faces moves it back.",
             "Part of the Unit A slab on grade and its stem wall sit on backfill beside the garage wall: use "
             "compacted engineered fill or step the stem footing down to the garage wall (S-101).",
         ]),
@@ -1119,9 +1125,9 @@ def sheet_c104(pdf):
     bg.text(xr, ytop - 0.17, "1/4\" = 1'-0\". East side is the mirror image against 441 Baird St.", fontsize=4.9, color=GREY, va="top")
     ys = 20.0
     xl, xo, xe = west_x(ys), m.xw_o(ys), xw_exc(ys)
-    xi, xt0, xt1 = xo + m.CONC / _CW, xo - FTG_TOE / _CW, xo + (FTG_TOE + m.CONC) / _CW
+    xi, xt0, xt1 = xo + m.CONC / _CW, xo - FTG_OUT / _CW, xo + (FTG_IN + m.CONC) / _CW
     xn = xl - 1.0
-    sv = (xl - 3.4, 909.6, xo + 6.8, 930.0)
+    sv = (xl - 3.4, EL_EXC - 2.6, xo + 6.8, 930.0)
     sx = plan_axes(fig, xr, ytop - 0.32 - (sv[3] - sv[1]) / 4.0, (sv[0], sv[2]), (sv[1], sv[3]), 4.0)
     g = lambda x: elev(x, ys)  # noqa: E731
     xs = np.linspace(sv[0], xe, 30)
@@ -1137,7 +1143,7 @@ def sheet_c104(pdf):
     rect(sx, xn - 1.3, g(xn) - 2.6, xn + 0.35, g(xn) - 1.8, fc="none", ec=GREY, lw=0.6, ls=(0, (2, 2)), z=3)
     txt(sx, xn - 0.5, g(xn) - 3.4, "footing\ndepth ?", size=4.4, color=GREY)
     txt(sx, xn - 1.5, g(xn) + 3.6, "442 BAIRD ST\nhouse wall", size=4.6, color=GREY, rot=90)
-    line(sx, [(xl, sv[1] + 1.9), (xl, sv[3])], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=6)
+    line(sx, [(xl, sv[1] + 2.2), (xl, sv[3])], color=ACCENT, lw=1.0, ls=(0, (9, 2.5, 1.5, 2.5)), z=6)
     txt(sx, xl + 0.25, sv[3] - 1.0, "LOT LINE", size=4.6, color=ACCENT, ha="left", weight="bold")
     # shoring
     rect(sx, xe - 0.67, sv[1], xe, g(xe) + 0.5, fc="#f3c9c4", ec=SHORE, lw=0.8, z=5)
@@ -1151,14 +1157,14 @@ def sheet_c104(pdf):
     rect(sx, xo, m.EL_B1_TOP, sv[2], m.EL_A, fc="#f4f1ea", ec=GREY, lw=0.4, z=5)
     rect(sx, xo, m.EL_A, xo + m.EXT, sv[3], fc="#f4f1ea", ec=GREY, lw=0.4, z=5)
     fdx = xo - FD_OFF / _CW
-    zfd = m.EL_DRAIN_HI - FD_SLOPE * (ys - m.YF) / _CW
+    zfd = max(m.EL_FTG_TOP, m.EL_DRAIN_HI - FD_SLOPE * (ys - m.YF) / _CW)
     sx.add_patch(Circle((fdx, zfd + 0.17), 0.17, fc=PAPER, ec=BLUE, lw=0.9, zorder=7))
     # 1:1 line
     line(sx, [(xe, EL_EXC), (sv[0], EL_EXC + (xe - sv[0]) / LAY_BACK)], color=GREY, lw=0.6, ls=(0, (5, 3)), z=4.5)
     txt(sx, sv[0] + 0.15, EL_EXC + 2.1, "1:1 open cut would cross\nthe lot line: not allowed", size=4.4, color=GREY, ha="left", rot=45, va="bottom")
     # dimensions
-    yb = 911.0
-    for a, b, lab in ((xn, xl, "±1'"), (xl, xe, ftin(gap_side)), (xe, xt0, ftin(WORK)), (xt0, xo, ftin(FTG_TOE)), (xo, xi, "12\"")):
+    yb = EL_EXC - 1.3
+    for a, b, lab in ((xn, xl, "±1'"), (xl, xe, ftin(gap_side)), (xe, xt0, ftin(WORK)), (xt0, xo, ftin(FTG_OUT)), (xo, xi, "12\"")):
         dimb(sx, (a, yb), (b, yb), 0, lab, ext=False, size=4.4, side=-1)
         line(sx, [(a, yb - 0.3), (a, yb + 0.9)], color=GREY, lw=0.3, z=7)
     line(sx, [(xi, yb - 0.3), (xi, yb + 0.9)], color=GREY, lw=0.3, z=7)
@@ -1168,7 +1174,7 @@ def sheet_c104(pdf):
     txt(sx, sv[2] - 0.15, m.EL_A + 0.45, f"UNIT A FLOOR EL {m.EL_A:.1f}", size=4.6, ha="right", weight="bold")
     txt(sx, sv[2] - 0.15, EL_EXC - 0.5, f"bottom of footing EL {EL_EXC:.1f}", size=4.4, ha="right", color=CUT)
     lead(sx, (xe - 0.3, g(xe) - 3.0), (xl - 3.2, 918.3), "SOLDIER PILE AND\nLAGGING or equal,\nengineer-designed", size=4.5, color=SHORE, box=True)
-    lead(sx, (fdx, zfd + 0.3), (xo + 4.9, 917.0), "French drain\n(C-105)", size=4.4, color=BLUE, ha="center")
+    lead(sx, (fdx + 0.1, zfd + 0.3), (xo + 4.9, 917.0), "French drain on the\nfooting heel (S-102)", size=4.4, color=BLUE, ha="center")
     lead(sx, (xo + 0.5, 921.9), (xo + 4.9, 921.6), "12 in. concrete\nwall (S-102)", size=4.4, ha="center")
     lead(sx, ((xe + xo) / 2, 920.0), (xo + 4.2, 928.3), "free-draining backfill", size=4.4, ha="center")
     txt(sx, xl + 0.2, g(xl) + 0.5, "existing ground", size=4.3, color=EARTH, ha="left")
@@ -1246,14 +1252,14 @@ def storm_lines(ax, color=STORM, lw=1.1, marks=True):
 def sheet_c105(pdf):
     L = m.REAR_WALL_LEN
     out_fall = m.EL_DRAIN_OUT - street_el(m.DRAIN_OUT[0])
-    slab_rise = (m.Y_GR_I - TD_Y) / 8.0
+    slab_rise = (m.EL_GAR - EL_TD) * 12
     ud1, ud2 = fg_rear(0.0) - UD_DEPTH, fg_rear(L) - UD_DEPTH
     ey0, ey1 = elev(47.4, 30.0), elev(47.4, 10.0)
     wy0, wy1 = elev(m.xw_o(40.0) - 2.6, 40.0), elev(m.xw_o(m.YF) - 2.6, m.YF)
     fig, bg = sheet("C-105", "1/8\" = 1'-0\"  ·  section 1/4\" = 1'-0\"", [
         ("Finish grades", [
-            f"Garage slab EL {m.EL_GAR:.1f} at the opening, rising 1/8 in./ft to the rear wall (about {slab_rise:.1f} in.), "
-            "so the whole slab drains to the trench drain.",
+            f"Garage slab EL {m.EL_GAR:.2f} at the rear wall, falling 1/8 in./ft ({slab_rise:.1f} in.) to EL {EL_TD:.2f} at the "
+            "trench drain (S-103).",
             f"Unit A floor EL {m.EL_A:.1f}. Entry landing EL {m.EL_GAR:.1f}, level with the garage floor.",
             "Concrete (stem wall or garage wall) stops 8 in. above finish grade all round; wood framing starts above that.",
             "Side yards follow the existing ground and fall to the street. Slope the ground away from the walls at 5 % "
@@ -1276,9 +1282,9 @@ def sheet_c105(pdf):
     line(ax, [m.OUT_L[0], m.OUT_L[3]], color=GREY, lw=0.5, z=8.2)
     site_work(ax)
     # floors and slab
-    txt(ax, 24.3, 21.5, f"GARAGE SLAB  EL {m.EL_GAR:.1f} at the opening", size=5.4, weight="bold", z=12)
+    txt(ax, 24.3, 21.5, f"GARAGE SLAB  EL {m.EL_GAR:.2f} at the rear wall", size=5.4, weight="bold", z=12)
     arrow(ax, (24.3, 19.6), (24.3, 13.2), color=BLUE)
-    txt(ax, 25.0, 16.6, "1/8 in./ft\nto the trench drain", size=4.8, color=BLUE, ha="left", z=12)
+    txt(ax, 25.0, 16.6, f"1/8 in./ft to the trench\ndrain, EL {EL_TD:.2f}", size=4.8, color=BLUE, ha="left", z=12)
     txt(ax, 22.0, 34.6, f"UNIT A SLAB ON GRADE  EL {m.EL_A:.1f}", size=4.8, weight="bold", z=12, rot=m.REAR_ANGLE)
     txt(ax, 40.4, 6.7, f"LANDING\nEL {m.EL_GAR:.1f}", size=4.4, z=12)
     # apron grades
@@ -1325,9 +1331,9 @@ def sheet_c105(pdf):
     flow(ax, rear_pt(0.0, UD_OFF), S1[0], t=0.45)
     flow(ax, TD_PIPE[0], TD_PIPE[1])
     flow(ax, RL_W[0], RL_W[1])
-    labs = [(FD[0], f"FD-1  {fd_inv(0):.1f}", (-3.4, -1.4)), (FD[1], f"FD-2  {fd_inv(1):.1f}", (-3.6, 1.2)),
-            (FD[2], f"FD-3  {fd_inv(2):.1f}", (8.6, 4.0)), (FD[3], f"FD-4  {fd_inv(3):.1f}", (7.6, 0.6)),
-            (J1, f"J-1  {fd_inv(4):.1f}", (7.6, -0.4))]
+    labs = [(FD[0], f"CO-1  {fd_inv(0):.2f}", (-3.4, -1.4)), (FD[1], f"CO-2  {fd_inv(1):.2f}", (-3.6, 1.2)),
+            (FD[2], f"CO-3  {fd_inv(2):.2f}", (8.6, 4.0)), (FD[3], f"CO-4  {fd_inv(3):.2f}", (7.6, 0.6)),
+            (J1, f"J-1  {fd_inv(4):.2f}", (7.6, -0.4))]
     for pt, lab, (dx, dy) in labs:
         lead(ax, pt, (pt[0] + dx, pt[1] + dy), lab, size=4.6, color=STORM, ha="center", weight="bold", head="-")
     lead(ax, m.DRAIN_OUT, (54.5, -9.3), f"OUTLET  INV EL {m.EL_DRAIN_OUT:.1f}\nstone splash pad", size=4.8, color=STORM, ha="center", weight="bold")
@@ -1366,10 +1372,10 @@ def sheet_c105(pdf):
             "before the garage floor level is fixed.", fontsize=5.6, color=ACCENT, va="center", linespacing=1.3)
     strip(bg, [
         ("Foundation drains", [
-            f"FD: 4 in. perforated pipe in washed stone and filter fabric beside the footing of the three buried walls, "
-            f"{ftin(FD_OFF)} from the wall face. One run, FD-1 round the back to the outlet: {FD_LEN:.0f} ft at "
-            f"{100 * FD_SLOPE:.2f} %. That is flat: set it with a laser. Solid pipe from FD-4 down.",
-            "Cleanout risers to grade at FD-1 to FD-4 and J-1.",
+            f"FD: 4 in. perforated pipe in washed stone and filter fabric at the footing of the three buried walls, "
+            f"{FD_OFF * 12:.0f} in. from the wall face (S-102). One run, CO-1 round the back to the outlet: {FD_LEN:.0f} ft at "
+            f"{100 * FD_SLOPE:.2f} %. That is flat: set it with a laser. Solid pipe from CO-4 down.",
+            "Cleanout risers to grade at CO-1 to CO-4 and J-1.",
         ]),
         ("Surface and roof water", [
             "TD, S1 and the south-east leader join the solid outlet pipe at J-1, with the wyes pointing downstream. "
@@ -1424,11 +1430,11 @@ def sheet_c105(pdf):
     bg.text(xr, y, "DRAIN SCHEDULE (preliminary inverts)", fontsize=6.4, fontweight="bold", va="top")
     gnd = lambda p: elev(*p)  # noqa: E731
     rows = [("Mark", "What and where", "Invert EL", "Ground EL")]
-    for i, nm in enumerate(("FD-1  SW corner, high point", "FD-2  NW corner", "FD-3  NE corner", "FD-4  SE corner, solid from here", "J-1   junction cleanout")):
-        rows.append((nm[:4].strip(), nm[6:], f"{fd_inv(i):.1f}", f"{gnd(FD_RUN[i]):.1f}"))
+    for i, nm in enumerate(("CO-1  SW corner, high point", "CO-2  NW corner", "CO-3  NE corner", "CO-4  SE corner, solid from here", "J-1   junction cleanout")):
+        rows.append((nm[:4].strip(), nm[6:], f"{fd_inv(i):.2f}", f"{gnd(FD_RUN[i]):.1f}"))
     rows += [
-        ("OUT", "Outlet at the street edge", f"{m.EL_DRAIN_OUT:.1f}", f"{gnd(m.DRAIN_OUT):.1f}"),
-        ("TD", f"Trench drain: grate {m.EL_GAR:.1f}, outlet", f"{EL_TD_OUT:.1f}", "-"),
+        ("OUT", "Outlet at the street edge", f"{m.EL_DRAIN_OUT:.2f}", f"{gnd(m.DRAIN_OUT):.1f}"),
+        ("TD", f"Trench drain: grate {EL_TD:.2f}, outlet", f"{EL_TD_OUT:.1f}", "-"),
         ("UD-1", "Upper drain, NW corner", f"{ud1:.1f}", f"{gnd(rear_pt(0, UD_OFF)):.1f}"),
         ("UD-2", "Upper drain, NE corner, solid S1 from here", f"{ud2:.1f}", f"{gnd(S1[0]):.1f}"),
         ("S1", "Storm pipe, east yard, 18 in. cover min.", "to J-1", "-"),
@@ -1494,7 +1500,7 @@ def sheet_c106(pdf):
     lead(ax, (48.6, -1.6), (55.5, -3.4), "MUB METER PITS A, B\n(utility-owned, in the R.O.W.)", size=4.8, color=WATER, ha="center", weight="bold")
     lead(ax, (X_WB, 21.0), (55.5, 23.4), f"W-A, W-B: two 1 in. water\nservices, {m.WATER_DEPTH * 12:.0f} in. cover,\n7 in. apart in one trench", size=4.8, color=WATER, ha="center")
     lead(ax, (m.XE - 0.5, ye + 0.3), (33.5, 31.6), f"WATER ENTRY, centre line EL {m.EL_WATER_ENTRY:.1f}: two sleeved cores through the\n"
-         f"12 in. wall, sealed both faces, {ftin(m.Y_GR_O - ye)} south of the rear wall face.\nGround cover here {cover_wall:.1f} ft. Meters' shut-offs and PRVs inside (P-101).",
+         f"12 in. wall, sealed both faces, {ftin(m.Y_GR_O - ye)} south of the rear wall face.\nGround cover here {cover_wall:.1f} ft. Main shut-offs and pressure-reducing valves inside (P-101).",
          size=4.6, color=WATER, ha="center")
     dimb(ax, (m.XE, 24.0), (X_WA, 24.0), 0, ftin(X_WA - m.XE), ext=False, size=4.4, color=WATER)
     dimb(ax, (X_WB, 15.0), (50.0, 15.0), 0, ftin(50.0 - X_WB), ext=False, size=4.4, color=WATER)
@@ -1585,14 +1591,14 @@ def sheet_c106(pdf):
     yc = 11.5
     g = lambda x: elev(x, yc)  # noqa: E731
     f_ = 8 / 3.0
-    sv = (43.0, 911.2, 52.2, 920.6)
+    sv = (43.0, 910.6, 52.2, 920.6)
     hs = (sv[3] - sv[1]) / f_
     sx = plan_axes(fig, xr, y - 0.36 - hs, (sv[0], sv[2]), (sv[1], sv[3]), f_)
     xs = np.linspace(m.XE, sv[2], 30)
     poly(sx, [(m.XE, sv[1])] + [(x, g(x)) for x in xs] + [(sv[2], sv[1])], fc="#efe6da", ec="none", z=1)
     line(sx, [(x, g(x)) for x in xs], color=EARTH, lw=1.0, z=4)
     rect(sx, m.XE - m.CONC, m.EL_FTG_TOP, m.XE, sv[3], fc=CONC, ec=INK, lw=0.6, z=6)
-    rect(sx, m.XE - m.CONC - FTG_TOE, EL_EXC, m.XE + FTG_TOE, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=6)
+    rect(sx, m.XE - m.CONC - FTG_IN, EL_EXC, m.XE + FTG_OUT, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=6)
     rect(sx, sv[0], m.EL_GAR - 0.5, m.XE - m.CONC, m.EL_GAR, fc=CONC, ec=INK, lw=0.5, z=6)
     xface = m.XE + EXC_OFF
     line(sx, [(xface, EL_EXC), (xface, g(xface))], color=SHORE, lw=1.2, ls=(0, (4, 2)), z=5)
@@ -1600,20 +1606,19 @@ def sheet_c106(pdf):
     rect(sx, 50.0 + 1.0, g(51.0) - 0.1, 50.0 + 1.67, sv[3], fc="#d9dce0", ec=GREY, lw=0.6, z=3)
     k4 = (yc - m.YF) / (FD[2][1] - m.YF)
     zfd = fd_inv(3) + (fd_inv(2) - fd_inv(3)) * k4
-    items = [(X_TEL, g(X_TEL) - 2.0, 0.08, POWER, "T"), (X_ET, g(X_ET) - 2.5, 0.13, POWER, "E"),
-             (X_S1, g(X_S1) - 2.0, 0.25, STORM, "S1"), (m.XE + FD_OFF, zfd + 0.17, 0.17, STORM, "FD"),
+    items = [(m.XE + FD_OFF, max(zfd, m.EL_FTG_TOP) + 0.17, 0.17, STORM, "FD"), (X_TEL, g(X_TEL) - 2.0, 0.08, POWER, "T"),
+             (X_ET, g(X_ET) - 2.5, 0.13, POWER, "E"), (X_S1, g(X_S1) - 2.0, 0.25, STORM, "S1"),
              (X_WA, g(X_WA) - m.WATER_DEPTH - 0.05, 0.07, WATER, "W-A"), (X_WB, g(X_WB) - m.WATER_DEPTH - 0.05, 0.07, WATER, "W-B")]
     for (x_, z_, r_, c_, lab) in items:
         sx.add_patch(Circle((x_, z_), r_, fc=PAPER if r_ > 0.1 else c_, ec=c_, lw=0.9, zorder=8))
         line(sx, [(x_, z_ + r_), (x_, g(x_))], color=c_, lw=0.3, ls=(0, (2, 2)), z=5)
     ytag = sv[3] - 0.45
-    for (x_, z_, r_, c_, lab), dx in zip(items, (-0.35, 0.0, 0.1, 0.1, 0.0, 0.25)):
+    for (x_, z_, r_, c_, lab), dx in zip(items, (-0.3, -0.1, 0.1, 0.35, 0.0, 0.3)):
         txt(sx, x_ + dx, ytag, lab, size=4.6, color=c_, weight="bold", box=True)
         line(sx, [(x_, g(x_)), (x_ + dx, ytag - 0.25)], color=c_, lw=0.3, z=5)
     yb = sv[1] + 0.45
-    chain = [m.XE, X_ET, m.XE + FD_OFF, X_WA, X_WB, 50.0]
-    for a, b in zip(chain, chain[1:]):
-        dimb(sx, (a, yb), (b, yb), 0, f"{round((b - a) * 12)}\"", ext=False, size=4.3, side=-1)
+    for a, b in ((m.XE, X_WA), (X_WA, X_WB), (X_WB, 50.0)):
+        dimb(sx, (a, yb), (b, yb), 0, ftin(b - a), ext=False, size=4.3, side=-1)
     txt(sx, 50.0 - 0.1, sv[1] + 1.25, "LOT LINE", size=4.3, color=ACCENT, ha="right", weight="bold")
     txt(sx, 51.35, 919.4, "441 BAIRD ST", size=4.3, color=GREY, rot=90)
     txt(sx, sv[0] + 0.1, m.EL_GAR + 0.3, f"EL {m.EL_GAR:.1f}", size=4.4, ha="left", va="bottom")
@@ -1621,10 +1626,10 @@ def sheet_c106(pdf):
     # depth list beside the section
     xt = xr + (sv[2] - sv[0]) / f_ + 0.12
     block(bg, xt, y - 0.42, SHEET_W - MARGIN - TB_W - 0.12 - xt, "Depth to the pipe", [
-        "T telecom conduit: 24 in.",
-        "E electric conduit: 30 in., or the power company's standard.",
-        "S1 storm, 6 in. solid: 24 in. here, 18 in. min.",
-        f"FD footing drain, 4 in.: INV EL {zfd:.1f}, beside the footing.",
+        f"FD footing drain, 4 in.: INV EL {zfd:.2f}, at the footing heel (S-102), {(FD_OFF) * 12:.0f} in. from the wall.",
+        f"T telecom conduit: 24 in., {(X_TEL - m.XE) * 12:.0f} in. from the wall.",
+        f"E electric conduit: 30 in. or the power company's standard, {(X_ET - m.XE) * 12:.0f} in. from the wall.",
+        f"S1 storm, 6 in. solid: 24 in. here, 18 in. min., {(X_S1 - m.XE) * 12:.0f} in. from the wall.",
         f"W-A, W-B water, 1 in.: {m.WATER_DEPTH * 12:.0f} in. to the top of the pipe.",
         "Keep 12 in. between water and electric. All of it sits in the backfill inside the shoring face.",
     ], fs=5.0, hang="", gap=0.03, rule=False)

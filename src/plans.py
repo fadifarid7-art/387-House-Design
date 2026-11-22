@@ -158,7 +158,7 @@ def draw_door(ax, d, st, tag=False):
 
 def draw_window(ax, wall_, s0, s1, st, tag=None):
     q = m.win_quad(wall_, s0, s1)
-    poly(ax, q, fc=PAPER, ec="none", z=5)
+    poly(ax, q, fc=PAPER, ec="none", z=5.4 if wall_ == "N" else 5)
     mid0 = ((q[0][0] + q[3][0]) / 2, (q[0][1] + q[3][1]) / 2)
     mid1 = ((q[1][0] + q[2][0]) / 2, (q[1][1] + q[2][1]) / 2)
     for a, b in ((q[0], q[1]), (mid0, mid1), (q[3], q[2])):

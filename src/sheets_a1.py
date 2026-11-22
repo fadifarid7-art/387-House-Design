@@ -223,7 +223,6 @@ def sheet_a101(pdf):
         ("Outside", [
             "Bike hooks on the west wall at the back.",
             "Trash bay: 4 carts, screened, on the lot.",
-            "Nothing in the right-of-way but the apron.",
         ]),
         ("To confirm", [
             "Wall, footing, beam sizes: engineer.",
@@ -309,7 +308,7 @@ def sheet_a101(pdf):
     leader(ax, (m.XE, 27.0), (50.9, 27.0), f"UTILITY ROOM (heated)\n{fi(util_w)} x {fi(util_d)} clear\nDoor swings in.\nBoth water services\nenter here (P-101)", arrow=False, **T)
     leader(ax, (m.XE_GI - 0.6, m.UTIL[2] - m.CMU / 2), (50.9, 23.2), f"{inch(m.CMU)} CONCRETE OR\nGROUTED BLOCK:\nlobby wall and stair /\nutility wall (S-101)", **T)
     leader(ax, (m.XE, 15.5), (50.9, 15.5), f"COMMON STAIR\nflights {fi(flight)} wide\n{lo['risers']} risers to Unit A", arrow=False, **T)
-    leader(ax, (m.XE - 1.0, 1.9), (46.4, 4.9), "TRASH BAY,\n4 CARTS, SCREENED\n(C-107)", **T)
+    leader(ax, (m.XE - 1.0, 1.9), (46.4, 4.9), "TRASH BAY,\n4 CARTS,\nSCREENED\n(C-107)", **T)
     txt(ax, 40.9, 4.4, f"ENTRY LANDING\nEL {m.EL_GAR:.1f}, level", size=4.2)
     leader(ax, (14.5, m.YF - 0.6), (0.7, 12.9), "TRENCH DRAIN ACROSS\nTHE OPENING (C-105)", ha="right", color=BLUE, **T)
     leader(ax, ((m.WING_W[0][0] + m.WING_W[1][0]) / 2, 5.3), (7.6, 3.3), "WING WALL RETAINS\nTHE FRONT YARD (C-107)", ha="right", **T)
@@ -432,8 +431,8 @@ def unit_names(ax, unit):
     for i, (x0, y0, x1, y1) in enumerate(m.TUBS):
         txt(ax, x0 + 0.72, (y0 + y1) / 2, f"BATH {i + 1}", size=4.4, weight="bold", rot=90)
     txt(ax, 21.42, 23.6, "HALL", size=4.2, color=GREY, rot=90)
-    txt(ax, 10.45, 23.35, f"CLOSET {fi(m.CL_Y - m.Y2)} deep", size=4.2, color=GREY)
-    txt(ax, 10.6, 24.75, f"CLOSET {fi(m.Y3 - m.CL_Y - m.PART)} deep", size=4.2, color=GREY)
+    txt(ax, 10.45, 23.35, f"CL. {fi(m.CL_Y - m.Y2)} deep", size=4.2, color=GREY)
+    txt(ax, 10.6, 24.75, f"CL. {fi(m.Y3 - m.CL_Y - m.PART)} deep", size=4.2, color=GREY)
     txt(ax, 28.05, 32.3, f"CLOSET\n{fi(m.C3_X - m.X_B3)} wide", size=4.2, color=GREY)
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
 
@@ -705,7 +704,7 @@ def sheet_a104(pdf):
     txt(ax, 34.4, 16.0, "LIVING / KITCHEN", size=5.0, weight="bold")
     txt(ax, 23.7, 11.75, "KITCHEN", size=4.4, weight="bold")
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
-    txt(ax, m.ISLAND[2] + 0.5, (m.ISLAND[1] + m.ISLAND[3]) / 2, "ISLAND 60 x 37 TOP", size=4.2, color=GREY, rot=90, z=9)
+    txt(ax, m.ISLAND[2] + 0.5, (m.ISLAND[1] + m.ISLAND[3]) / 2, f"ISLAND {round((m.ISLAND_TOP[3] - m.ISLAND_TOP[1]) * 12)} x {round((m.ISLAND_TOP[2] - m.ISLAND_TOP[0]) * 12)} TOP", size=4.2, color=GREY, rot=90, z=9)
     txt(ax, *m.WH_UNIT, "WH", size=4.2, z=8, weight="bold")
     txt(ax, (m.FRIDGE[0] + m.FRIDGE[2]) / 2, (m.FRIDGE[1] + m.FRIDGE[3]) / 2, "REF\n36 in.", size=4.2, color=GREY, z=8)
     txt(ax, (m.WD[0] + m.WD[2]) / 2, (m.WD[1] + m.WD[3]) / 2, "W/D", size=4.2, color=GREY, z=8)
