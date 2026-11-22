@@ -412,8 +412,8 @@ def front_labels(ax, xl, yl):
         size=4.4, color=ACCENT)
     line(ax, [(XE - 9, zm), (XE + 4.4, zm)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
     txt(ax, XE - 0.5, zm + 0.5, f"MEAN ROOF LEVEL EL {zm:.1f}", size=3.7, color=ACCENT, ha="right", z=12)
-    dim(ax, (XE + 3.6, ag), (XE + 3.6, zm), 0, f"ZONING HEIGHT {ftin(m.zoning_height())} (avg. grade to mean roof)", ext=False, size=4.0, color=ACCENT)
-    dim(ax, (XE + 3.6, zm), (XE + 3.6, ag + 35), 0, f"{ftin(35 - m.zoning_height())} SPARE", ext=False, size=4.0, color=ACCENT)
+    dim(ax, (XE + 4.5, ag), (XE + 4.5, zm), 0, f"ZONING HEIGHT {ftin(m.zoning_height())} (avg. grade to mean roof)", ext=False, size=4.0, color=ACCENT)
+    dim(ax, (XE + 4.5, zm), (XE + 4.5, ag + 35), 0, f"{ftin(35 - m.zoning_height())} SPARE", ext=False, size=4.0, color=ACCENT)
     line(ax, [(XE - 4, ag), (XE + 4.4, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
     txt(ax, XE + 0.3, ag - 0.6, f"AVG. GRADE EL {ag:.1f}", size=3.7, color=ACCENT, ha="left", z=12)
     # widths
@@ -516,7 +516,7 @@ def rear_labels(ax, xl, yl, wins, ct, ll):
     note(ax, (w1[1] + 1.17, w1[3] + 2), (12.3, 931.6), f"W1 ESCAPE WINDOW\nSILL EL {w1[3]:.1f}", size=3.8, ha="left")
     note(ax, (24.0, np.interp(24.0, [c[0] for c in ct], [c[1] for c in ct]) - 0.25), (16.5, 923.2),
          "CONCRETE STEM WALL carried to 8 in.\nabove finish grade, siding starts there", size=3.8, ha="center")
-    note(ax, (20.5, np.interp(20.5, [c[0] for c in ll], [c[1] for c in ll])), (14.5, 934.6),
+    note(ax, (20.5, np.interp(20.5, [c[0] for c in ll], [c[1] for c in ll])), (9.2, 935.0),
          "EXISTING GROUND AT THE REAR LOT LINE (dotted red)\n5'-2\" in front of this wall; 6 ft fence on the line not drawn", size=3.8, ha="center", color=ACCENT)
     txt(ax, 13.0, 918.6, "dashed brown: existing ground at the wall · solid: finish grade, cut 6 in. for the swale that falls east",
         size=3.7, color=EARTH, z=12)
