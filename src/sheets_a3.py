@@ -307,11 +307,10 @@ def sheet_a501(pdf):
         ("Where the ratings are", [
             "W4 stair walls and F2 floor between the\n"
             "flats: 1 hour. F1 garage ceiling: 5/8 in.\n"
-            "Type X (IRC R302.6). Roof edges: the rear\n"
-            f"eave ({ftin(eave_face)} from the lot line) and the\n"
-            f"{inch(RAKE)} side rakes ({ftin(rake_face)}) are both under 5 ft:\n"
-            "1-hour underside on all three, no vents.\n"
-            "Attic vents: front soffit and ridge only.",
+            f"Type X (IRC R302.6). Rear eave ({ftin(eave_face)} from\n"
+            f"the lot line) and {inch(RAKE)} side rakes ({ftin(rake_face)}):\n"
+            "1-hour underside, no vents. Attic vents:\n"
+            "front soffit and ridge only.",
         ]),
         ("Fire-stopping", [
             "Every pipe, duct, cable and box through a\n"
@@ -340,9 +339,8 @@ def sheet_a501(pdf):
             "the garage slab to the roof deck.",
         ]),
         ("Preliminary", [
-            "UL numbers are generic examples. The\n"
-            "architect picks the listed designs; build\n"
-            "to those listings exactly.",
+            "UL numbers are generic examples. Architect\n"
+            "picks the listings; build exactly to them.",
         ]),
     ]
     fig, bg = new_sheet("A-501", TITLE["A-501"], "As noted", notes)
