@@ -154,7 +154,7 @@ WALK = [(apron_x(LAND_Y0, 1), LAND_Y0), (XE, LAND_Y0), (XE, YF), (OPEN[1], YF)]
 TRASH = (38.0, 0.5, XE, LAND_Y0)                                    # screened bay for 4 carts, opens onto the landing
 WING_W = [(OPEN[0], YF), (apron_x(0.5, 0), 0.5)]                    # west wing wall beside the apron (retains the front yard)
 WING_E = [(apron_x(0.5, 1) + 0.2, 0.5), (XE + 0.35, 0.5), (XE + 0.35, YF)]   # low wall around the trash bay and landing
-HP = [(xw_o(20.5) - 1.1, 20.5), (xw_o(25.8) - 1.1, 25.8)]           # heat-pump pads A, B: side-discharge units 38 x 15 in.
+HP = [(xw_o(20.5) - 1.1, 20.5), (xw_o(24.6) - 1.1, 24.6)]           # heat-pump pads A, B: side-discharge units 38 x 15 in.
 HP_SIZE = (38 * IN, 15 * IN)
 
 # ---- coordination points shared by every trade ----

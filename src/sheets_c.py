@@ -848,7 +848,6 @@ def sheet_c103(pdf):
     txt(ax, -3.4, 30, "442 BAIRD ST", size=5.0, color=GREY, weight="bold", rot=83.5)
     txt(ax, 55.4, 22, "441 BAIRD ST", size=5.0, color=GREY, weight="bold", rot=90)
     poly(ax, m.OUT_U, fc="#f4f5f6", ec=GREY, lw=0.6, ls=(0, (4, 2)), z=2.5)
-    txt(ax, 22.5, 36.0, "Unit A floor over: slab on grade, not excavated", size=4.2, color=GREY, rot=m.REAR_ANGLE, z=6)
     site_work(ax)
     lower_plan(ax, "arch", cars=True, labels=False)
     for i, c in enumerate(car_c):
@@ -893,7 +892,7 @@ def sheet_c103(pdf):
     txt(ax, 4.6, -14.3, "one lane · falls 11.4 %\nto the east", size=4.8, color=GREY, z=6, va="top")
     north_arrow(ax, 54.4, 35.4, 2.6, 6.5)
     scale_bar(ax, 37, -25.2, 20, 5, 0.65)
-    title(ax, "Garage level: vehicle access and towing plan", "Amber = truck on the apron (position A) · green = truck in the street (position B)",
+    title(ax, "Garage level: vehicle access and towing plan", "Amber = truck on the apron (position A) · green = truck in the street (position B) · dashed = Unit A walls over",
           dx=0.5, dy=1.4, clear=(42, 4.4))
 
     # ---- right column: apron profiles
@@ -1420,10 +1419,10 @@ def sheet_c105(pdf):
     txt(sx, sv[0] + 0.2, m.EL_A + 0.5, f"UNIT A SLAB EL {m.EL_A:.1f}", size=4.6, weight="bold", ha="left")
     lead(sx, (-m.CMU / 2, fg0 + STEM_UP), (-4.6, fg0 + STEM_UP + 2.4), f"TOP OF CONCRETE EL {fg0 + STEM_UP:.1f}\n8 in. above finish grade", size=4.5, ha="center")
     lead(sx, (SWALE_OFF, inv0), (3.4, inv0 + 3.4), f"SWALE INV EL {inv0:.1f}", size=4.5, color=BLUE, ha="center", weight="bold")
-    lead(sx, (0.8, fg0 - 0.12), (-4.6, fg0 - 1.3), "5 % to the swale", size=4.4, color=BLUE, ha="center")
-    lead(sx, (UD_OFF, fg0 - UD_DEPTH + 0.3), (4.6, fg0 - UD_DEPTH - 0.6), f"UD 4 in. perforated,\nINV EL {fg0 - UD_DEPTH:.1f}", size=4.4, color=STORM, ha="center")
+    lead(sx, (0.9, fg0 - 0.1), (4.1, fg0 - 1.5), "5 % to the swale", size=4.4, color=BLUE, ha="center")
+    lead(sx, (UD_OFF + 0.15, fg0 - UD_DEPTH + 0.2), (3.4, fg0 - UD_DEPTH + 0.4), f"UD 4 in. perforated,\nINV EL {fg0 - UD_DEPTH:.1f}", size=4.4, color=STORM, ha="center")
     lead(sx, (-m.CMU / 2, fb + 1.6), (-5.0, fb + 0.2), "8 in. stem wall on a\n20 x 10 in. footing (S-101)", size=4.4, ha="center")
-    txt(sx, YARD + 0.25, sv[1] + 1.9, "REAR\nLOT LINE", size=4.3, color=ACCENT, ha="right", weight="bold")
+    txt(sx, YARD + 0.25, sv[1] + 0.9, "REAR\nLOT LINE", size=4.3, color=ACCENT, ha="left", weight="bold")
     txt(sx, sv[2] - 0.2, ge(sv[2] - 0.6) + 0.55, "existing", size=4.2, color=EARTH, ha="right")
     # drain schedule
     y = ytop - 0.32 - hh - 0.16
@@ -1479,7 +1478,7 @@ def sheet_c106(pdf):
     view = (20, -18, 62, 34)
     ax = frame(fig, view, FPI, left=0.6, bottom=0.6)
     site_base(ax, cont="faint", clabels=False, street_label=None)
-    txt(ax, 57.5, 30.4, "441 BAIRD ST", size=5.4, color=GREY, weight="bold")
+    txt(ax, 57.6, 3.0, "441 BAIRD ST", size=5.4, color=GREY, weight="bold")
     poly(ax, m.OUT_U, fc="none", ec=GREY, lw=0.6, ls=(0, (4, 2)), z=5.5)
     site_work(ax, bg=True)
     lower_plan(ax, "bg", cars=False)
@@ -1498,9 +1497,9 @@ def sheet_c106(pdf):
     line(ax, WATER_B[1:], color=WATER, lw=1.3, z=10.5)
     rect(ax, m.XE - 1.0, ye - 0.3, m.XE, ye + 0.97, fc=WATER, ec=WATER, lw=0.3, z=11)
     lead(ax, (48.6, -1.6), (55.5, -3.4), "MUB METER PITS A, B\n(utility-owned, in the R.O.W.)", size=4.8, color=WATER, ha="center", weight="bold")
-    lead(ax, (X_WB, 21.0), (55.5, 23.4), f"W-A, W-B: two 1 in. water\nservices, {m.WATER_DEPTH * 12:.0f} in. cover,\n7 in. apart in one trench", size=4.8, color=WATER, ha="center")
-    lead(ax, (m.XE - 0.5, ye + 0.3), (33.5, 31.6), f"WATER ENTRY, centre line EL {m.EL_WATER_ENTRY:.1f}: two sleeved cores through the\n"
-         f"12 in. wall, sealed both faces, {ftin(m.Y_GR_O - ye)} south of the rear wall face.\nGround cover here {cover_wall:.1f} ft. Main shut-offs and pressure-reducing valves inside (P-101).",
+    lead(ax, (X_WB, 20.0), (55.5, 21.6), f"W-A, W-B: two 1 in. water\nservices, {m.WATER_DEPTH * 12:.0f} in. cover,\n7 in. apart in one trench", size=4.8, color=WATER, ha="center")
+    lead(ax, (m.XE - 0.5, ye + 0.6), (56.2, 28.6), f"WATER ENTRY, EL {m.EL_WATER_ENTRY:.1f}:\ntwo sleeved cores through the\n12 in. wall, sealed both faces,\n"
+         f"{ftin(m.Y_GR_O - ye)} south of the rear wall face.\nGround cover here {cover_wall:.1f} ft. Main\nshut-offs and pressure-reducing\nvalves inside (P-101).",
          size=4.6, color=WATER, ha="center")
     dimb(ax, (m.XE, 24.0), (X_WA, 24.0), 0, ftin(X_WA - m.XE), ext=False, size=4.4, color=WATER)
     dimb(ax, (X_WB, 15.0), (50.0, 15.0), 0, ftin(50.0 - X_WB), ext=False, size=4.4, color=WATER)
@@ -1527,7 +1526,7 @@ def sheet_c106(pdf):
     for xx in (X_ET, X_TEL):
         line(ax, [(xx - 0.3, 3.45), (xx + 0.3, 3.75)], color=POWER, lw=0.8, z=10.7)
     lead(ax, (ex + 0.5, ey + 0.5), (55.5, 11.6), "2-POSITION METER STACK\non the east wall (E-101)", size=4.8, color=POWER, ha="center", weight="bold")
-    lead(ax, (X_ET + 0.15, 6.0), (55.5, 5.4), "E: service lateral in conduit\nT: telecom conduit (dashed)\nBoth continue to the utility pole:\nPOLE POSITION NOT KNOWN", size=4.6, color=POWER, ha="center")
+    lead(ax, (X_ET + 0.15, 6.4), (55.5, 6.9), "E: service lateral in conduit\nT: telecom conduit (dashed)\nBoth continue to the utility pole:\nPOLE POSITION NOT KNOWN", size=4.6, color=POWER, ha="center")
     # section and profile marks
     for xx in (43.2, 51.6):
         line(ax, [(xx, 11.5), (xx + (1.2 if xx < 45 else -1.2), 11.5)], lw=1.4, z=12)
@@ -1535,10 +1534,10 @@ def sheet_c106(pdf):
     txt(ax, 26.5, -9.4, "BAIRD STREET", size=7.0, weight="bold", color=GREY, z=6)
     txt(ax, 26.5, -10.9, "one lane · falls 11.4 % east", size=4.8, color=GREY, z=6)
     txt(ax, 28.5, 24.5, "OPEN GARAGE\nno water piping here", size=4.6, color=GREY, z=6)
-    north_arrow(ax, 23.2, 30.0, 1.8, 6.5)
+    north_arrow(ax, 58.6, -14.4, 1.8, 6.5)
     scale_bar(ax, 21.5, -16.6, 12, 4, 0.42, size=5.2)
     title(ax, "Site utilities plan (east half of the lot)", "Blue = water · purple = sewer · orange = electric and telecom · grey-green = storm (C-105)",
-          dx=2.8, dy=0.9, size=8.6)
+          dx=0.6, dy=0.9, size=8.6, clear=(34, 2.5))
     # ---- right column
     xr = 0.6 + (view[2] - view[0]) / FPI + 0.3
     wr = SHEET_W - MARGIN - TB_W - 0.15 - xr
@@ -1583,7 +1582,7 @@ def sheet_c106(pdf):
     txt(px, 14.0, G[min(range(len(S)), key=lambda i: abs(S[i] - 14.0))] + 0.9, "ground", size=4.4, color=EARTH)
     lead(px, (26.5, G[min(range(len(S)), key=lambda i: abs(S[i] - 26.5))] - 3.0), (22.5, 913.0), "frost line, 36 in.", size=4.3, color=GREY, ha="center")
     lead(px, (cum[-1], m.EL_WATER_ENTRY), (cum[-1] - 6.0, 911.4), f"enters at EL {m.EL_WATER_ENTRY:.1f}\n({cover_wall:.1f} ft of cover at the wall)", size=4.5, color=WATER, ha="center")
-    txt(px, pv[2] - 0.1, m.EL_GAR + 0.6, f"utility room\nEL {m.EL_GAR:.1f}", size=4.2, ha="right", va="bottom")
+    txt(px, cum[-1] - 0.4, 924.2, f"utility room wall; slab EL {m.EL_GAR:.1f}", size=4.2, ha="right")
     # section B
     y = ytop - 0.36 - hh - 0.22
     bg.text(xr, y, "SECTION B: EAST SIDE YARD AT Y = 11'-6\", LOOKING NORTH", fontsize=7.0, fontweight="bold", va="top")
@@ -1613,7 +1612,7 @@ def sheet_c106(pdf):
         sx.add_patch(Circle((x_, z_), r_, fc=PAPER if r_ > 0.1 else c_, ec=c_, lw=0.9, zorder=8))
         line(sx, [(x_, z_ + r_), (x_, g(x_))], color=c_, lw=0.3, ls=(0, (2, 2)), z=5)
     ytag = sv[3] - 0.45
-    for (x_, z_, r_, c_, lab), dx in zip(items, (-0.3, -0.1, 0.1, 0.35, 0.0, 0.3)):
+    for (x_, z_, r_, c_, lab), dx in zip(items, (-0.3, -0.25, 0.0, 0.15, 0.35, 0.45)):
         txt(sx, x_ + dx, ytag, lab, size=4.6, color=c_, weight="bold", box=True)
         line(sx, [(x_, g(x_)), (x_ + dx, ytag - 0.25)], color=c_, lw=0.3, z=5)
     yb = sv[1] + 0.45
@@ -1832,7 +1831,7 @@ def sheet_c107(pdf):
         door(dx_, (hxg, BAY[3]), gw, 0 if sgn > 0 else 180, 75 * sgn, color=EARTH)
     if not BAY_OK:
         rect(dx_, m.TRASH[0], m.TRASH[1], m.TRASH[2], m.TRASH[3], fc="none", ec=ACCENT, lw=0.9, ls=(0, (3, 2)), z=7)
-        lead(dx_, (m.TRASH[0], m.TRASH[3] - 0.3), (BAY[0] - 1.0, BAY[3] + 4.4),
+        lead(dx_, (m.TRASH[0], m.TRASH[3] - 0.3), (BAY[0] + 1.6, BAY[3] + 4.7),
              f"red dashed = bay in the model,\n{ftin(m.TRASH[2] - m.TRASH[0])} x {ftin(m.TRASH[3] - m.TRASH[1])}: too small", size=4.4, color=ACCENT, ha="center")
     dimb(dx_, (BAY[0], BAY[1]), (BAY[2], BAY[1]), -1.25, f"{ftin(bw)} INSIDE", size=4.6, side=-1)
     dimb(dx_, (BAY[2], BAY[1]), (BAY[2], BAY[3]), -1.5, ftin(bd), size=4.6, side=-1)

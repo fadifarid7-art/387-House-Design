@@ -700,7 +700,7 @@ def sheet_a104(pdf):
             txt(ax, cx, cy, f"{FURN_NAME[kind]}\n{s}", size=4.2, rot=ang, z=9.6)
     for room, c in m.CHAIRS.items():
         poly(ax, c, fc="none", ec=GREY, lw=0.4, ls=(0, (2, 2)), z=6.5)
-    txt(ax, m.STOOLS[1][0] + 1.25, m.STOOLS[1][1], "3 STOOLS", size=4.2, rot=90)
+    txt(ax, m.STOOLS[1][0] + 1.25, m.STOOLS[1][1], f"{len(m.STOOLS)} STOOLS", size=4.2, rot=90)
     txt(ax, 34.4, 16.0, "LIVING / KITCHEN", size=5.0, weight="bold")
     txt(ax, 23.7, 11.75, "KITCHEN", size=4.4, weight="bold")
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
@@ -781,7 +781,7 @@ def sheet_a104(pdf):
     for room, c in m.CHAIRS.items():
         a, b = math.dist(c[0], c[1]), math.dist(c[1], c[2])
         flat.append((room.title(), "Desk chair space", f"{round(a * 12)} x {round(b * 12)}"))
-    flat.append(("Living / kitchen", "3 stools at the island", f"{inch(m.STOOLS[1][1] - m.STOOLS[0][1])} centre to centre"))
+    flat.append(("Living / kitchen", f"{len(m.STOOLS)} stools at the island", f"{inch(m.STOOLS[1][1] - m.STOOLS[0][1])} centre to centre"))
     half = (len(flat) + 1) // 2
     for i in range(half):
         r2 = flat[i + half] if i + half < len(flat) else ("", "", "")
@@ -1216,7 +1216,7 @@ def sheet_a401(pdf):
         f"  {inch(m.ISL_DW[1] - m.ISLAND[1])} filler, 24 in. dishwasher, 33 in. sink base.",
         f"  Top {fi(m.ISLAND_TOP[3] - m.ISLAND_TOP[1])} x {fi(m.ISLAND_TOP[2] - m.ISLAND_TOP[0])}: 12 in. seating overhang on the",
         "  living-room side, on brackets by the supplier.",
-        f"  3 stools at {inch(m.STOOLS[1][1] - m.STOOLS[0][1])} centres (by tenant).",
+        f"  {len(m.STOOLS)} stools at {inch(m.STOOLS[1][1] - m.STOOLS[0][1])} centres (by tenant).",
         "  Sink drain, water and the island receptacle come",
         "  up through the floor inside the sink base: cut",
         "  the cabinet floor after the plumber marks it.",

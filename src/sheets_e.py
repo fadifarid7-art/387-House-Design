@@ -469,7 +469,7 @@ def sheet_e101(pdf):
     ], "E-101")
     fig, bg = new_sheet("E-101", "Electrical: garage level and service", SCALE, notes)
     view = ((-12.0, 58.0), (-8.5, 41.0))
-    ax = frame(fig, view, "Garage level: power, lighting and service",
+    ax = frame(fig, view, "Garage level power and service plan",
                f"Garage floor EL {m.EL_GAR:.1f} · common loads on Unit A's panel PA (CL)",
                street=True, north=(55.3, 37.6), lot_label=(50.0, 29.3))
     site_work(ax, bg=True)
@@ -545,12 +545,12 @@ def sheet_e101(pdf):
     heater(ax, (SX0 + 0.2, 25.4), "v", 1.1)
     recept(ax, (38.6, m.UTIL[2] + 0.42), "G")
     ux = 38.2
-    txt(ax, ux - 0.5, 34.5, "UTILITY ROOM (heated, locked)", size=5.0, weight="bold", ha="left", color=PWR)
+    txt(ax, ux - 0.5, 34.15, "UTILITY ROOM (heated, locked)", size=5.0, weight="bold", ha="left", color=PWR)
     for j, (n, s) in enumerate([(5, "500 W wall heater, CL-2H: keeps the room above freezing"),
                                 (3, "Automatic light and GFCI receptacle, CL-1")]):
-        keynote(ax, ux, 33.4 - j * 1.12, n, r=0.5)
-        txt(ax, ux + 0.85, 33.4 - j * 1.12, s, size=4.4, ha="left")
-    leader(ax, [(40.6, 31.6), (40.6, 29.9), (39.6, 25.9)], color=PWR)
+        keynote(ax, ux, 33.05 - j * 1.1, n, r=0.5)
+        txt(ax, ux + 0.85, 33.05 - j * 1.1, s, size=4.4, ha="left")
+    leader(ax, [(40.6, 31.3), (40.6, 29.9), (39.6, 25.9)], color=PWR)
 
     # ---- service: meter stack, lateral, grounding, feeders ----
     rect(ax, m.XE, METER[1] - 1.15, m.XE + 0.6, METER[1] + 1.15, fc=PWR, ec=PWR, z=11)
@@ -625,9 +625,9 @@ def sheet_e101(pdf):
         "Confirm with the inspector: GFCI on the outdoor heat-pump circuits (NEC 210.8(F))",
         "and outdoor receptacles for the flats (210.52(E)).",
     ], fs=4.5, lh=0.7)
-    x_in, y_in = inch(ax, 5.6, 37.6)
+    x_in, y_in = inch(ax, 4.9, 37.2)
     bg.text(x_in, y_in + 0.05, "COMMON CIRCUITS, ALL ON UNIT A'S PANEL PA (no house meter)", fontsize=6.2, fontweight="bold", color=INK, va="bottom")
-    table(bg, x_in, y_in, [0.5, 1.2, 3.6, 0.85], [
+    table(bg, x_in, y_in, [0.5, 1.2, 3.4, 0.8], [
         ["Circuit", "Breaker, wire", "Serves", "Load"],
         ["CL-1", "15 A 1-pole, #14 Cu", f"Automatic lights: garage {len(G_STRIPS)}, stair {N_STAIR_AL}, outside {len(EXT_AL)}, utility room 1; utility receptacle",
          f"{CL1_W} W + 180 VA"],
