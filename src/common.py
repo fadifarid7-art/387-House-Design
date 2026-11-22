@@ -152,7 +152,7 @@ def byright_envelope():
 
 
 # ----------------------------------------------------------------------------
-# Proposed concept, Rev C: two-family dwelling (two 3-bed / 3-bath flats) over a 3-car garage
+# Proposed concept, Rev D: two-family dwelling (two 3-bed / 3-bath flats) over a 3-car garage
 # ----------------------------------------------------------------------------
 BX0, BX1, BY0, BY1 = 9.5, 45.0, 8.0, 30.0       # main block, 35'-6" x 22'-0"
 WX1, WY1 = 28.5, 35.0                           # rear wing (west 19'-0"), 5'-0" deeper
@@ -166,16 +166,19 @@ EL_RIDGE = EL_PLATE + (BY1 - BY0) / 2 * 0.5      # 6:12 gable, ridge parallel to
 EL_MEAN_ROOF = (EL_PLATE + EL_RIDGE) / 2
 EL_REF = (914.5 + 927.0) / 2                     # mid-point of lowest/highest grade at footprint
 PAVE_N, PAVE_S = -7.0, -21.0                     # approx. pavement edges (LiDAR profile)
-# garage level
-STALLS = [(10.5, 19.39), (19.39, 28.28), (28.28, 37.17)]
-DOOR_A = (11.4, 27.4)                            # 16'-0" x 8'-0" overhead door, stalls 1-2
-DOOR_B = (28.9, 36.9)                            # 8'-0" x 8'-0" overhead door, stall 3
+# garage level: plain rectangle, open front, no storage room (rear wing is not excavated at this level)
+OUT_L = [(BX0, BY0), (BX1, BY0), (BX1, BY1), (BX0, BY1)]
+IN_L = [(10.5, 8.67), (44.0, 8.67), (44.0, 29.0), (10.5, 29.0)]
+STALLS = [(10.5, 20.17), (20.17, 28.67), (28.67, 37.17)]      # 9'-8", 8'-6", 8'-6"
+CARS = [12.9, 21.32, 29.82]                                   # west edge of a 6'-2" wide car in each stall
+DOOR_A = (11.15, 28.42)                          # open bay, stalls 1-2 (no door)
+DOOR_B = (28.92, 37.17)                          # open bay, stall 3 (no door)
 ENTRY = (40.9, 43.9)                             # 3'-0" common entry door
-SHAFT_L = (37.5, 44.0, 8.67, 21.87)               # stair shaft, lower level (x0, x1, y0, y1)
+SHAFT_L = (37.5, 44.0, 8.67, 21.87)              # stair shaft, garage level (x0, x1, y0, y1)
 SHAFT_U = (37.5, 44.5, 8.5, 21.7)                # stair shaft, unit levels
-STORE_Y = 28.0                                   # south face of conditioned storage room partition
-APRON = [(DOOR_A[0], BY0), (DOOR_B[1], BY0), (37.7, PAVE_N), (10.6, PAVE_N)]
-REV = "C"
+APRON = [(DOOR_A[0], BY0), (DOOR_B[1], BY0), (37.9, PAVE_N), (10.4, PAVE_N)]
+TRASH = (38.2, 0.6, 45.0, 2.8)                   # screened cart bay, on the lot
+REV = "D"
 
 
 def street_el(x):
@@ -198,7 +201,7 @@ SHEET_W, SHEET_H = 17.0, 11.0
 TB_W = 2.9
 MARGIN = 0.35
 PROJECT = "387 BAIRD STREET"
-ISSUE = "REV C · HEAD-START SET · 22 NOV 2026"
+ISSUE = "REV D · HEAD-START SET · 22 NOV 2026"
 
 
 def ftin(v, zero_in=True):
@@ -227,7 +230,7 @@ def new_sheet(number, title, scale_txt, notes=None):
     bg.text(tx, top - 0.88, "Tax Dist. 13 · Map 29 · Parcel 84", fontsize=7.5, color=GREY, va="center")
     bg.plot([x0, SHEET_W - MARGIN], [top - 1.08, top - 1.08], color=INK, lw=0.6)
     bg.text(tx, top - 1.30, "TWO-FAMILY DWELLING OVER", fontsize=7.6, color=INK, va="center")
-    bg.text(tx, top - 1.48, "3-CAR GARAGE + OWNER STORAGE", fontsize=7.6, color=INK, va="center")
+    bg.text(tx, top - 1.48, "AN OPEN 3-CAR GARAGE", fontsize=7.6, color=INK, va="center")
     bg.plot([x0, SHEET_W - MARGIN], [top - 1.68, top - 1.68], color=INK, lw=0.6)
     # notes
     y = top - 1.95

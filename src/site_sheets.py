@@ -155,8 +155,9 @@ def site_plan_base(ax, view, contour_alpha=0.55, labels=None, envelope=True):
     poly(ax, OUT, fc="none", ec=INK, lw=2.0, z=10)
     poly(ax, APRON, fc="#cfd6de", ec=BLUE, lw=0.8, z=5)
     rect(ax, 37.5, 3, 45, BY0, fc="#e2e7ec", ec=BLUE, lw=0.6, z=5)
-    line(ax, [(11.2, 7.9), (10.95, 0.5)], lw=2.0, color=GREY, z=6)
-    line(ax, [(37.6, 2.8), (45.2, 2.8), (45.2, 7.9)], lw=1.6, color=GREY, z=6)
+    rect(ax, *TRASH[:2], *TRASH[2:], fc="#dfe3d6", ec=BLUE, lw=0.6, z=5)
+    line(ax, [(11.0, 7.9), (10.75, 0.5)], lw=2.0, color=GREY, z=6)
+    line(ax, [(37.9, 2.9), (37.9, 0.5), (45.2, 0.5), (45.2, 7.9)], lw=1.6, color=GREY, z=6)
     rect(ax, 9.5, 4, 35.5, BY0, fc="none", ec=BLUE, lw=0.8, z=9, ls="--")
 
 
@@ -180,7 +181,7 @@ def sheet_c102(pdf):
             f"Side setbacks 5.0 ft east, {w_n:.1f} to {w_s:.1f} ft west",
             f"Coverage {cov:.0f} % ({FOOTPRINT:,.0f} sf footprint)",
             f"Height {EL_MEAN_ROOF - EL_REF:.1f} ft, 2 storeys over basement",
-            "Parking 3 spaces, all enclosed",
+            "Parking 3 spaces in the open garage",
             "Porch 73 % of the front (50 % min.)",
             "Nothing but the apron in the R.O.W.",
         ]),
@@ -214,17 +215,18 @@ def sheet_c102(pdf):
     txt(ax, 53.5, 10, "10' FRONT\nSETBACK", size=5.0, color=ACCENT, ha="left")
     txt(ax, 53.5, rear_setback_y(50) - 0.2, "20' REAR\nSETBACK", size=5.0, color=ACCENT, ha="left")
     txt(ax, 27, 27.4, "PROPOSED TWO-FAMILY DWELLING", size=7.0, weight="bold", z=12)
-    txt(ax, 27, 25.4, f"{FOOTPRINT:,.0f} sf footprint · two 3-bed / 3-bath flats over a 3-car garage", size=5.6, z=12)
+    txt(ax, 27, 25.4, f"{FOOTPRINT:,.0f} sf footprint · two 3-bed / 3-bath flats over an open 3-car garage", size=5.6, z=12)
     txt(ax, 27, 23.7, f"Garage slab EL {EL_GAR:.1f} · Unit A EL {EL_MAIN:.1f} · Unit B EL {EL_UP:.1f}", size=5.4, z=12)
     txt(ax, 19, 32.6, "REAR WING 19' x 5'", size=5.0, z=12)
     txt(ax, 22.5, 6.0, "PORCHES OVER (CANTILEVERED 4')", size=4.7, color=BLUE, z=12, box=True)
-    txt(ax, 24, 1.6, "DRIVEWAY APRON", size=5.4, color=BLUE, z=12, weight="bold")
+    txt(ax, 24, 1.6, "DRIVEWAY APRON · OPEN GARAGE FRONT", size=5.0, color=BLUE, z=12, weight="bold")
     txt(ax, 41.2, 5.4, "ENTRY\nLANDING", size=4.6, color=BLUE, z=12)
     txt(ax, 62, -3.5, "CITY RIGHT-OF-WAY (tinted):\ndriveway apron only", size=5.0, color=ACCENT)
     txt(ax, -6, -3.5, "bank graded\nback 2:1,\nno wall", size=4.6, color=ACCENT)
-    for x in (30.6, 33.6, 36.6):
+    for x in (34.6, 37.2):
         rect(ax, x - 1.2, 31.2, x + 1.2, 33.4, fc=PAPER, ec=BLUE, lw=0.6, z=9)
-    txt(ax, 33.6, 34.6, "HEAT-PUMP PADS", size=4.4, color=BLUE, z=12)
+    txt(ax, 36.0, 34.6, "HEAT-PUMP PADS", size=4.4, color=BLUE, z=12)
+    txt(ax, 49.6, 1.6, "TRASH BAY\n(on lot)", size=4.4, color=BLUE, z=12)
     dim(ax, (BX0, WY1), (WX1, WY1), 1.3, "19'-0\"", size=5.2)
     dim(ax, (BX1, BY0), (BX1, BY1), -1.3, "22'-0\"", size=5.2, side=-1)
     dim(ax, (BX0, 36.9), (BX1, 36.9), 0, "35'-6\"", size=5.2, ext=False)
@@ -289,19 +291,19 @@ def sheet_c103(pdf):
             "straight out: the tow takes two moves.",
         ]),
         ("Built in to make it easy", [
-            "1. Every car is one move from a door:",
-            "    no tandem, no stackers.",
-            "2. No posts, steps or walls in the apron",
-            "    (porches are cantilevered).",
-            "3. Flush threshold: slab, drain grate and",
+            "1. Open front: no doors to open, jam or",
+            "    work around.",
+            "2. Every car is one move from the",
+            "    street: no tandem, no stackers.",
+            "3. No posts, steps or walls in the apron",
+            "    (porches are cantilevered). One slim",
+            "    post at the front, on a stall line.",
+            "4. Flush threshold: slab, drain grate and",
             "    apron at one level, so dollies roll.",
-            "4. 16 ft door, no centre post, stalls 1-2:",
-            "    a car can be swung out.",
-            "5. 9'-2\" ceiling and 8 ft doors clear a",
-            "    wheel-lift boom.",
+            "5. 9'-2\" ceiling, 8'-7\" under the beam.",
             "6. 2 to 3 ft behind each car to winch it",
             "    back. No kerbs or wheel stops.",
-            "7. Light and an outlet at each stall.",
+            "7. Numbered stalls and automatic lights.",
         ]),
         ("Rules for the tow company", [
             "Wheel-lift wrecker with dollies. A",
@@ -309,8 +311,8 @@ def sheet_c103(pdf):
             "loads in the street after step 1.",
             "The street is blocked for several",
             "minutes. Leave downhill (east).",
-            "Post tow-away signs as state and city",
-            "rules require.",
+            "Post private-parking, tow-away signs",
+            "as state and city rules require.",
         ]),
     ]
     fig, bg = new_sheet("C-103", "Vehicle access and towing", "1/8\" = 1'-0\"", notes)
@@ -323,12 +325,11 @@ def sheet_c103(pdf):
         cx = (a + b) / 2
         rect(ax, cx - 3.1, 10.2, cx + 3.1, 26.6, fc="#e9ecef" if i != 1 else "#fdf0d5", ec=GREY if i != 1 else "#b9770e", lw=0.7, z=11)
         txt(ax, cx, 21.5, f"{i + 1}", size=7, weight="bold", color=GREY, z=13)
-    rect(ax, 10.5, 28.33, 27.5, 34, fc="#eef1f4", ec=GREY, lw=0.4, z=10)
-    txt(ax, 19, 31.2, "storage", size=4.6, color=GREY, z=12)
     rect(ax, 37.5, 8.67, 44, 29, fc="#eef1f4", ec=GREY, lw=0.4, z=10)
-    txt(ax, 40.75, 18.5, "stair +\nmech", size=4.4, color=GREY, z=12)
+    txt(ax, 40.75, 18.5, "stair +\nbikes", size=4.4, color=GREY, z=12)
     for a, b in (DOOR_A, DOOR_B):
-        line(ax, [(a, BY0 + 0.3), (b, BY0 + 0.3)], lw=1.6, color=BLUE, z=12)
+        line(ax, [(a, BY0 + 0.3), (b, BY0 + 0.3)], lw=0.8, color=BLUE, z=12, ls=(0, (2, 2)))
+    rect(ax, DOOR_A[1], BY0, DOOR_B[0], BY0 + 0.67, fc=BLUE, ec=BLUE, z=12)
     # step 1: hook-up position, backed to stall 2
     cx2 = (STALLS[1][0] + STALLS[1][1]) / 2
     truck(ax, cx2, 7.2, 270, label="STEP 1  HOOK UP")
@@ -347,8 +348,8 @@ def sheet_c103(pdf):
     dim(ax, (46.6, PAVE_N), (46.6, BY0), 0, "15' APRON", ext=False, size=5.0, color=BLUE, side=-1)
     dim(ax, (46.6, PAVE_S), (46.6, PAVE_N), 0, "±14' LANE", ext=False, size=5.0, color=GREY, side=-1)
     dim(ax, (52.5, PAVE_S), (52.5, BY0), 0, "29' DOOR TO FAR EDGE", ext=False, size=5.0, side=-1)
-    dim(ax, (DOOR_A[0], 9.6), (DOOR_A[1], 9.6), 0, "16' CLEAR", ext=False, size=4.8, color=BLUE)
-    dim(ax, (DOOR_B[0], 9.6), (DOOR_B[1], 9.6), 0, "8'", ext=False, size=4.8, color=BLUE)
+    dim(ax, (DOOR_A[0], 9.6), (DOOR_A[1], 9.6), 0, "17'-3\" OPEN", ext=False, size=4.8, color=BLUE)
+    dim(ax, (DOOR_B[0], 9.6), (DOOR_B[1], 9.6), 0, "8'-3\"", ext=False, size=4.8, color=BLUE)
     txt(ax, 62, -3.5, "CITY RIGHT-OF-WAY (tinted):\nno parking, nothing built", size=5.0, color=ACCENT)
     txt(ax, 60, -23.5, "B A I R D   S T R E E T  ·  one lane, ±11 % grade", size=6.4, weight="bold", color=GREY)
     txt(ax, -15, -13.5, "DAILY USE: cars back out across\nthe 15 ft apron into the lane.\n29 ft of back-up depth (24 ft is\nthe usual aisle), onto a one-lane\nstreet on a grade: fit a convex\nmirror and good door lighting.", size=4.8, ha="left", z=12, box=True)

@@ -1,10 +1,9 @@
 # 387 Baird Street, Morgantown WV: purchase research and head-start drawing set
 
 Research for buying 387 Baird St, removing the existing house, and building a **two-family dwelling
-(two stacked flats, six bedrooms and six private baths in total) over a 3-car garage with a
-conditioned owner storage room**.
+(two stacked flats, six bedrooms and six baths in total) over an open three-car garage**.
 
-**Drawing set, Rev C:** [`drawings/387-Baird-St_Permit-Head-Start-Set.pdf`](drawings/387-Baird-St_Permit-Head-Start-Set.pdf)
+**Drawing set, Rev D:** [`drawings/387-Baird-St_Permit-Head-Start-Set.pdf`](drawings/387-Baird-St_Permit-Head-Start-Set.pdf)
 (27 sheets, 11 x 17 in). Individual sheets are in [`drawings/png/`](drawings/png/).
 
 > Preliminary, not for construction. This is a coordinated first draft of every discipline so the
@@ -12,18 +11,21 @@ conditioned owner storage room**.
 > be stamped as-is: each professional must review, recalculate and take responsibility for their
 > own sheets. No boundary survey, soil report or site visit is behind it.
 
-## Rev C at a glance
+## Rev D at a glance
 
-| Request | How it is handled |
+| Decision | How it is drawn |
 |---|---|
-| As many cars as possible | Three, side by side. The lot is 50 ft wide and the 5 ft side setbacks leave a 35'-6" building; three 8'-11" stalls plus the stair fill it. A duplex also requires three spaces (1.5 per unit). |
-| Six bedrooms, all with private baths | Two stacked flats with identical plans, each with 3 bedrooms and 3 baths in about 780 sq ft. Bedrooms are 80 to 106 sq ft (70 sq ft is the code minimum); each has its own entry hall, bath and escape window. |
-| All floor plans | Every trade has a separate sheet for the garage level, Unit A and Unit B. |
-| Storage in the house | One 17'-0" x 5'-8" room on the garage level, inside the insulated envelope, with a mini-split, dehumidifier and a 16 ft rack. The separate owner's suite was dropped. |
-| Tow trucks | Every car has a straight run to a door (no tandem, no stackers), no posts in the apron, a flush threshold, a 16 ft door with no centre post. See sheet C-103. |
-| Entrance | One street-level door to an enclosed common stair for both units, reached by a level landing on the lot. No exterior steps. |
-| Nothing on city property | Only the driveway apron crosses the right-of-way. Walls, landing, drains, meters and porches stay on the lot; banks beside the apron are regraded, not walled. |
-| Follow the code | Side setbacks, coverage (43 %), height (25.6 ft), parking, porch standard, unit separation, egress, stairs, alarms and energy targets are met. The items below cannot be. |
+| Parking | Three numbered stalls in an open-front garage with no doors. One clear room, no walls or columns between cars. Stall 1 is 9'-8" wide and stalls 2 and 3 are 8'-6", set so each driver's door has about 2'-3" to 2'-5". |
+| No storage room | Removed. The rear wing is not excavated at garage level; its floor is a slab on fill at Unit A level, so there is no crawl space. |
+| Six bedrooms, six baths | Two stacked flats, each with 3 bedrooms (77 to 94 sq ft) and 3 baths with 5 ft tubs. Each bath opens only off its own bedroom. |
+| Everything separate | Two electric meters only, one per flat. Each flat has its own panel, heat pump, 80 gal water heater (in a closet by its entry), kitchen appliances, washer and dryer, and water meter. |
+| Common lighting | Garage, stair and exterior lights are automatic (motion sensor plus photocell) on one circuit from Unit A's panel, marked with keynotes on E-101. |
+| No sump pump | A French drain at the base of the three buried walls runs by gravity to one outlet at the street edge, with cleanout risers at the corners. A second shallow drain behind the building catches hillside runoff. |
+| No freezing | No water pipe runs through the open garage. Meters sit in pits at the street; the two lines run buried 42 in. deep along the west side yard and come up through the rear wing into heated space. |
+| Cleanouts | At the base of each stack, at each turn of the main drain under the slab, and a two-way cleanout on the lot before the lot line. |
+| Trash | A screened, lockable bay for four carts beside the entry landing, on the lot. |
+| All-electric | No gas. No cameras, door operators or heat cable. |
+| City property | Only the driveway apron and the buried drain outlet are in the right-of-way. |
 
 ### What cannot meet the code and needs approval
 
@@ -33,16 +35,25 @@ conditioned owner storage room**.
    sets it by the neighbouring houses.
 3. **Garage width.** 78 % of the front against a 65 % limit (1337.07(B)(5)). Two cars would
    comply, but then the duplex is one parking space short, so one or the other needs relief.
-4. **Driveway width** at the street (26 ft against 22 ft) and a **sidewalk waiver**: City Engineer.
+4. **City Engineer:** driveway width at the street (26 ft against 22 ft), a sidewalk waiver, and
+   the gravity drain outlet at the street edge.
+
+### Things to confirm before relying on this design
+
+- **The drain outlet has about 6 in. of fall.** The survey must confirm the French drain can reach
+  the street by gravity. If it cannot, the choices are a pump or a higher garage floor.
+- **Required parking is for occupants.** The zoning code reserves the three required spaces for the
+  building's occupants; renting them to outsiders needs the Planning Division's answer.
+- **Common lighting on Unit A's meter** should be disclosed in that lease or credited in the rent.
+- **Renting by the bedroom** can be classed as a rooming house, a different use from a duplex.
 
 ### Structure in one paragraph
 
-Concrete walls 12 in. thick retain 8 to 13 ft of soil on three sides and are propped at the top by
-the Unit A floor. Because the garage doors leave almost no front wall, a steel beam on four steel
-columns carries the front of both floors and the roof and resists sideways load; that frame is
-the critical engineered element. Floors are 20 in. open-web wood trusses spanning front to back,
-which keeps the garage column-free. Every member size on the S sheets is a preliminary
-assumption.
+Concrete walls 12 in. thick retain 8 to 10.5 ft of soil on three sides and are propped at the top
+by the Unit A floor. The garage front is open, so a steel beam on four steel columns carries the
+front of both floors and the roof and resists sideways load; that frame is the critical engineered
+element. Floors are 20 in. open-web wood trusses spanning front to back, which keeps the garage
+column-free. Every member size on the S sheets is a preliminary assumption.
 
 ### Sheets
 
@@ -51,9 +62,9 @@ assumption.
 | G-001, G-002 | Cover and summary; code analysis and general notes |
 | C-101 to C-103 | Existing site; site plan and zoning; vehicle access and towing |
 | A-101 to A-301 | Garage level, Unit A, Unit B, street elevation, building section |
-| S-001 to S-301 | Structural criteria, foundation, Unit A floor framing, Unit B floor framing, roof framing and shear walls, sections |
+| S-001 to S-301 | Structural criteria, foundation and French drain, Unit A floor framing, Unit B floor framing, roof framing and shear walls, sections |
 | P-101 to P-201 | Plumbing for the garage level, Unit A and Unit B; riser diagram and schedules |
-| M-101 to M-103 | Heat pumps and ventilation for the garage level, Unit A and Unit B |
+| M-101 to M-103 | Mechanical for the garage level, Unit A and Unit B |
 | E-101 to E-201 | Power and lighting for the garage level, Unit A and Unit B; one-line diagram and load calculations |
 
 ## Who owns it and when it last sold
@@ -93,7 +104,7 @@ the rear boundary, which matters because the rear setback is the main constraint
 
 Confirmed on the City of Morgantown zoning layer. No overlay district is mapped at the parcel.
 
-| Standard | R-2 requirement | Rev C design |
+| Standard | R-2 requirement | Rev D design |
 |---|---|---|
 | Use | Two-family dwelling permitted | Two stacked flats, 3 bedrooms and 3 baths each |
 | Minimum lot area | 5,000 sq ft | about 2,050 sq ft (legal nonconforming lot, buildable under 1373.04) |
@@ -103,7 +114,7 @@ Confirmed on the City of Morgantown zoning layer. No overlay district is mapped 
 | Rear setback | 20 ft | 5.3 to 10.9 ft (variance) |
 | Lot coverage | 50 % max | 43 % |
 | Height | 2.5 storeys or 35 ft | 25.6 ft, two storeys over a basement garage |
-| Parking | 1.5 spaces per unit = 3 | 3, all inside |
+| Parking | 1.5 spaces per unit = 3 | 3, in the open garage |
 | Garage width | 65 % of the front max | 78 % (needs relief) |
 | Front porch | 50 % of the front min | 73 % |
 
@@ -140,5 +151,5 @@ python3 src/make_drawings.py
 ```
 
 The source data used is in [`data/`](data/). The design dimensions are constants in the "Proposed
-concept, Rev C" block of `src/common.py`; `src/levels.py` holds the base floor plans that every
+concept, Rev D" block of `src/common.py`; `src/levels.py` holds the base floor plans that every
 trade sheet is drawn over.

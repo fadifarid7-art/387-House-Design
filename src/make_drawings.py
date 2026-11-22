@@ -1,4 +1,4 @@
-"""Build the 387 Baird St head-start set (Rev C): drawings/387-Baird-St_Permit-Head-Start-Set.pdf + PNG sheets."""
+"""Build the 387 Baird St head-start set (Rev D): drawings/387-Baird-St_Permit-Head-Start-Set.pdf + PNG sheets."""
 import glob
 import os
 
@@ -37,7 +37,7 @@ with PdfPages(TMP) as pdf:
     mp.unit_power_sheet(pdf, "E-103", "B")
     mp.sheet_e201(pdf)
     d = pdf.infodict()
-    d["Title"] = "387 Baird Street, Morgantown WV: two-family dwelling head-start set, Rev C"
+    d["Title"] = "387 Baird Street, Morgantown WV: two-family dwelling head-start set, Rev D"
     d["Subject"] = "Preliminary, not for construction"
 os.replace(TMP, OUT_PDF)
 print("wrote", OUT_PDF, len(c.INDEX), "sheets")

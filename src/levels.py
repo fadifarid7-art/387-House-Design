@@ -82,16 +82,15 @@ def u_stair(ax, shaft, st, n=8, tread=10 / 12, up=True, dn=True, gap=0.3):
 
 
 def wc(ax, x, y, st, facing="S"):
+    """Water closet; (x, y) is the centre of the tank's wall side, `facing` is the direction the bowl points."""
     c = st.furn
-    if facing == "N":
-        rect(ax, x - 0.8, y, x + 0.8, y + 0.65, fc=PAPER, ec=c, lw=0.5, z=6)
-        ax.add_patch(Ellipse((x, y + 1.55), 1.3, 1.8, fc=PAPER, ec=c, lw=0.5, zorder=6))
-    elif facing == "S":
-        rect(ax, x - 0.8, y - 0.65, x + 0.8, y, fc=PAPER, ec=c, lw=0.5, z=6)
-        ax.add_patch(Ellipse((x, y - 1.55), 1.3, 1.8, fc=PAPER, ec=c, lw=0.5, zorder=6))
-    elif facing == "W":
-        rect(ax, x - 0.65, y - 0.8, x, y + 0.8, fc=PAPER, ec=c, lw=0.5, z=6)
-        ax.add_patch(Ellipse((x - 1.55, y), 1.8, 1.3, fc=PAPER, ec=c, lw=0.5, zorder=6))
+    dx, dy = {"N": (0, 1), "S": (0, -1), "E": (1, 0), "W": (-1, 0)}[facing]
+    if dx == 0:
+        rect(ax, x - 0.8, min(y, y + 0.65 * dy), x + 0.8, max(y, y + 0.65 * dy), fc=PAPER, ec=c, lw=0.5, z=6)
+        ax.add_patch(Ellipse((x, y + 1.55 * dy), 1.3, 1.8, fc=PAPER, ec=c, lw=0.5, zorder=6))
+    else:
+        rect(ax, min(x, x + 0.65 * dx), y - 0.8, max(x, x + 0.65 * dx), y + 0.8, fc=PAPER, ec=c, lw=0.5, z=6)
+        ax.add_patch(Ellipse((x + 1.55 * dx, y), 1.8, 1.3, fc=PAPER, ec=c, lw=0.5, zorder=6))
 
 
 def lav(ax, x0, y0, x1, y1, st):
@@ -113,55 +112,39 @@ def room(ax, x, y, name, size=None, extra=None, fs=6.4, st=None):
 
 # ----------------------------------------------------------------------------
 def lower_plan(ax, mode="arch", cars=True):
+    """Garage level: open front, three stalls, lobby + stair, small utility closet. No storage room."""
     st = Style(mode)
-    poly(ax, OUT, fc=st.conc, ec=st.edge, lw=0.9, z=3)
+    poly(ax, OUT_L, fc=st.conc, ec=st.edge, lw=0.9, z=3)
     poly(ax, IN_L, fc=PAPER, ec=st.edge, lw=0.6, z=4)
-    # front wall openings
-    for a, b in (DOOR_A, DOOR_B):
+    for a, b in (DOOR_A, DOOR_B):                         # open bays, no doors
         opening(ax, a, BY0 - 0.02, b, BY0 + 0.69)
-        line(ax, [(a, BY0 + 0.2), (b, BY0 + 0.2)], lw=0.5, ls=(0, (5, 2)), z=7, color=st.edge)
-        line(ax, [(a, BY0 + 0.45), (b, BY0 + 0.45)], lw=0.5, ls=(0, (5, 2)), z=7, color=st.edge)
+        line(ax, [(a, BY0), (b, BY0)], lw=0.5, ls=(0, (2, 3)), z=7, color=st.edge)
+    rect(ax, DOOR_A[1], BY0 + 0.08, DOOR_B[0], BY0 + 0.58, fc=st.conc if st.bg else "#1f5fa8", ec=st.edge, lw=0.4, z=7)   # centre post
     opening(ax, ENTRY[0], BY0 - 0.02, ENTRY[1], BY0 + 0.69)
     door(ax, (ENTRY[0], BY0 + 0.67), 3.0, 0, 90, color=st.edge)
-    # stair shaft + mech room (rated enclosure)
     x0, x1, y0, y1 = SHAFT_L
     wall(ax, x0 - 0.33, y0, x0, 29.0, st, fc=st.conc)
     wall(ax, x0, y1, x1, y1 + 0.33, st, fc=st.conc)
-    opening(ax, x0 - 0.35, 9.3, x0 + 0.02, 12.3)                 # lobby -> garage (20-min door)
+    opening(ax, x0 - 0.35, 9.3, x0 + 0.02, 12.3)          # lobby <-> garage (20-min, tenant key)
     door(ax, (x0 - 0.33, 9.3), 3.0, 90, 90, color=st.edge)
-    opening(ax, x0 - 0.35, 24.0, x0 + 0.02, 27.0)                # mech room door
+    opening(ax, x0 - 0.35, 24.0, x0 + 0.02, 27.0)         # utility / bike closet
     door(ax, (x0 - 0.33, 27.0), 3.0, 180, 90, color=st.edge)
     u_stair(ax, SHAFT_L, st, n=8, dn=False)
-    # conditioned storage room partition (insulated)
-    wall(ax, 10.5, STORE_Y, 27.5, STORE_Y + 0.33, st)
-    wall(ax, 27.5, STORE_Y, 27.83, 29.0, st)
-    opening(ax, 12.5, STORE_Y - 0.02, 17.5, STORE_Y + 0.35)
-    door(ax, (12.5, STORE_Y), 2.5, 270, 90, color=st.edge)
-    door(ax, (17.5, STORE_Y), 2.5, 270, -90, color=st.edge)
-    opening(ax, 24.0, STORE_Y - 0.02, 27.0, STORE_Y + 0.35)
-    door(ax, (27.0, STORE_Y), 3.0, 270, -90, color=st.edge)
-    # mech room equipment
-    for cx, lab in ((39.0, "WH-A"), (41.4, "WH-B")):
-        ax.add_patch(plt.Circle((cx, 27.6), 1.0, fc=PAPER, ec=st.furn, lw=0.6, zorder=6))
-        if not st.bg:
-            txt(ax, cx, 27.6, lab, size=4.0, color=GREY)
     if cars:
-        for i, (a, b) in enumerate(STALLS):
-            car(ax, (a + b) / 2 - 3.15, 10.4, label=None if st.bg else f"CAR {i + 1}", color=st.furn)
+        for i, cx in enumerate(CARS):
+            car(ax, cx - 0.05, 10.4, w=6.3, label=None, color=st.furn)
         for a, b in STALLS[:-1]:
-            line(ax, [(b, 9.2), (b, 27.2)], lw=0.4, color=st.furn, ls=(0, (6, 4)), z=5)
+            line(ax, [(b, 9.0), (b, 27.4)], lw=0.9 if not st.bg else 0.5, color="#c9a400" if not st.bg else st.furn, z=5)
     if st.bg:
-        room(ax, 23.8, 24.5, "GARAGE", st=st)
-        room(ax, 19.0, 31.3, "STORAGE (CONDITIONED)", st=st)
+        room(ax, 23.8, 24.5, "OPEN GARAGE", st=st)
         room(ax, 40.8, 10.3, "LOBBY", st=st)
-        room(ax, 40.8, 25.0, "MECH", st=st)
+        room(ax, 40.8, 25.4, "UTILITY", st=st)
         return st
-    rect(ax, 10.6, 32.5, 27.4, 33.9, fc=WOOD, ec=FURN, lw=0.5, z=5, ls="--")
-    txt(ax, 19.0, 33.2, "16 FT RACK FOR TRIM, LUMBER, SHEET GOODS ON EDGE", size=4.6, color=GREY)
-    room(ax, 23.8, 25.2, "3-CAR GARAGE", "26'-8\" x 19'-4\" to 20'-4\"", f"slab EL {EL_GAR:.1f}  ·  9'-2\" clear")
-    room(ax, 19.0, 31.0, "OWNER STORAGE (CONDITIONED)", "17'-0\" x 5'-8\"  ·  96 sf", fs=5.8)
+    for i, (a, b) in enumerate(STALLS):
+        txt(ax, (a + b) / 2 + (0.6 if i == 0 else 0), 18.7, f"{i + 1}", size=11, weight="bold", color="#c9a400", z=7)
+    room(ax, 23.8, 27.9, "OPEN 3-CAR GARAGE", None, fs=6.2)
     txt(ax, 40.75, 10.2, "LOBBY", size=5.2, weight="bold")
-    txt(ax, 40.75, 25.4, "MECH /\nMETERS", size=5.0, weight="bold")
+    txt(ax, 40.75, 25.6, "BIKES /\nUTILITY", size=5.0, weight="bold")
     return st
 
 
@@ -170,6 +153,12 @@ def shower(ax, x0, y0, x1, y1, st):
     rect(ax, x0, y0, x1, y1, fc=PAPER, ec=st.furn, lw=0.6, z=6)
     line(ax, [(x0, y0), (x1, y1)], lw=0.3, color=st.furn, z=6)
     line(ax, [(x0, y1), (x1, y0)], lw=0.3, color=st.furn, z=6)
+
+
+def tub(ax, x0, y0, x1, y1, st):
+    rect(ax, x0, y0, x1, y1, fc=PAPER, ec=st.furn, lw=0.7, z=6)
+    ax.add_patch(FancyBboxPatch((x0 + 0.35, y0 + 0.35), (x1 - x0) - 0.7, (y1 - y0) - 0.7, boxstyle="round,pad=0.1,rounding_size=0.5",
+                                fc=PAPER, ec=st.furn, lw=0.5, zorder=6))
 
 
 def pocket(ax, x0, y0, x1, y1, st):
@@ -184,105 +173,113 @@ def pocket(ax, x0, y0, x1, y1, st):
 
 
 def unit_plan(ax, mode="arch", unit="A"):
-    """3-bedroom / 3-bath flat. Bedrooms across the rear, each with its own entry hall and bath."""
+    """3-bedroom / 3-bath flat with tubs. Bedrooms 1 and 2 share a short hall; each bath opens off its own bedroom."""
     st = Style(mode)
     poly(ax, OUT, fc=st.frame, ec=st.edge, lw=0.9, z=3)
     poly(ax, IN_U, fc=PAPER, ec=st.edge, lw=0.6, z=4)
-    # exterior openings
     window_h(ax, 12, 17, BY0, BY0 + 0.5)            # kitchen window
     window_h(ax, 22, 30, BY0, BY0 + 0.5)            # living sliding door
     window_h(ax, 39.5, 43, BY0, BY0 + 0.5)          # stair window
     window_v(ax, 10.5, 13.5, BX0, BX0 + 0.5)        # kitchen west
-    window_v(ax, 27, 30, BX0, BX0 + 0.5)            # bedroom 1 west
+    window_v(ax, 28.5, 31.5, BX0, BX0 + 0.5)        # bedroom 1 west
     window_h(ax, 12, 16, WY1 - 0.5, WY1)            # bedroom 1 north (escape)
     window_h(ax, 22, 26, WY1 - 0.5, WY1)            # bedroom 2 north (escape)
     window_h(ax, 39, 43, BY1 - 0.5, BY1)            # bedroom 3 north (escape)
-    window_v(ax, 24, 27, BX1 - 0.5, BX1)            # bedroom 3 east
-    # stair enclosure (1-hour)
+    window_v(ax, 24.5, 27.5, BX1 - 0.5, BX1)        # bedroom 3 east
     x0, x1, y0, y1 = SHAFT_U
-    wall(ax, x0 - 0.5, y0, x0, y1 + 0.5, st)
+    wall(ax, x0 - 0.5, y0, x0, y1 + 0.5, st)        # stair enclosure (1-hour)
     wall(ax, x0, y1, x1, y1 + 0.5, st)
     opening(ax, x0 - 0.52, 9.0, x0 + 0.02, 12.0)    # unit entry
     door(ax, (x0 - 0.5, 9.0), 3.0, 90, 90, color=st.edge)
     u_stair(ax, SHAFT_U, st, n=8, up=(unit == "A"), dn=True)
     # partitions
-    wall(ax, 10, 18.5, 37, 18.9, st)                # living / bedroom suites (wet wall)
-    wall(ax, 10, 23.5, 33.2, 23.9, st)              # baths / bedrooms
-    wall(ax, 16.4, 18.9, 16.8, 23.5, st)            # bath 1 / hall 1
-    wall(ax, 20, 18.9, 20.4, 34.5, st)              # suite 1 / suite 2
-    wall(ax, 23.6, 18.9, 24, 23.5, st)              # hall 2 / bath 2
-    wall(ax, 30, 18.9, 30.4, 23.5, st)              # bath 2 / laundry
-    wall(ax, 33.2, 18.9, 33.6, 29.5, st)            # laundry + bath 3 / suite 3
-    wall(ax, 28, 23.9, 28.4, 29.5, st)              # bedroom 2 / bath 3
-    for a, b in ((17.1, 19.8), (20.7, 23.4), (33.9, 36.6)):          # suite entry doors
-        opening(ax, a, 18.48, b, 18.92)
-        door(ax, (a, 18.9), b - a, 0, 90, color=st.edge)
-    opening(ax, 30.6, 18.48, 33.0, 18.92)           # laundry bifold
-    line(ax, [(30.6, 18.5), (31.2, 17.9), (31.8, 18.5), (32.4, 17.9), (33.0, 18.5)], lw=0.5, z=7, color=st.edge)
-    opening(ax, 17.1, 23.48, 19.8, 23.92)           # hall 1 -> bedroom 1 (open)
-    opening(ax, 20.7, 23.48, 23.4, 23.92)           # hall 2 -> bedroom 2 (open)
-    pocket(ax, 16.38, 19.7, 16.82, 22.1, st)        # bath 1
-    pocket(ax, 23.58, 19.7, 24.02, 22.1, st)        # bath 2
-    pocket(ax, 33.18, 24.3, 33.62, 26.7, st)        # bath 3
-    # bath fixtures
+    wall(ax, 10, 18.0, 37, 18.4, st)                # living / suites (wet wall)
+    wall(ax, 10, 23.5, 29.8, 23.9, st)              # baths / bedrooms
+    wall(ax, 17.6, 18.4, 18.0, 27.3, st)            # bath 1 east + hall west
+    wall(ax, 21.4, 18.4, 21.8, 27.3, st)            # hall east + bath 2 west
+    wall(ax, 17.6, 26.9, 21.8, 27.3, st)            # hall end
+    wall(ax, 19.5, 27.3, 19.9, 34.5, st)            # bedroom 1 / bedroom 2
+    wall(ax, 29.4, 18.4, 29.8, 23.9, st)            # bath 2 east
+    wall(ax, 29.8, 21.5, 33.5, 21.9, st)            # laundry / bath 3
+    wall(ax, 33.5, 18.4, 33.9, 29.5, st)            # laundry + bath 3 / suite 3
+    wall(ax, 28.0, 23.9, 28.4, 29.5, st)            # bedroom 2 / bath 3
+    for a, b in ((18.3, 21.1), (34.1, 36.8)):       # hall doors from the living room
+        opening(ax, a, 17.98, b, 18.42)
+        door(ax, (a, 18.4), b - a, 0, 90, color=st.edge)
+    opening(ax, 30.2, 17.98, 33.2, 18.42)           # laundry bifold
+    line(ax, [(30.2, 18.0), (30.95, 17.4), (31.7, 18.0), (32.45, 17.4), (33.2, 18.0)], lw=0.5, z=7, color=st.edge)
+    opening(ax, 18.02, 23.48, 21.38, 23.92)         # hall runs through to the bedroom doors
+    opening(ax, 17.58, 24.2, 18.02, 26.7)           # bedroom 1 door
+    door(ax, (17.6, 24.2), 2.5, 90, 90, color=st.edge)
+    opening(ax, 21.38, 24.2, 21.82, 26.7)           # bedroom 2 door
+    door(ax, (21.8, 24.2), 2.5, 90, -90, color=st.edge)
+    pocket(ax, 15.0, 23.48, 17.4, 23.92, st)        # bath 1 from bedroom 1
+    pocket(ax, 22.0, 23.48, 24.4, 23.92, st)        # bath 2 from bedroom 2
+    pocket(ax, 33.48, 24.1, 33.92, 26.5, st)        # bath 3 from bedroom 3
     f = st.furn
-    shower(ax, 10.1, 19.0, 13.1, 23.4, st)
-    wc(ax, 14.5, 18.9, st, facing="N")
-    lav(ax, 13.5, 21.9, 15.7, 23.4, st)
-    shower(ax, 27.0, 19.0, 29.9, 23.4, st)
-    wc(ax, 25.6, 23.5, st, facing="S")
-    lav(ax, 24.4, 19.0, 26.6, 20.5, st)
-    shower(ax, 28.5, 26.6, 31.3, 29.4, st)
-    wc(ax, 32.3, 29.5, st, facing="S")
-    lav(ax, 28.7, 24.0, 30.9, 25.5, st)
-    rect(ax, 30.5, 20.9, 33.1, 23.4, fc=PAPER, ec=f, lw=0.5, z=6)                 # stacked W/D
+    tub(ax, 10.1, 18.5, 12.6, 23.4, st)             # bath 1
+    wc(ax, 14.1, 18.4, st, facing="N")
+    lav(ax, 15.5, 18.5, 17.5, 20.0, st)
+    tub(ax, 26.8, 18.5, 29.3, 23.4, st)             # bath 2
+    wc(ax, 25.3, 23.5, st, facing="S")
+    lav(ax, 22.0, 18.5, 24.0, 20.0, st)
+    tub(ax, 28.5, 27.0, 33.4, 29.4, st)             # bath 3
+    wc(ax, 28.4, 25.3, st, facing="E")
+    lav(ax, 30.4, 22.0, 32.8, 23.5, st)
+    rect(ax, 30.1, 18.6, 33.2, 21.3, fc=PAPER, ec=f, lw=0.5, z=6)                 # stacked W/D
+    # water heater closet beside the entry
+    wall(ax, 34.0, 12.2, 34.3, 15.5, st)
+    wall(ax, 34.0, 15.2, 37, 15.5, st)
+    wall(ax, 34.0, 12.2, 37, 12.5, st)
+    opening(ax, 33.98, 12.8, 34.32, 14.9)
+    ax.add_patch(plt.Circle((35.7, 13.85), 1.05, fc=PAPER, ec=f, lw=0.6, zorder=6))
     # kitchen along the west wall + island
-    rect(ax, 10.0, 8.9, 12.0, 18.5, fc=WOOD if not st.bg else PAPER, ec=f, lw=0.6, z=5)
-    rect(ax, 10.0, 15.9, 12.8, 18.5, fc=PAPER, ec=f, lw=0.6, z=6)                 # refrigerator
-    rect(ax, 10.05, 13.3, 11.95, 15.8, fc=PAPER, ec=f, lw=0.6, z=6)               # range
-    for cy in (13.9, 15.2):
+    rect(ax, 10.0, 8.9, 12.0, 18.0, fc=WOOD if not st.bg else PAPER, ec=f, lw=0.6, z=5)
+    rect(ax, 10.0, 15.4, 12.8, 18.0, fc=PAPER, ec=f, lw=0.6, z=6)                 # refrigerator
+    rect(ax, 10.05, 12.9, 11.95, 15.3, fc=PAPER, ec=f, lw=0.6, z=6)               # range
+    for cy in (13.5, 14.7):
         for cx in (10.5, 11.45):
             ax.add_patch(plt.Circle((cx, cy), 0.3, fc="none", ec=f, lw=0.4, zorder=7))
-    lav(ax, 10.15, 10.7, 11.85, 13.2, st)                                         # kitchen sink
-    rect(ax, 10.05, 8.95, 11.95, 10.6, fc=PAPER, ec=f, lw=0.5, z=6)               # dishwasher
-    rect(ax, 14.6, 10.3, 17.1, 16.0, fc=WOOD if not st.bg else PAPER, ec=f, lw=0.6, z=5)   # island
-    # closets
-    for (a, b, c, d) in ((10.1, 23.9, 15.6, 25.8), (24.4, 23.9, 27.9, 25.8), (40.6, 22.2, 44.4, 24.1)):
+    lav(ax, 10.15, 10.5, 11.85, 12.8, st)                                         # kitchen sink
+    rect(ax, 10.05, 8.95, 11.95, 10.4, fc=PAPER, ec=f, lw=0.5, z=6)               # dishwasher
+    rect(ax, 14.6, 10.0, 17.1, 15.4, fc=WOOD if not st.bg else PAPER, ec=f, lw=0.6, z=5)   # island
+    for (a, b, c, d) in ((10.1, 23.9, 14.8, 25.8), (24.7, 23.9, 27.9, 25.8), (40.6, 22.2, 44.4, 24.1)):   # closets
         rect(ax, a, b, c, d, fc="none", ec=f, lw=0.5, z=5, ls="--")
     if st.bg:
-        for x, y, n in ((27, 13, "LIVING"), (13.3, 17.2, "KITCHEN"), (15, 30, "BEDROOM 1"), (24.2, 30, "BEDROOM 2"),
-                        (39, 26.5, "BEDROOM 3"), (14.6, 20.6, "BATH 1"), (26.4, 21.6, "BATH 2"), (30.8, 26, "BATH 3"), (31.8, 19.8, "W/D")):
+        for x, y, n in ((27, 12.6, "LIVING"), (13.4, 16.6, "KITCHEN"), (14.6, 30.6, "BEDROOM 1"), (24.0, 30.6, "BEDROOM 2"),
+                        (39, 26.6, "BEDROOM 3"), (14.6, 21.6, "BATH 1"), (24.6, 21.4, "BATH 2"), (31.0, 25.6, "BATH 3"),
+                        (31.6, 20.0, "W/D"), (35.7, 13.85, "WH")):
             room(ax, x, y, n, st=st)
         return st
-    txt(ax, 11.0, 9.8, "DW", size=4.0, color=GREY, z=8)
-    txt(ax, 11.4, 17.2, "REF", size=4.2, color=GREY, z=8)
-    txt(ax, 31.8, 22.1, "W/D", size=4.4, color=GREY, z=8)
-    for sy in (11.4, 13.2, 15.0):
+    txt(ax, 11.0, 9.7, "DW", size=4.0, color=GREY, z=8)
+    txt(ax, 11.4, 16.7, "REF", size=4.2, color=GREY, z=8)
+    txt(ax, 31.65, 19.95, "W/D", size=4.4, color=GREY, z=8)
+    txt(ax, 35.7, 13.85, "WH", size=4.4, color=GREY, z=8)
+    for sy in (11.0, 12.7, 14.4):
         ax.add_patch(plt.Circle((18.0, sy), 0.55, fc=PAPER, ec=f, lw=0.4, zorder=6))
-    rect(ax, 24.0, 14.6, 31.0, 17.6, fc="#f2f3f5", ec=f, lw=0.5, z=5)             # sofa
-    rect(ax, 24.0, 16.9, 31.0, 17.6, fc="#e4e6e9", ec=f, lw=0.4, z=6)
-    rect(ax, 25.5, 11.4, 29.5, 13.2, fc="#f2f3f5", ec=f, lw=0.5, z=5)
+    rect(ax, 24.6, 14.2, 31.6, 17.2, fc="#f2f3f5", ec=f, lw=0.5, z=5)             # sofa
+    rect(ax, 24.6, 16.5, 31.6, 17.2, fc="#e4e6e9", ec=f, lw=0.4, z=6)
+    rect(ax, 26.1, 11.2, 30.1, 13.0, fc="#f2f3f5", ec=f, lw=0.5, z=5)
     for (a, b, c, d, hx0, hy0, hx1, hy1) in ((10.2, 28.6, 16.9, 33.6, 10.2, 28.6, 11.8, 33.6),
-                                             (21.6, 27.6, 26.6, 34.2, 21.6, 32.6, 26.6, 34.2),
+                                             (21.4, 28.0, 26.4, 34.2, 21.4, 32.6, 26.4, 34.2),
                                              (39.6, 24.6, 44.3, 29.3, 39.6, 27.7, 44.3, 29.3)):
         rect(ax, a, b, c, d, fc="#f2f3f5", ec=f, lw=0.5, z=5)
         rect(ax, hx0, hy0, hx1, hy1, fc="#e4e6e9", ec=f, lw=0.4, z=6)
-    room(ax, 27.0, 10.2, "LIVING", "27'-0\" x 10'-0\" with kitchen")
-    txt(ax, 13.3, 17.3, "KITCHEN", size=5.2, weight="bold", z=9)
-    room(ax, 15.0, 27.4, "BEDROOM 1", "10'-0\" x 10'-7\"  ·  106 sf", fs=5.8)
-    room(ax, 24.2, 26.8, "BEDROOM 2", "7'-7\" x 10'-7\"  ·  81 sf", fs=5.6)
+    room(ax, 27.0, 10.0, "LIVING", "27'-0\" x 9'-6\" with kitchen")
+    txt(ax, 13.4, 16.6, "KITCHEN", size=5.2, weight="bold", z=9)
+    room(ax, 14.4, 27.5, "BEDROOM 1", "9'-6\" x 10'-7\"  ·  94 sf", fs=5.6)
+    room(ax, 25.0, 27.3, "BEDROOM 2", None, fs=5.4)
+    txt(ax, 25.0, 26.5, "8'-1\" x 10'-7\" · 79 sf", size=4.6, box=True, z=9)
     room(ax, 36.6, 27.6, "BEDROOM 3", None, fs=5.6)
-    txt(ax, 36.6, 26.6, "10'-11\" x 7'-4\"", size=5.0, box=True, z=9)
-    txt(ax, 36.6, 25.7, "80 sf", size=5.0, box=True, z=9)
-    txt(ax, 14.9, 20.4, "BATH 1", size=4.8, weight="bold")
-    txt(ax, 25.5, 21.6, "BATH 2", size=4.8, weight="bold")
-    txt(ax, 30.8, 26.0, "BATH 3", size=4.8, weight="bold", rot=0)
-    txt(ax, 18.4, 21.2, "HALL", size=4.2, color=GREY, rot=90)
-    txt(ax, 22.0, 21.2, "HALL", size=4.2, color=GREY, rot=90)
-    txt(ax, 35.3, 20.4, "HALL", size=4.2, color=GREY)
-    txt(ax, 12.9, 24.8, "CLOSET", size=3.8, color=GREY)
-    txt(ax, 26.1, 24.8, "CLOSET", size=3.8, color=GREY)
-    txt(ax, 42.5, 23.1, "CLOSET", size=3.8, color=GREY)
+    txt(ax, 36.6, 26.6, "10'-7\" x 7'-4\"", size=5.0, box=True, z=9)
+    txt(ax, 36.6, 25.7, "77 sf", size=5.0, box=True, z=9)
+    txt(ax, 14.6, 21.8, "BATH 1", size=4.8, weight="bold")
+    txt(ax, 24.6, 21.4, "BATH 2", size=4.8, weight="bold")
+    txt(ax, 31.2, 25.3, "BATH 3", size=4.8, weight="bold")
+    txt(ax, 19.7, 21.0, "HALL", size=4.4, color=GREY, rot=90)
+    txt(ax, 35.4, 20.4, "HALL", size=4.2, color=GREY)
+    for x, y in ((12.4, 24.85), (26.3, 24.85), (42.5, 23.15)):
+        txt(ax, x, y, "CLOSET", size=3.8, color=GREY)
     txt(ax, 41.0, 10.2, "COMMON\nSTAIR", size=4.8, color=GREY)
     return st
 

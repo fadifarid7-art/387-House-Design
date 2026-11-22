@@ -9,7 +9,7 @@ from levels import *  # noqa: F401,F403
 
 STEEL = "#1f5fa8"
 FRAME_Y = 8.33
-COLS = [10.9, 28.15, 37.3, 44.5]
+COLS = [10.9, 28.67, 37.3, 44.5]
 
 
 def text_columns(bg, cols, top=None, fs=6.5, lh=0.165):
@@ -73,8 +73,9 @@ def sheet_s001(pdf):
         ]),
         (L + 4.42, 4.0, [
             ("Structural system", [
-                "Garage level: 12 in. reinforced concrete walls on the west,\nnorth and east, retaining 8 to 13 ft of soil. They are\nrestrained at the top by the Unit A floor diaphragm, so\nthat floor must be built and anchored before backfill.",
-                "Front line: the garage doors leave almost no wall, so a\nsteel frame (beam B1 on four HSS columns) carries the\nfront of both floors and the roof and resists sideways\nload. This is the critical engineered element.",
+                "Garage level: 12 in. reinforced concrete walls on the west,\nnorth and east, retaining 8 to 10.5 ft of soil. They are\nrestrained at the top by the Unit A floor diaphragm, so\nthat floor must be built and anchored before backfill.",
+                "Front line: the garage front is open, so a steel frame\n(beam B1 on four HSS columns) carries the front of both\nfloors and the roof and resists sideways load. This is\nthe critical engineered element.",
+                "Rear wing: not excavated. Its Unit A floor is a slab on\nengineered fill inside a shallow frost wall.",
                 "Floors: 20 in. open-web wood trusses at 16 in. o.c.\nspanning front to back with no interior supports, which\nkeeps the garage column-free. Porches are 4 ft\ncantilevers of the same trusses.",
                 "Walls above: 2x6 studs at 16 in. o.c. with wood\nstructural panel sheathing as shear walls.",
                 "Roof: pre-engineered wood trusses at 24 in. o.c.",
@@ -89,12 +90,12 @@ def sheet_s001(pdf):
         ]),
         (L + 8.84, 4.0, [
             ("Excavation and neighbours", [
-                "Cut is 8 to 13 ft deep and within 5 to 9 ft of three\nneighbouring lots. Assume engineered shoring\n(soldier piles and lagging or equivalent) on the\nwest, north and east. No sloped open cut fits.",
+                "Cut is 8 to 10.5 ft deep and within 5 to 10 ft of three\nneighbouring lots. Assume engineered shoring\n(soldier piles and lagging or equivalent) on the\nwest, north and east. No sloped open cut fits.",
                 "Pre-construction survey and vibration monitoring of\n441 and 442 Baird and 386 Forest.",
                 "Underpinning if any neighbouring footing falls inside\na 1:1 line from the bottom of this excavation.",
             ]),
             ("Drainage and waterproofing", [
-                "Membrane waterproofing and drainage board on all\nretaining walls. 4 in. perforated footing drain in\nstone, to a sump in the mech room.",
+                "Membrane waterproofing and drainage board on all\nretaining walls. 4 in. perforated French drain in stone\nat the wall base, sloped to a gravity outlet at the\nstreet edge. No sump pump. Cleanout risers at corners.",
                 "Slab on 4 in. stone with a 15-mil vapour barrier,\nsloped 1/8 in. per ft to the trench drain.",
             ]),
             ("Special inspections to expect", [
@@ -104,7 +105,8 @@ def sheet_s001(pdf):
                 ("B1", "W12 steel beam, front line"),
                 ("C1-C4", "HSS 6x6x3/8 columns"),
                 ("W1", "12 in. concrete wall"),
-                ("F1", "Footing 3'-0\" x 12 in.\n(4'-6\" at the wing rear)"),
+                ("F1", "Footing 3'-0\" x 12 in.\n(4'-6\" at the rear wall)"),
+                ("F3", "Frost wall 8 in. on 20 in.\nfooting, rear wing"),
                 ("F2", "Pad 4'-0\" x 4'-0\" x 16 in."),
                 ("FT1", "20 in. floor truss @ 16 in."),
                 ("RT1 / RT2", "Roof truss @ 24 in."),
@@ -124,87 +126,90 @@ def sheet_s101(pdf):
     notes = [
         ("Foundation plan", [
             "F1: continuous footing 3'-0\" x 12 in.",
-            "under all 12 in. walls, widened to 4'-6\"",
-            "at the wing rear wall (tallest fill).",
-            "F2: 4'-0\" square pads under the four",
-            "front frame columns, tied by a grade",
-            "beam below the door sills.",
-            "Bottom of footing EL 912.0 or lower,",
-            "36 in. minimum below finished grade",
-            "at the front where it is exposed.",
+            "under the 12 in. walls, 4'-6\" at the rear.",
+            "F2: 4'-0\" pads under the four front",
+            "frame columns, tied by a grade beam",
+            "across the open front.",
+            "F3: shallow frost wall around the rear",
+            "wing, which is not excavated. Its floor",
+            "is a slab on engineered fill at Unit A",
+            "level. No crawl space.",
         ]),
         ("Slab", [
             "5 in. slab, #4 at 18 in. each way, on a",
             "15-mil vapour barrier and 4 in. stone.",
+            "Broom finish, penetrating sealer.",
             "Slope 1/8 in./ft to the trench drain.",
-            "Saw-cut joints as shown. Thicken to",
-            "10 in. under the storage partition.",
-            "2 in. rigid insulation under the storage",
-            "room and mech room slabs.",
         ]),
-        ("Drainage", [
-            "Footing drain (dashed blue) around the",
-            "three buried sides to a sump in the",
-            "mech room. Discharge location is a",
-            "civil/City Engineer item: it must not",
-            "create a structure in the right-of-way.",
+        ("French drain: no sump pump", [
+            "4 in. perforated pipe in stone at the",
+            "base of the west, rear and east walls,",
+            "sloped 0.5 % to a gravity outlet at the",
+            "street edge. Inverts shown are targets:",
+            "the fall is only ±6 in. end to end, so",
+            "the survey must confirm it.",
+            "A second, shallow drain behind the",
+            "building catches hillside runoff.",
+            "CO = cleanout riser to grade.",
+            "The outlet is on city property and",
+            "needs City Engineer approval.",
         ]),
         ("Preliminary", [
-            "Sizes are assumptions for the engineer",
-            "to check against the soil report.",
+            "Sizes are assumptions for the engineer.",
         ]),
     ]
-    fig, bg = new_sheet("S-101", "Foundation plan", "3/16\" = 1'-0\"", notes)
-    ax = plan_frame(fig, "Foundation and slab plan", f"Top of slab EL {EL_GAR:.1f} · footings dashed · preliminary sizes", street=False)
+    fig, bg = new_sheet("S-101", "Foundation and drainage plan", "3/16\" = 1'-0\"", notes)
+    ax = plan_frame(fig, "Foundation, slab and French drain plan", f"Top of slab EL {EL_GAR:.1f} · footings dashed · drains blue · preliminary")
+    poly(ax, APRON, fc="#f1f3f5", ec=BG_EDGE, lw=0.5, z=2)
     lower_plan(ax, "bg", cars=False)
-    # footings
-    outer = offset_poly(OUT, 1.0)
-    inner = offset_poly(IN_L, -1.0)
-    line(ax, outer, color=INK, lw=0.7, ls=(0, (5, 3)), z=7)
-    line(ax, inner, color=INK, lw=0.7, ls=(0, (5, 3)), z=7)
-    rect(ax, BX0 - 2.5, 31.0, WX1 + 1.0, WY1 + 2.5, fc="none", ec=INK, lw=0.7, z=7, ls=(0, (5, 3)))
-    txt(ax, 19, 36.4, "F1 WIDENED TO 4'-6\" AT WING REAR WALL", size=4.8, box=True)
+    line(ax, offset_poly(OUT_L, 1.0), color=INK, lw=0.7, ls=(0, (5, 3)), z=7)
+    line(ax, offset_poly(IN_L, -1.0), color=INK, lw=0.7, ls=(0, (5, 3)), z=7)
+    # rear wing frost wall
+    rect(ax, BX0, BY1, WX1, WY1, fc="#f4efe6", ec=INK, lw=0.9, z=3)
+    rect(ax, BX0 + 0.67, BY1, WX1 - 0.67, WY1 - 0.67, fc="#faf7f1", ec=GREY, lw=0.4, z=4)
+    txt(ax, 19, 32.6, "REAR WING: F3 FROST WALL · 5\" SLAB ON ENGINEERED FILL · T.O. SLAB EL 925.5", size=4.6, box=True, z=9)
     for cx in COLS:
         rect(ax, cx - 2, FRAME_Y - 2, cx + 2, FRAME_Y + 2, fc="none", ec=STEEL, lw=0.9, z=8, ls=(0, (5, 3)))
         rect(ax, cx - 0.3, FRAME_Y - 0.3, cx + 0.3, FRAME_Y + 0.3, fc=STEEL, ec=STEEL, z=9)
     for i, cx in enumerate(COLS):
-        txt(ax, cx, 5.3, f"C{i + 1} / F2", size=4.8, color=STEEL, weight="bold", box=True)
+        txt(ax, cx, 11.4, f"C{i + 1} / F2", size=4.8, color=STEEL, weight="bold", box=True, z=11)
     line(ax, [(COLS[0], FRAME_Y), (COLS[-1], FRAME_Y)], color=STEEL, lw=0.6, ls=(0, (2, 2)), z=8)
-    txt(ax, 19.4, 7.0, "GRADE BEAM 16\" x 24\" BELOW DOOR SILLS, TIES F2 PADS", size=4.6, color=STEEL, box=True)
-    # footing drain + sump
-    fd = offset_poly(OUT, 1.6)
-    seg = [p for p in fd if p[1] > 8.5]
-    line(ax, [(BX0 - 1.6, 9.0), (BX0 - 1.6, WY1 + 1.6), (WX1 + 1.6, WY1 + 1.6), (WX1 + 1.6, BY1 + 1.6), (BX1 + 1.6, BY1 + 1.6), (BX1 + 1.6, 9.0)],
-         color=BLUE, lw=0.9, ls=(0, (6, 2, 1, 2)), z=8)
-    line(ax, [(BX1 + 1.6, 26.0), (43.2, 26.0)], color=BLUE, lw=0.9, ls=(0, (6, 2, 1, 2)), z=8)
-    ax.add_patch(plt.Circle((43.0, 24.4), 0.9, fc=PAPER, ec=BLUE, lw=1.0, zorder=9))
-    txt(ax, 43.0, 24.4, "SUMP", size=3.8, color=BLUE)
-    txt(ax, 48.6, 22.0, "4\" FOOTING\nDRAIN", size=4.6, color=BLUE)
-    # slab joints and slopes
-    for x in (19.39, 28.28):
-        line(ax, [(x, 8.8), (x, 27.9)], lw=0.4, color=GREY, ls=(0, (8, 3)), z=6)
+    txt(ax, 19.4, 13.0, "GRADE BEAM 16\" x 24\" ACROSS THE OPEN FRONT, TIES F2 PADS", size=4.6, color=STEEL, box=True)
+    # French drain at wall base: SW start -> NW -> NE -> SE -> outlet at street edge
+    fd = [(BX0 - 1.6, 9.0), (BX0 - 1.6, BY1 + 1.6), (BX1 + 1.6, BY1 + 1.6), (BX1 + 1.6, 3.4), (43.6, 0.2), (43.6, PAVE_N)]
+    line(ax, fd, color=BLUE, lw=1.6, z=9)
+    for (x, y, lab, dx, dy) in ((BX0 - 1.6, 9.0, "CO  INV 913.1", -5.0, 0.0), (BX0 - 1.6, BY1 + 1.6, "CO  INV 912.95", -4.6, 1.6),
+                                (BX1 + 1.6, BY1 + 1.6, "CO  INV 912.75", 4.6, 1.6), (BX1 + 1.6, 9.0, "CO  INV 912.6", 5.0, 0.0)):
+        ax.add_patch(plt.Circle((x, y), 0.5, fc=PAPER, ec=BLUE, lw=1.2, zorder=10))
+        txt(ax, x + dx, y + dy, lab, size=4.4, color=BLUE, weight="bold", box=True, z=11)
+    poly(ax, [(43.0, PAVE_N), (44.2, PAVE_N), (43.6, PAVE_N - 1.2)], fc=BLUE, ec=BLUE, z=10)
+    txt(ax, 49.2, -5.0, "GRAVITY OUTLET\nAT STREET EDGE\nINV ±912.2", size=4.4, color=BLUE, weight="bold")
+    line(ax, [(46.6, -5.6), (44.4, -6.6)], lw=0.3, color=BLUE)
+    for (x, y, ang) in ((BX0 - 1.6, 20, 90), (27, BY1 + 1.6, 0), (BX1 + 1.6, 20, 270)):
+        a = math.radians(ang)
+        ax.annotate("", xy=(x + 2.2 * math.cos(a), y + 2.2 * math.sin(a)), xytext=(x - 2.2 * math.cos(a), y - 2.2 * math.sin(a)),
+                    arrowprops=dict(arrowstyle="-|>", lw=0.9, color=BLUE), zorder=11)
+    txt(ax, 27, 28.0, "4\" PERFORATED FRENCH DRAIN IN STONE AT WALL BASE · 0.5 % FALL", size=4.6, color=BLUE, box=True, z=11)
+    # shallow interceptor drain behind the building
+    sd = [(BX0 - 3.4, 14.0), (BX0 - 3.4, WY1 + 1.9), (WX1 + 2.0, WY1 + 1.9), (WX1 + 2.0, BY1 + 3.6), (BX1 + 3.4, BY1 + 3.6), (BX1 + 3.4, 3.4)]
+    line(ax, sd, color="#0e8f9c", lw=1.2, ls=(0, (6, 2, 1, 2)), z=9)
+    txt(ax, 19, 38.0, "SHALLOW INTERCEPTOR DRAIN (hillside runoff), 12\" below grade", size=4.4, color="#0e8f9c", box=True, z=11)
+    line(ax, [(DOOR_A[0], 7.55), (DOOR_B[1], 7.55), (40.2, 4.4), (43.6, 1.2)], lw=1.4, color="#0e8f9c", z=8)
+    txt(ax, 24, 5.6, "TRENCH DRAIN ACROSS THE OPEN FRONT, TO THE SAME OUTLET", size=4.4, color="#0e8f9c", box=True, z=11)
+    for x in (20.17, 28.67):
+        line(ax, [(x, 8.8), (x, 28.9)], lw=0.4, color=GREY, ls=(0, (8, 3)), z=6)
     line(ax, [(10.6, 18.5), (37.1, 18.5)], lw=0.4, color=GREY, ls=(0, (8, 3)), z=6)
     for x in (15, 24, 33):
-        ax.annotate("", xy=(x, 10.0), xytext=(x, 15.5), arrowprops=dict(arrowstyle="-|>", lw=0.5, color=GREY), zorder=7)
-    txt(ax, 24, 16.6, "SLOPE 1/8\"/FT TO TRENCH DRAIN", size=4.6, color=GREY, box=True)
-    line(ax, [(DOOR_A[0], 7.55), (DOOR_B[1], 7.55)], lw=1.4, color=BLUE, z=6)
+        ax.annotate("", xy=(x, 14.6), xytext=(x, 17.8), arrowprops=dict(arrowstyle="-|>", lw=0.5, color=GREY), zorder=7)
     txt(ax, 24, 22.8, "5\" SLAB · #4 @ 18\" E.W. · 15-MIL VAPOUR BARRIER · 4\" STONE", size=4.8, box=True)
-    txt(ax, 24, 21.6, f"T.O. SLAB EL {EL_GAR:.1f}", size=5.2, weight="bold", box=True)
-    txt(ax, 19, 30.4, "INSULATED SLAB · THICKENED EDGE UNDER PARTITION", size=4.4, box=True)
-    # wall tags
-    for (x, y, t) in ((6.4, 22, "W1"), (27, 37.8, "W1"), (47.5, 14, "W1"), (39, 31.6, "W1")):
+    txt(ax, 24, 21.6, f"T.O. SLAB EL {EL_GAR:.1f} · SLOPE 1/8\"/FT TO TRENCH DRAIN", size=5.0, weight="bold", box=True)
+    for (x, y, t) in ((27, 26.0, "W1"),):
         ax.add_patch(plt.Circle((x, y), 1.0, fc=PAPER, ec=INK, lw=0.6, zorder=9))
         txt(ax, x, y, t, size=4.8, weight="bold", z=10)
-    line(ax, [(7.4, 22), (9.6, 22)], lw=0.3)
-    line(ax, [(27, 36.8), (27, 35.2)], lw=0.3)
-    line(ax, [(46.5, 14), (45.1, 14)], lw=0.3)
-    line(ax, [(39, 30.6), (39, 30.1)], lw=0.3)
-    txt(ax, 2.2, 28.5, "W1 = 12\" CONC.\nWALL, #5 @ 12\"\nVERT. INSIDE\nFACE, #4 @ 12\"\nHORIZ. (PRELIM.)", size=4.4, color=GREY)
-    dim(ax, (BX0, WY1), (WX1, WY1), 4.6, "19'-0\"", size=5.2)
-    dim(ax, (BX1, BY0), (BX1, BY1), -8.2, "22'-0\"", side=-1, size=5.2)
-    dim(ax, (BX0, -1.2), (BX1, -1.2), 0, "35'-6\"", ext=False, size=5.2)
-    for a, b in zip(COLS[:-1], COLS[1:]):
-        dim(ax, (a, 2.6), (b, 2.6), 0, ftin(b - a), ext=False, size=4.8, color=STEEL)
+    line(ax, [(27, 27.0), (27, 29.4)], lw=0.3)
+    txt(ax, 33.4, 26.0, "W1 = 12\" CONC. WALL, ALL THREE BURIED SIDES", size=4.4, color=GREY, box=True)
+    dim(ax, (BX1, BY0), (BX1, BY1), -11.0, "22'-0\"", side=-1, size=5.2)
+    dim(ax, (BX0, 2.2), (BX1, 2.2), 0, "35'-6\"", ext=False, size=5.2)
     save(fig, "S-101", pdf)
 
 
@@ -212,11 +217,13 @@ TR = "#7a5c2e"
 
 
 def floor_framing(ax, over_garage):
-    """Floor trusses at 16 in. o.c. spanning front to back; common to both unit floors."""
+    """Floor trusses at 16 in. o.c. spanning front to back. Unit A floor stops at the garage rear wall
+    (the wing is a slab on fill); the Unit B floor carries on over the wing."""
     shaft = SHAFT_L if over_garage else SHAFT_U
     y_front = FRAME_Y if over_garage else BY0 + 0.25
+    y_wing = 29.5 if over_garage else 34.5
     for x in np.arange(10.17, 28.4, 16 / 12):
-        line(ax, [(x, y_front), (x, 34.5)], lw=0.35, color=TR, z=7)
+        line(ax, [(x, y_front), (x, y_wing)], lw=0.35, color=TR, z=7)
         line(ax, [(x, 4.0), (x, y_front)], lw=0.35, color=TR, z=7, ls=(0, (3, 2)))
     for x in np.arange(28.83, 37.1, 16 / 12):
         line(ax, [(x, y_front), (x, 29.5)], lw=0.35, color=TR, z=7)
@@ -225,28 +232,33 @@ def floor_framing(ax, over_garage):
     for x in np.arange(38.2, 44.4, 16 / 12):
         line(ax, [(x, shaft[3] + 0.3), (x, 29.5)], lw=0.35, color=TR, z=7)
     rect(ax, 9.5, 4.0, 35.5, BY0, fc="none", ec=TR, lw=0.7, z=7, ls=(0, (3, 2)))
-    for x in (28.5, 37.3):
-        line(ax, [(x, y_front), (x, 29.5 if x > 30 else 34.5)], lw=1.3, color=TR, z=8)
-    txt(ax, 29.7, 26.6, "GT1", size=4.8, color=TR, weight="bold", rot=90, box=True)
+    line(ax, [(37.3, y_front), (37.3, 29.5)], lw=1.3, color=TR, z=8)
     txt(ax, 36.2, 26.6, "GT1", size=4.8, color=TR, weight="bold", rot=90, box=True)
+    if not over_garage:
+        line(ax, [(28.5, y_front), (28.5, 34.5)], lw=1.3, color=TR, z=8)
+        txt(ax, 29.7, 26.6, "GT1", size=4.8, color=TR, weight="bold", rot=90, box=True)
     rect(ax, shaft[0], shaft[2], shaft[1], shaft[3], fc="none", ec=INK, lw=0.6, z=8, hatch="xx")
     txt(ax, 40.75, 15.2, "STAIR\nOPENING", size=5.0, weight="bold", box=True, z=10)
-    txt(ax, 19.2, 27.6, "FT1 · 20\" OPEN-WEB FLOOR TRUSSES @ 16\" O.C.", size=5.2, weight="bold", box=True, z=10)
-    txt(ax, 19.2, 26.4, "span 26'-4\" · front bearing to wing rear wall", size=4.8, box=True, z=10)
+    txt(ax, 19.2, 24.0, "FT1 · 20\" OPEN-WEB FLOOR TRUSSES @ 16\" O.C.", size=5.2, weight="bold", box=True, z=10)
+    txt(ax, 19.2, 22.8, "span 21'-4\" · front beam to garage rear wall" if over_garage else "span 26'-4\" · front wall to wing rear wall", size=4.8, box=True, z=10)
     txt(ax, 33.0, 14.5, "FT1 @ 16\"\nspan 21'-4\"", size=4.8, box=True, z=10)
     txt(ax, 41.2, 26.0, "FT1 @ 16\"\nspan 7'", size=4.4, box=True, z=10)
     txt(ax, 22.5, 2.9, "4'-0\" PORCH CANTILEVER (TRUSS TOP CHORD EXTENDS) · 60 PSF LIVE", size=4.6, color=TR)
-    ax.annotate("", xy=(14, 33.6), xytext=(14, 9.4), arrowprops=dict(arrowstyle="<|-|>", lw=0.6, color=INK), zorder=10)
+    ax.annotate("", xy=(14, y_wing - 0.9), xytext=(14, 9.4), arrowprops=dict(arrowstyle="<|-|>", lw=0.6, color=INK), zorder=10)
+    if over_garage:
+        rect(ax, BX0, BY1, WX1, WY1, fc="#f4efe6", ec=INK, lw=0.9, z=6)
+        txt(ax, 19, 32.5, "REAR WING: 5\" SLAB ON ENGINEERED FILL (NO FRAMING, NO CRAWL SPACE)", size=4.6, box=True, z=10)
 
 
 def sheet_s102(pdf):
     notes = [
         ("Unit A floor framing", [
             "FT1: 20 in. open-web floor trusses at",
-            "16 in. o.c., spanning front to back:",
-            "26'-4\" in the wing bay, 21'-4\" in the",
-            "east bay. No interior bearing, so the",
-            "garage stays column-free.",
+            "16 in. o.c., spanning 21'-4\" from the",
+            "front beam to the garage rear wall. No",
+            "interior bearing: the garage stays",
+            "column-free. The rear wing floor is a",
+            "slab on fill, not framed.",
             "Top-chord cantilever 4'-0\" for the porch.",
             "Truss maker designs to L/480 live load",
             "with the loads on S-001.",
@@ -254,7 +266,7 @@ def sheet_s102(pdf):
         ("Front frame (critical)", [
             "B1: W12 steel beam on C1-C4. It",
             "carries Units A and B and the roof over",
-            "the garage doors and, with the columns,",
+            "the open garage front and, with the columns,",
             "forms the lateral frame for the open",
             "front. Engineer to size as a moment",
             "frame or braced portal.",
@@ -293,8 +305,9 @@ def sheet_s102(pdf):
 def sheet_s103(pdf):
     notes = [
         ("Unit B floor framing", [
-            "Same FT1 trusses and layout as the",
-            "Unit A floor, so bearing lines stack.",
+            "Same FT1 trusses as the Unit A floor,",
+            "but here they run on over the wing:",
+            "26'-4\" in the wing bay, 21'-4\" elsewhere.",
             "Here the trusses bear on the 2x6 stud",
             "walls of Unit A instead of steel and",
             "concrete.",
@@ -410,30 +423,31 @@ def sheet_s104(pdf):
 def sheet_s301(pdf):
     notes = [
         ("1 · Retaining wall", [
-            "Typical at the wing rear wall, the tallest",
-            "condition (±12.5 ft of soil). The wall is",
-            "propped by the slab at the bottom and",
-            "by the Unit A floor at EL 925.5; above",
-            "that it cantilevers 3 ft as a stem wall.",
+            "Typical at the garage rear wall, the",
+            "tallest condition (±10.5 ft of soil). The",
+            "wall is propped by the slab at the",
+            "bottom and by the Unit A floor at the",
+            "top. The wing's slab and frost wall sit",
+            "on the fill behind it and add load.",
             "Rebar shown is a placeholder.",
         ]),
         ("2 · Front frame", [
-            "Looking north at the garage doors.",
-            "B1 spans 17'-3\", 9'-2\" and 7'-2\" over",
-            "C1-C4. Rough check for the 17 ft bay:",
-            "about 2.4 kips/ft from two floors, porch",
-            "and roof gives ±85 kip-ft. A W12x30",
+            "Looking north at the open garage front.",
+            "B1 spans 17'-9\", 8'-8\" and 7'-2\" over",
+            "C1-C4. Rough check for the 17'-9\" bay:",
+            "about 2.5 kips/ft from two floors, porch",
+            "and roof gives ±92 kip-ft. A W12x30",
             "works for gravity; lateral design will",
             "likely increase it.",
             "Columns bear on F2 pads tied by a",
             "grade beam under the door sills.",
         ]),
         ("Sequence that matters", [
-            "1. Shore. 2. Excavate. 3. Footings and",
-            "walls. 4. Slab. 5. Steel frame. 6. Unit A",
-            "floor, anchored to walls. 7. Only then",
-            "backfill, in lifts, with light compaction",
-            "near the walls.",
+            "1. Shore. 2. Excavate. 3. Footings, walls",
+            "and French drain. 4. Slab. 5. Steel",
+            "frame. 6. Unit A floor, anchored to",
+            "walls. 7. Only then backfill in lifts.",
+            "8. Wing frost wall and slab on that fill.",
         ]),
         ("Preliminary", [
             "For the engineer of record to redesign.",
@@ -444,17 +458,16 @@ def sheet_s301(pdf):
     f1 = 8 / 3.0
     ax = plan_axes(fig, 0.75, 0.9, (-9, 11), (-4.5, 19.5), f1)
     z0 = 0.0                                # top of slab
-    poly(ax, [(1, -1.5), (11, -1.5), (11, 12.5), (1, 12.5)], fc="#efe9e1", ec="none", z=1)
-    ax.fill_between([1, 11], [12.5, 12.9], [12.5 - 0.8, 12.9 - 0.8], hatch="////", fc="none", ec=EARTH, lw=0, zorder=2, alpha=0.6)
-    line(ax, [(1, 12.5), (11, 12.9)], lw=1.2, z=6)
+    poly(ax, [(1, -1.5), (11, -1.5), (11, 10.58), (1, 10.58)], fc="#efe9e1", ec="none", z=1)
+    rect(ax, 1, 10.58, 11, 11.0, fc=CONC, ec=INK, lw=0.7, z=5)                          # wing slab on fill
     rect(ax, -4.5, -2.75, 3.0, -1.5, fc=CONC, ec=INK, lw=0.9, z=4)                     # footing 7'-6"? shown 4'-6" + toe
-    rect(ax, 0, -1.5, 1, 14.0, fc=CONC, ec=INK, lw=0.9, z=5)                           # wall
+    rect(ax, 0, -1.5, 1, 11.0, fc=CONC, ec=INK, lw=0.9, z=5)                           # wall
     rect(ax, -9, -0.42, 0, 0, fc=CONC, ec=INK, lw=0.7, z=4)                            # slab
     rect(ax, -9, -0.9, 0, -0.42, fc="#e1ddd4", ec="none", z=3)
-    rect(ax, 1, -1.5, 1.9, 12.0, fc="#dcdfe3", ec="none", z=3, hatch="....")           # drainage stone/board
+    rect(ax, 1, -1.5, 1.9, 10.2, fc="#dcdfe3", ec="none", z=3, hatch="....")           # drainage stone/board
     ax.add_patch(plt.Circle((1.6, -1.1), 0.3, fc=PAPER, ec=BLUE, lw=1.0, zorder=6))
-    line(ax, [(0.75, -1.3), (0.75, 13.7)], lw=0.9, color=ACCENT, z=7)                  # inside-face vertical bars
-    for y in np.arange(-1.0, 13.8, 1.0):
+    line(ax, [(0.75, -1.3), (0.75, 10.7)], lw=0.9, color=ACCENT, z=7)                  # inside-face vertical bars
+    for y in np.arange(-1.0, 10.8, 1.0):
         ax.add_patch(plt.Circle((0.6, y), 0.06, fc=ACCENT, ec=ACCENT, zorder=7))
     line(ax, [(0.75, -1.3), (0.75, -2.45), (-3.8, -2.45)], lw=0.9, color=ACCENT, z=7)
     line(ax, [(-4.2, -1.8), (2.7, -1.8)], lw=0.9, color=ACCENT, z=7)
@@ -463,26 +476,26 @@ def sheet_s301(pdf):
     for x in np.arange(-8, 0, 2.0):
         line(ax, [(x - 0.8, 11 - 1.73), (x, 10.9), (x + 0.8, 11 - 1.73)], lw=0.25, color=GREY, z=5)
     rect(ax, -0.9, 11 - 1.73, 0, 11 - 1.48, fc=POCHE, z=6)                              # ledger / bearing
-    rect(ax, 0, 14.0, 0.5, 19.5, fc=POCHE, z=5)                                         # stud wall above
-    rect(ax, 0, 14.0, 1, 14.15, fc=POCHE, z=6)
+    rect(ax, 0, 11.0, 0.5, 19.5, fc=POCHE, z=5)                                         # stud wall above (east bay)
+    rect(ax, 0, 11.0, 1, 11.15, fc=POCHE, z=6)
     lab = [(-8.6, 12.0, "UNIT A FLOOR  EL 925.5"), (-8.6, 0.6, f"GARAGE SLAB  EL {EL_GAR:.1f}")]
     for x, y, s in lab:
         txt(ax, x, y, s, size=5.6, weight="bold", ha="left")
     call = [((0.5, 7.0), (4.2, 7.6), "12\" CONCRETE WALL, 4,000 PSI\n#5 @ 12\" VERT. INSIDE FACE\n#4 @ 12\" HORIZ. (PLACEHOLDER)"),
             ((1.45, 4.0), (4.2, 4.6), "WATERPROOFING MEMBRANE +\nDRAINAGE BOARD, FREE-DRAINING\nBACKFILL 12\" MIN."),
-            ((1.6, -1.1), (4.4, 0.6), "4\" PERFORATED FOOTING DRAIN\nIN STONE, FILTER FABRIC, TO SUMP"),
-            ((-2.0, -2.1), (-8.6, -3.4), "F1 FOOTING 4'-6\" x 15\" HERE (3'-0\" x 12\" ELSEWHERE), BEARING ON UNDISTURBED SOIL OR ROCK"),
+            ((1.6, -1.1), (4.4, 0.6), "4\" PERFORATED FRENCH DRAIN IN STONE,\nFILTER FABRIC, GRAVITY TO STREET (NO SUMP)"),
+            ((-2.0, -2.1), (-8.6, -3.4), "F1 FOOTING 4'-6\" x 15\" AT THE REAR WALL (3'-0\" x 12\" ELSEWHERE), ON UNDISTURBED SOIL OR ROCK"),
             ((-0.45, 9.4), (-8.6, 8.0), "FLOOR TRUSSES BEAR ON A LEDGE OR\nSTEEL ANGLE; ANCHOR BOLTS TIE THE\nDIAPHRAGM TO THE WALL (PROP)"),
-            ((0.5, 13.0), (4.2, 15.2), "WALL CONTINUES 3'-0\" ABOVE THE\nFLOOR AS A CANTILEVER STEM\nWHERE GRADE IS ABOVE THE FLOOR"),
-            ((0.25, 17.0), (4.2, 18.0), "2x6 STUD WALL, TREATED SILL,\nANCHOR BOLTS @ 32\""),
-            ((6.0, 12.7), (4.4, 10.6), "FINISHED GRADE ±EL 927\nSLOPE AWAY 5 % MIN.")]
+            ((4.0, 11.2), (4.2, 15.2), "REAR WING BEHIND THE WALL:\nSLAB ON ENGINEERED FILL AT\nUNIT A LEVEL (surcharge on wall)"),
+            ((0.25, 17.0), (4.2, 18.0), "2x6 STUD WALL ABOVE (east bay only;\nopen to the wing rooms in the west bay)"),
+            ((6.0, 10.2), (4.4, 9.0), "ENGINEERED FILL UNDER WING SLAB")]
     for (px, py), (tx, ty), s in call:
         line(ax, [(px, py), (tx - 0.15 if tx > px else tx + 0.2, ty)], lw=0.3, z=8)
         txt(ax, tx, ty, s, size=4.9, ha="left", va="center", box=True)
     dim(ax, (-6.6, 0), (-6.6, 11), 0, "11'-0\"", ext=False, size=5.2)
-    dim(ax, (9.6, 0), (9.6, 12.8), 0, "±12'-6\" RETAINED", ext=False, size=5.0, side=-1)
+    dim(ax, (9.6, 0), (9.6, 10.6), 0, "±10'-6\" RETAINED", ext=False, size=5.0, side=-1)
     dim(ax, (0, -3.5), (1, -3.5), 0, "12\"", ext=False, size=4.8)
-    txt(ax, -9, -4.2, "1   RETAINING WALL AT WING REAR (TALLEST CONDITION)      3/8\" = 1'-0\"", size=7.4, weight="bold", ha="left")
+    txt(ax, -9, -4.2, "1   RETAINING WALL AT GARAGE REAR (TALLEST CONDITION)      3/8\" = 1'-0\"", size=7.4, weight="bold", ha="left")
     # --- detail 2: front frame elevation at 3/16"
     f2 = 8.0
     ax2 = plan_axes(fig, 8.45, 6.55, (7, 47.5), (EL_GAR - 5, EL_GAR + 19), f2)
@@ -498,8 +511,8 @@ def sheet_s301(pdf):
     for x in np.arange(10.17, 45, 16 / 12):
         line(ax2, [(x, g + 9.3), (x, g + 11.0)], lw=0.2, color=GREY, z=5)
     rect(ax2, 9.5, g + 11.0, 45, g + 19, fc="#fbfaf7", ec=INK, lw=0.6, z=3)
-    for (a, b), lab in ((DOOR_A, "16' x 8' DOOR"), (DOOR_B, "8' x 8' DOOR"), (ENTRY, "ENTRY")):
-        rect(ax2, a, g, b, g + (8 if b - a > 4 else 6.67), fc=PAPER, ec=GREY, lw=0.5, z=4, ls="--")
+    for (a, b), lab in ((DOOR_A, "OPEN BAY, STALLS 1-2"), (DOOR_B, "OPEN BAY"), (ENTRY, "ENTRY")):
+        rect(ax2, a, g, b, g + (8.3 if b - a > 4 else 6.67), fc=PAPER, ec=GREY, lw=0.5, z=4, ls="--")
         txt(ax2, (a + b) / 2, g + 3.6, lab, size=4.6, color=GREY, rot=90 if b - a < 4 else 0)
     for i, cx in enumerate(COLS):
         txt(ax2, cx, g - 4.3, f"C{i + 1} / F2", size=4.8, color=STEEL, weight="bold")
@@ -515,11 +528,11 @@ def sheet_s301(pdf):
         ax2.add_patch(plt.Circle((cx, g + 8.3), 0.55, fc="none", ec=ACCENT, lw=1.0, zorder=8))
     txt(ax2, 33.2, g + 6.9, "", size=4)
     bg.text(8.45, 9.9, "2   FRONT STEEL FRAME, LOOKING NORTH      1/8\" = 1'-0\"", fontsize=7.4, fontweight="bold")
-    bg.text(8.45, 6.3, "Red circles: beam-to-column joints the engineer must detail as moment connections\nor replace with a braced/portal system. This frame is what keeps the open garage\nfront from racking under wind and seismic load.", fontsize=6.2, color=ACCENT, va="top", linespacing=1.3)
-    bg.text(8.45, 5.35, "ROUGH GRAVITY CHECK FOR THE ENGINEER (17'-3\" BAY)", fontsize=7.0, fontweight="bold", va="top")
+    bg.text(8.45, 6.3, "Red circles: beam-to-column joints the engineer must detail as moment connections\nor replace with a braced/portal system. With no doors or wall in the front, this\nframe alone keeps the garage level from racking under wind and seismic load.", fontsize=6.2, color=ACCENT, va="top", linespacing=1.3)
+    bg.text(8.45, 5.35, "ROUGH GRAVITY CHECK FOR THE ENGINEER (17'-9\" BAY)", fontsize=7.0, fontweight="bold", va="top")
     rows = [("Two unit floors", "2 x 55 psf x 13.2 ft tributary", "1,450 plf"), ("Two porches", "2 x 75 psf x 2 ft", "300 plf"),
             ("Roof", "45 psf x 12 ft", "540 plf"), ("Walls", "two storeys of 2x6 wall", "180 plf"), ("Total", "", "±2,470 plf"),
-            ("Moment", "w L² / 8, L = 16.5 ft clear", "±84 kip-ft"), ("Trial size", "W12x30, A992 (Zx 43 in³)", "gravity only")]
+            ("Moment", "w L² / 8, L = 17.3 ft clear", "±92 kip-ft"), ("Trial size", "W12x30, A992 (Zx 43 in³)", "gravity only")]
     for i, (a, b, c) in enumerate(rows):
         y = 5.07 - i * 0.2
         bg.text(8.45, y, a, fontsize=6.3, va="top", fontweight="bold" if a in ("Total", "Trial size") else "normal")

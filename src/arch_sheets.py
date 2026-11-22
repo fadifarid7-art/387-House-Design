@@ -11,8 +11,12 @@ def site_work(ax, bg=False):
     c = BG_EDGE if bg else INK
     poly(ax, APRON, fc="#d5dbe2" if not bg else "#eceef1", ec=c, lw=0.6, z=2)
     rect(ax, 37.5, 3, 45, BY0, fc="#e7eaee" if not bg else "#f3f4f6", ec=c, lw=0.5, z=2)       # entry landing, on lot
-    line(ax, [(11.2, 7.9), (10.95, 0.5)], lw=2.2, color=CONC, z=3)                             # west apron wall (on lot)
-    line(ax, [(37.6, 2.8), (45.2, 2.8), (45.2, 7.9)], lw=1.8, color=CONC, z=3)                 # low landing wall (on lot)
+    rect(ax, *TRASH[:2], *TRASH[2:], fc="#dfe3d6" if not bg else "#f3f4f6", ec=c, lw=0.6, z=3)  # screened cart bay, on lot
+    if not bg:
+        for i in range(4):
+            rect(ax, 38.6 + i * 1.6, 0.9, 39.9 + i * 1.6, 2.5, fc=PAPER, ec=GREY, lw=0.4, z=4)
+    line(ax, [(11.0, 7.9), (10.75, 0.5)], lw=2.2, color=CONC, z=3)                             # west apron wall (on lot)
+    line(ax, [(37.9, 2.9), (37.9, 0.5), (45.2, 0.5), (45.2, 7.9)], lw=1.8, color=CONC, z=3)    # low wall around bay + landing
     line(ax, [(DOOR_A[0], 7.55), (DOOR_B[1], 7.55)], lw=1.4, color=BLUE, z=6)                  # trench drain
 
 
@@ -30,67 +34,68 @@ def setback_dims(ax):
 
 def sheet_a101(pdf):
     notes = [
-        ("Garage level", [
-            f"Slab EL {EL_GAR:.1f}. Gross {FOOTPRINT:,.0f} sf. 9'-2\" clear.",
-            "3 stalls side by side, each 8'-11\" wide",
-            "(8'-6\" x 18' required). Every car has a",
-            "straight run to a door: no tandem, no",
-            "stackers, no columns between stalls.",
-            "Two-family parking: 1.5 x 2 = 3 required,",
-            "3 provided.",
+        ("Open garage", [
+            f"Slab EL {EL_GAR:.1f}. 9'-2\" clear. No doors.",
+            "One clear room, 26'-8\" x 20'-4\", with no",
+            "walls or columns between cars. Stalls",
+            "are painted lines only.",
+            "Stall 1 is 9'-8\" (its driver's door faces",
+            "the wall); stalls 2 and 3 are 8'-6\".",
+            "Each driver's door has ±2'-3\" to 2'-5\".",
+            "Duplex parking: 3 required, 3 provided.",
         ]),
-        ("Owner storage", [
-            "17'-0\" x 5'-8\" room behind stalls 1-2,",
-            "inside the insulated envelope, with a",
-            "mini-split and dehumidifier on the house",
-            "meter. 16 ft rack takes trim and lumber",
-            "flat. Flammables stay in a steel cabinet",
-            "in the garage.",
+        ("Because it is open", [
+            "The garage is at outdoor temperature.",
+            "No water pipes run through it. Drain",
+            "pipes cross it inside the insulated,",
+            "fire-rated ceiling.",
+            "Lobby door is on the tenants' key.",
+            "Lights are automatic (E-101). A conduit",
+            "is left for a future grille.",
         ]),
-        ("Entrance", [
-            "One street-level door to a common stair",
-            "for both units, reached from the apron by",
-            "a level landing on the lot. No steps.",
+        ("Trash", [
+            "Screened, lockable bay for 4 carts (trash",
+            "+ recycling for each flat) beside the",
+            "entry landing, on the lot. Carts roll",
+            "down the apron on collection day.",
         ]),
-        ("Nothing built in the right-of-way", [
-            "Only the driveway apron crosses city",
-            "property. Walls, landing, drains and",
-            "porches stop at or inside the lot line.",
-        ]),
-        ("Relief needed on this level", [
-            "Garage is 27'-8\" of a 35'-6\" front = 78 %",
-            "(65 % max, 1337.07(B)(5)). Apron is 26 ft",
-            "wide at the R.O.W. line (22 ft unless the",
-            "City Engineer approves more).",
+        ("Floor and relief", [
+            "Broom-finished concrete, sealed,",
+            "painted lines and numbers.",
+            "Garage is 78 % of the front (65 % max);",
+            "apron 26 ft at the R.O.W. (22 ft).",
         ]),
     ]
     fig, bg = new_sheet("A-101", "Garage level plan", "3/16\" = 1'-0\"", notes)
-    ax = plan_frame(fig, "Garage level plan", f"3 cars + conditioned owner storage · slab EL {EL_GAR:.1f} · concrete walls shown grey")
+    ax = plan_frame(fig, "Garage level plan", f"Open 3-car garage · slab EL {EL_GAR:.1f} · concrete walls grey · rear wing not excavated at this level")
     site_work(ax)
+    rect(ax, BX0, BY1, WX1, WY1, fc="#efe9e1", ec=EARTH, lw=0.5, z=1, ls="--", hatch="////", alpha=0.6)
+    txt(ax, 19, 32.5, "UNEXCAVATED · rear wing of the flats above sits on fill here", size=4.8, color=EARTH, box=True)
     txt(ax, 24, 1.8, "CONCRETE APRON", size=6.0, weight="bold")
-    txt(ax, 24, 0.6, "15 ft door to pavement · slopes −7 % (west) to +12 % (east)", size=4.9)
+    txt(ax, 24, 0.6, "15 ft to pavement · slopes −7 % (west) to +12 % (east)", size=4.9)
     txt(ax, 24, -3.6, "CITY RIGHT-OF-WAY: APRON ONLY, NO WALLS / STEPS / POSTS\nbanks beside the apron graded back at 2:1", size=4.9, color=ACCENT)
-    txt(ax, 41.2, 5.4, "ENTRY LANDING\nlevel, on lot", size=4.9)
-    txt(ax, 8.6, 4.6, "TRENCH DRAIN", size=4.4, color=BLUE, rot=0)
-    line(ax, [(9.6, 5.2), (11.6, 7.4)], lw=0.3, color=BLUE)
-    txt(ax, 4.4, 1.4, "RETAINING WALL\nON LOT, ENDS AT\nLOT LINE", size=4.4, color=GREY)
-    line(ax, [(7.2, 1.8), (10.9, 3.0)], lw=0.3, color=GREY)
+    txt(ax, 41.5, 5.6, "ENTRY LANDING\nlevel, on lot", size=4.8)
+    txt(ax, 48.6, 1.7, "TRASH BAY\n4 carts,\nscreened", size=4.4)
+    line(ax, [(46.6, 1.7), (45.3, 1.7)], lw=0.3)
+    txt(ax, 6.6, 5.0, "TRENCH DRAIN", size=4.4, color=BLUE)
+    line(ax, [(8.6, 5.4), (11.4, 7.4)], lw=0.3, color=BLUE)
+    txt(ax, 4.2, 1.4, "RETAINING WALL\nON LOT, ENDS AT\nLOT LINE", size=4.4, color=GREY)
+    line(ax, [(7.0, 1.8), (10.7, 3.0)], lw=0.3, color=GREY)
     rect(ax, 9.5, 4, 35.5, BY0, fc="none", ec=GREY, lw=0.5, z=6, ls="--")
     txt(ax, 22.5, 5.6, "CANTILEVERED PORCHES ABOVE (NO POSTS IN THE APRON)", size=4.6, color=GREY, box=True)
     lower_plan(ax, "arch")
-    txt(ax, 19.4, 9.9, "16'-0\" x 8'-0\" DOOR", size=5.0)
-    txt(ax, 32.9, 9.9, "8'-0\" x 8'-0\" DOOR", size=4.8)
+    txt(ax, 19.6, 9.6, "OPEN, NO DOOR", size=5.0, color=GREY)
+    txt(ax, 33.0, 9.6, "OPEN", size=5.0, color=GREY)
     txt(ax, 42.4, 7.0, "ENTRY", size=4.6)
-    txt(ax, 36.5, 33.4, "12\" REINFORCED CONCRETE\nWALLS RETAIN ±8 TO 13 FT\nENGINEERED · SEE S-101, S-301", size=4.7)
-    dim(ax, (BX0, WY1), (WX1, WY1), 1.6, "19'-0\"", size=5.4)
-    dim(ax, (WX1, BY1), (BX1, BY1), 1.6, "16'-6\"", size=5.4)
+    txt(ax, 27.6, 6.9, "POST", size=4.0, color=BLUE)
+    dim(ax, (BX0, BY1), (BX1, BY1), 6.6, "35'-6\"", size=5.4)
     dim(ax, (BX1, BY0), (BX1, BY1), -8.0, "22'-0\"", side=-1)
-    dim(ax, (BX0, BY0), (BX0, WY1), 5.2, "27'-0\"")
-    dim(ax, (DOOR_A[0], BY0), (DOOR_A[1], BY0), -2.4, "16'-0\"", side=-1, size=5.2)
-    dim(ax, (DOOR_B[0], BY0), (DOOR_B[1], BY0), -2.4, "8'-0\"", side=-1, size=5.2)
-    for a, b in STALLS:
-        dim(ax, (a, 21.0), (b, 21.0), 0, "8'-11\"", ext=False, size=4.8)
-    dim(ax, (12.0, 8.67), (12.0, STORE_Y), 0, "19'-4\"", ext=False, size=4.8)
+    for (a, b), lab in zip(STALLS, ("9'-8\"", "8'-6\"", "8'-6\"")):
+        dim(ax, (a, 24.6), (b, 24.6), 0, lab, ext=False, size=4.8)
+    dim(ax, (11.6, 8.67), (11.6, 29.0), 0, "20'-4\"", ext=False, size=4.8)
+    dim(ax, (10.5, 15.4), (CARS[0], 15.4), 0, "2'-5\"", ext=False, size=4.4, color=BLUE)
+    dim(ax, (CARS[0] + 6.2, 15.4), (CARS[1], 15.4), 0, "2'-3\"", ext=False, size=4.4, color=BLUE)
+    dim(ax, (CARS[1] + 6.2, 15.4), (CARS[2], 15.4), 0, "2'-4\"", ext=False, size=4.4, color=BLUE)
     setback_dims(ax)
     save(fig, "A-101", pdf)
 
@@ -99,6 +104,7 @@ def unit_sheet(pdf, number, unit, el, notes):
     fig, bg = new_sheet(number, f"Unit {unit} plan", "3/16\" = 1'-0\"", notes)
     ax = plan_frame(fig, f"Unit {unit} floor plan", f"{'Main' if unit == 'A' else 'Upper'} level · finished floor EL {el:.1f} · 3 bedrooms, 3 baths · ±780 sf net")
     if unit == "A":
+        rect(ax, BX0, BY1, WX1, WY1, fc="none", ec="none", z=1)
         poly(ax, APRON, fc="none", ec=GREY, lw=0.4, z=2, ls="--")
         txt(ax, 24, 0.8, "driveway apron below", size=4.8, color=GREY)
         rect(ax, 29.2, BY1, 44, 34.2, fc="#f3f4f5", ec=GREY, lw=0.5, z=2, ls="--")
@@ -111,6 +117,7 @@ def unit_sheet(pdf, number, unit, el, notes):
     unit_plan(ax, "arch", unit)
     txt(ax, 26, 8.95, "8' SLIDING DOOR", size=4.2, color=GREY)
     txt(ax, 39.2, 10.6, "UNIT\nENTRY", size=4.4, color=RATED)
+    txt(ax, 35.6, 16.1, "water heater", size=3.8, color=GREY)
     dim(ax, (BX0, WY1), (WX1, WY1), 1.6, "19'-0\"", size=5.4)
     dim(ax, (WX1, BY1), (BX1, BY1), 1.6 if unit == "B" else 5.6, "16'-6\"", size=5.4)
     dim(ax, (BX1, BY0), (BX1, BY1), -8.0, "22'-0\"", side=-1)
@@ -124,38 +131,37 @@ def sheet_a102(pdf):
     unit_sheet(pdf, "A-102", "A", EL_MAIN, [
         ("Unit A (main level)", [
             f"Finished floor EL {EL_MAIN:.1f}, 11'-0\" above the",
-            "garage slab. 3 bedrooms, each with its",
-            "own bath and entry hall, plus a shared",
-            "living room / kitchen and laundry.",
-            "Gross 876 sf with the common stair;",
-            "about 780 sf inside the unit. 8'-3\" ceilings.",
+            "garage slab. 3 bedrooms, 3 baths with",
+            "tubs, shared living room / kitchen.",
+            "About 780 sf inside the unit.",
         ]),
-        ("Bedrooms", [
-            "Bedroom 1: 106 sf. Bedroom 2: 81 sf.",
-            "Bedroom 3: 80 sf. The code minimum is",
-            "70 sf and 7 ft in each direction, so",
-            "these are compact rooms.",
-            "Each has an emergency escape window",
-            "on an outside wall (IRC R310): 5.7 sf",
-            "clear, sill 44 in. max above the floor.",
+        ("Bedrooms and baths", [
+            "Bedroom 1: 94 sf. Bedroom 2: 79 sf.",
+            "Bedroom 3: 77 sf. Code minimum is",
+            "70 sf and 7 ft across.",
+            "Each bath has a 5 ft tub/shower, toilet",
+            "and sink, and opens only off its own",
+            "bedroom. Bedrooms 1 and 2 share a",
+            "short hall from the living room.",
+            "Each bedroom has an escape window",
+            "on an outside wall (IRC R310).",
         ]),
-        ("Baths", [
-            "Three 3/4 baths (shower, toilet, sink),",
-            "each entered only from its own suite.",
-            "Baths 2 and 3 and the laundry share one",
-            "plumbing stack; bath 1 and the kitchen",
-            "share the other.",
+        ("This flat's own equipment", [
+            "Water heater (80 gal) in the closet by",
+            "the entry. Stacked washer and dryer.",
+            "Range, refrigerator, dishwasher.",
+            "Its own electric meter and panel, heat",
+            "pump and water meter.",
         ]),
         ("Access", [
             "Unit door opens off the common stair",
             "landing. The stair is a 1-hour enclosure",
             "with its own street door.",
         ]),
-        ("Grade at this level", [
-            "Rear grade is ±1 to 1.5 ft above the floor",
-            "at the wing and ±0.5 to 2.5 ft below it at",
-            "the east end. The wing's rear wall is",
-            "concrete to 3 ft above the floor (S-301).",
+        ("Finishes (rental grade)", [
+            "Vinyl plank floors, one-piece fiberglass",
+            "tub surrounds, laminate counters,",
+            "solid-core doors.",
         ]),
     ])
 
@@ -166,12 +172,13 @@ def sheet_a103(pdf):
             f"Finished floor EL {EL_UP:.1f}, 10'-0\" above",
             "Unit A. Same plan as Unit A so the",
             "kitchens, baths and laundry stack.",
-            "3 bedrooms, 3 baths. 8'-1\" ceilings,",
-            "sloping to 6'-10\" at the rear of the wing.",
+            "3 bedrooms, 3 baths with tubs.",
+            "8'-1\" ceilings, sloping to 6'-10\" at the",
+            "rear of the wing.",
         ]),
         ("Building totals", [
-            "6 bedrooms, 6 private baths, 2 kitchens",
-            f"Garage level                         {FOOTPRINT:,.0f} sf",
+            "6 bedrooms, 6 baths, 2 kitchens",
+            "Garage level (open)             781 sf",
             f"Unit A level                          {FOOTPRINT:,.0f} sf",
             f"Unit B level                          {FOOTPRINT:,.0f} sf",
             "Each unit, net of stair          ±780 sf",
@@ -183,13 +190,15 @@ def sheet_a103(pdf):
             "the common stair, carried to the roof",
             "deck. Garage ceiling: 5/8 in. Type X",
             "(R302.6). Stair-to-garage door: 20-min.",
+            "Sound insulation in the floor and the",
+            "bedroom walls is recommended.",
         ]),
         ("Storey count", [
             "R-2 allows 2.5 storeys / 35 ft. The",
-            "garage level is ±60 % below the average",
-            "adjoining grade, so it should rate as a",
-            "basement: two storeys over a basement.",
-            "Confirm with Planning.",
+            "garage level is over half below the",
+            "average adjoining grade, so it should",
+            "rate as a basement: two storeys over a",
+            "basement. Confirm with Planning.",
             f"Height to mean roof: {EL_MEAN_ROOF - EL_REF:.1f} ft.",
         ]),
     ])
@@ -212,9 +221,9 @@ def sheet_a201(pdf):
             "falls ±4 ft across the building.",
         ]),
         ("What you see", [
-            "Garage level: 16 ft and 8 ft overhead",
-            "doors and the common entry door, all",
-            "at slab level, no steps.",
+            "Garage level: an open front with one",
+            "steel post, and the common entry",
+            "door, all at slab level, no steps.",
             "Units A and B: stacked covered porches",
             "cantilevered 4 ft, sliding doors behind.",
             "Bedrooms are at the rear and sides.",
@@ -254,11 +263,11 @@ def sheet_a201(pdf):
     rect(ax, BX0, EL_GAR - 1.5, BX1, EL_MAIN, fc="#d9dcdf", ec=INK, lw=1.0, z=3)
     for y in np.arange(EL_GAR - 1.0, EL_MAIN, 0.667):
         line(ax, [(BX0, y), (BX1, y)], lw=0.15, color=GREY, z=3)
-    for (a, b), lab in ((DOOR_A, "16' x 8' GARAGE DOOR"), (DOOR_B, "8' x 8' DOOR")):
-        rect(ax, a, EL_GAR, b, EL_GAR + 8, fc="#f6f6f4", ec=INK, lw=0.9, z=4)
-        for y in np.arange(EL_GAR + 2, EL_GAR + 8, 2):
-            line(ax, [(a, y), (b, y)], lw=0.4, z=4)
-        txt(ax, (a + b) / 2, EL_GAR + 4.9, lab, size=5.0, z=9)
+    for (a, b) in (DOOR_A, DOOR_B):
+        rect(ax, a, EL_GAR, b, EL_GAR + 8.6, fc="#5c6269", ec=INK, lw=0.9, z=4)
+    rect(ax, DOOR_A[1], EL_GAR, DOOR_B[0], EL_GAR + 8.6, fc="#1f5fa8", ec=INK, lw=0.6, z=5)
+    txt(ax, 19.8, EL_GAR + 4.6, "OPEN GARAGE (NO DOORS)", size=5.4, color=PAPER, z=9)
+    txt(ax, 33.0, EL_GAR + 4.6, "OPEN", size=5.0, color=PAPER, z=9)
     rect(ax, ENTRY[0], EL_GAR, ENTRY[1], EL_GAR + 6.67, fc="#dfe7ee", ec=INK, lw=0.9, z=4)
     rect(ax, ENTRY[0], EL_GAR + 6.9, ENTRY[1], EL_GAR + 8.0, fc="#dfe7ee", ec=INK, lw=0.6, z=4)
     txt(ax, 42.4, EL_GAR + 3.3, "ENTRY", size=4.6, z=9, rot=90)
@@ -312,29 +321,31 @@ def section_base(ax, XS, xl, bottom, labels=True):
     eg = [(y, elev(XS, y)) for y in ys]
     st = street_el(XS)
     fg = [(xl[0], elev(XS, xl[0])), (PAVE_S, elev(XS, PAVE_S)), (PAVE_S, st), (PAVE_N, st), (BY0, EL_GAR), (BY0, EL_GAR - 1.5),
-          (WY1, EL_GAR - 1.5), (WY1, 927.0)]
+          (BY1, EL_GAR - 1.5), (BY1, EL_MAIN - 0.42), (WY1, EL_MAIN - 0.42), (WY1, 927.0)]
     fg += [(y, max(elev(XS, y), 927.0)) for y in np.arange(WY1 + 2, xl[1] + 1, 2)]
     poly(ax, fg + [(xl[1], bottom), (xl[0], bottom)], fc="#efe9e1", ec="none", z=2)
     line(ax, [(xl[0], elev(XS, xl[0])), (PAVE_S, elev(XS, PAVE_S))], lw=1.2, z=7)
     line(ax, [(PAVE_S, st), (PAVE_N, st)], lw=2.6, color="#3a3f45", z=7)
     line(ax, [(PAVE_N, st), (BY0, EL_GAR)], lw=1.4, z=7)
-    line(ax, [(WY1, 927.0)] + fg[8:], lw=1.4, z=7)
+    line(ax, [(WY1, 927.0)] + fg[10:], lw=1.4, z=7)
     line(ax, eg, lw=0.9, color=EARTH, ls=(0, (5, 3)), z=8)
-    # slab, footings, walls
-    rect(ax, BY0, EL_GAR - 0.42, WY1 - 1, EL_GAR, fc=CONC, ec=INK, lw=0.6, z=5)
-    rect(ax, BY0, EL_GAR - 0.9, WY1 - 1, EL_GAR - 0.42, fc="#e1ddd4", ec="none", z=4)
-    rect(ax, BY0 - 0.9, EL_GAR - 2.5, BY0 + 1.6, EL_GAR - 1.5, fc=CONC, ec=INK, lw=0.6, z=5)
-    rect(ax, BY0, EL_GAR - 1.5, BY0 + 0.67, EL_GAR, fc=CONC, ec=INK, lw=0.6, z=5)
-    rect(ax, WY1 - 1, EL_GAR - 1.5, WY1, EL_MAIN + 3.0, fc=CONC, ec=INK, lw=0.8, z=5)            # rear wall to 3 ft above Unit A floor
-    rect(ax, WY1 - 6.0, EL_GAR - 2.75, WY1 + 2.0, EL_GAR - 1.5, fc=CONC, ec=INK, lw=0.8, z=5)
-    ax.add_patch(plt.Circle((WY1 + 0.6, EL_GAR - 1.1), 0.33, fc=PAPER, ec=BLUE, lw=0.8, zorder=6))
-    rect(ax, WY1, EL_GAR - 1.5, WY1 + 1.2, 926.4, fc="#dcdfe3", ec="none", z=4, hatch="....")
-    rect(ax, BY0, EL_GAR + 8, BY0 + 0.67, EL_MAIN - 1.73, fc=CONC, ec=INK, lw=0.6, z=5)          # beam zone over door
-    line(ax, [(BY0 + 0.33, EL_GAR), (BY0 + 0.33, EL_GAR + 8)], lw=0.6, ls=(0, (4, 2)), z=6)
-    rect(ax, STORE_Y, EL_GAR, STORE_Y + 0.33, EL_MAIN - 1.73, fc=POCHE, z=6)                     # storage partition
+    # garage slab, footings, walls
+    rect(ax, BY0, EL_GAR - 0.42, BY1 - 1, EL_GAR, fc=CONC, ec=INK, lw=0.6, z=5)
+    rect(ax, BY0, EL_GAR - 0.9, BY1 - 1, EL_GAR - 0.42, fc="#e1ddd4", ec="none", z=4)
+    rect(ax, BY0 - 0.9, EL_GAR - 2.5, BY0 + 1.6, EL_GAR - 1.5, fc=CONC, ec=INK, lw=0.6, z=5)       # grade beam at the open front
+    rect(ax, BY1 - 1, EL_GAR - 1.5, BY1, EL_MAIN - 1.73, fc=CONC, ec=INK, lw=0.8, z=5)             # rear retaining wall
+    rect(ax, BY1 - 5.0, EL_GAR - 2.75, BY1 + 2.0, EL_GAR - 1.5, fc=CONC, ec=INK, lw=0.8, z=5)
+    ax.add_patch(plt.Circle((BY1 + 0.6, EL_GAR - 1.1), 0.33, fc=PAPER, ec=BLUE, lw=0.8, zorder=6))
+    rect(ax, BY1, EL_GAR - 1.5, BY1 + 1.2, EL_MAIN - 1.2, fc="#dcdfe3", ec="none", z=4, hatch="....")
+    rect(ax, BY0, EL_GAR + 8.6, BY0 + 0.67, EL_MAIN - 1.73, fc="#1f5fa8", ec=INK, lw=0.6, z=5)    # steel beam over the open front
+    # rear wing: slab on fill, shallow frost wall
+    rect(ax, BY1, EL_MAIN - 0.42, WY1 - 1, EL_MAIN, fc=CONC, ec=INK, lw=0.6, z=5)
+    rect(ax, WY1 - 1, EL_MAIN - 3.6, WY1, EL_MAIN + 3.0, fc=CONC, ec=INK, lw=0.8, z=5)
+    rect(ax, WY1 - 1.6, EL_MAIN - 4.6, WY1 + 0.9, EL_MAIN - 3.6, fc=CONC, ec=INK, lw=0.8, z=5)
     for el in (EL_MAIN, EL_UP):                                                                  # 20 in. floor trusses
-        rect(ax, BY0, el - 1.73, WY1 - (1 if el == EL_MAIN else 0), el, fc="#e9e4d9", ec=INK, lw=0.7, z=5)
-        for y in np.arange(BY0 + 1, WY1 - 1, 2.0):
+        yend = BY1 if el == EL_MAIN else WY1
+        rect(ax, BY0, el - 1.73, yend, el, fc="#e9e4d9", ec=INK, lw=0.7, z=5)
+        for y in np.arange(BY0 + 1, yend - 1, 2.0):
             line(ax, [(y - 0.8, el - 1.73), (y, el - 0.1), (y + 0.8, el - 1.73)], lw=0.2, color=GREY, z=6)
         rect(ax, 4, el - 1.0, BY0, el, fc="#e9e4d9", ec=INK, lw=0.7, z=6)                         # cantilevered porch
         line(ax, [(4.1, el), (4.1, el + 3), (BY0, el + 3)], lw=0.6, z=6)
@@ -342,15 +353,14 @@ def section_base(ax, XS, xl, bottom, labels=True):
     rect(ax, BY0, EL_UP, BY0 + 0.5, EL_PLATE, fc=POCHE, z=6)
     rect(ax, WY1 - 0.5, EL_MAIN + 3.0, WY1, EL_UP - 1.73, fc=POCHE, z=6)
     rect(ax, WY1 - 0.5, EL_UP, WY1, EL_PLATE - 1.25, fc=POCHE, z=6)
-    rect(ax, BY0 - 0.02, EL_MAIN + 0.1, BY0 + 0.52, EL_MAIN + 6.8, fc=PAPER, ec=INK, lw=0.4, z=7)
-    rect(ax, BY0 - 0.02, EL_UP + 0.1, BY0 + 0.52, EL_UP + 6.8, fc=PAPER, ec=INK, lw=0.4, z=7)
+    rect(ax, BY0 - 0.02, EL_MAIN + 2.7, BY0 + 0.52, EL_MAIN + 6.8, fc=PAPER, ec=INK, lw=0.4, z=7)
+    rect(ax, BY0 - 0.02, EL_UP + 2.7, BY0 + 0.52, EL_UP + 6.8, fc=PAPER, ec=INK, lw=0.4, z=7)
     rect(ax, WY1 - 0.52, EL_MAIN + 3.4, WY1 + 0.02, EL_MAIN + 7.0, fc=PAPER, ec=INK, lw=0.4, z=7)
     rect(ax, WY1 - 0.52, EL_UP + 2.4, WY1 + 0.02, EL_UP + 6.0, fc=PAPER, ec=INK, lw=0.4, z=7)
-    for el in (EL_MAIN, EL_UP):                                                                  # partition at y=20
+    for el in (EL_MAIN, EL_UP):                                                                  # partitions cut at this station
         top_el = (EL_UP - 1.73) if el == EL_MAIN else EL_PLATE
-        rect(ax, 18.5, el + 6.8, 18.9, top_el, fc=POCHE, z=6)                                      # door head, hall 1
-        rect(ax, 23.5, el + 6.8, 23.9, top_el, fc=POCHE, z=6)
-    # roof: 6:12 gable over the 22 ft block, 3:12 broken pitch over the wing
+        rect(ax, 18.0, el, 18.4, top_el, fc=POCHE, z=6)
+        rect(ax, 23.5, el, 23.9, top_el, fc=POCHE, z=6)
     ym = (BY0 + BY1) / 2
     top = [(BY0 - 1.2, EL_PLATE - 0.6), (ym, EL_RIDGE), (BY1, EL_PLATE), (WY1 + 1.2, EL_PLATE - 1.55)]
     roof = top + [(WY1 + 1.2, EL_PLATE - 1.05), (BY1, EL_PLATE + 0.55), (ym, EL_RIDGE + 0.6), (BY0 - 1.2, EL_PLATE - 0.1)]
@@ -361,36 +371,41 @@ def section_base(ax, XS, xl, bottom, labels=True):
 
 
 def sheet_a301(pdf):
-    XS = 18.0
+    XS = 14.0
     notes = [
         ("Section A-A", [
-            "Cut north-south at plan station X = 18 ft,",
-            "through the 16 ft door, stall 2, the owner",
-            "storage room and the rear wing, looking",
-            "west. Dashed brown = existing ground",
-            "from the 1 m LiDAR.",
+            "Cut north-south at plan station X = 14 ft,",
+            "through stall 1, bath 1 and bedroom 1,",
+            "looking west. Dashed brown = existing",
+            "ground from the 1 m LiDAR.",
         ]),
-        ("Why it is cut this way", [
+        ("What it shows", [
             f"The slab sits at EL {EL_GAR:.1f}, within a foot",
-            "of the pavement opposite the doors.",
-            "Unit A's floor lands about a foot below",
-            "the rear yard. Unit B is 10 ft above it.",
+            "of the pavement. The garage front is",
+            "open under a steel beam.",
+            "The rear wing is not dug out: its floor",
+            "is a slab on fill at Unit A level, behind",
+            "the garage's rear wall.",
         ]),
         ("Cost drivers visible here", [
-            "±9 ft average cut over the footprint,",
-            "up to ±13 ft at the wing.",
-            "Rear wall retains ±12.5 ft at this cut,",
-            "9 ft from 386 Forest Ave's lot line.",
+            "±8 ft average cut over the garage.",
+            "Rear wall retains ±10.5 ft, 14 ft from",
+            "386 Forest Ave's lot line at this cut.",
             "Shoring and neighbour monitoring.",
             "Rock depth unknown: borings needed.",
             "Ask the geotech to check state mine",
             "maps for old workings.",
         ]),
         ("Garage clearances", [
-            "19'-4\" clear depth at stalls 1-2 (20'-4\"",
-            "at stall 3), 9'-2\" clear height, 8'-0\"",
-            "doors. Full-size crew-cab pickups will",
-            "not fit; sedans, SUVs and vans will.",
+            "20'-4\" clear depth, 9'-2\" clear height,",
+            "8'-7\" clear under the front beam.",
+            "Full-size crew-cab pickups will not fit;",
+            "sedans, SUVs and vans will.",
+        ]),
+        ("Wing foundation", [
+            "The wing's footing sits near the garage",
+            "wall's backfill. Engineer to place it on",
+            "engineered fill or step it down.",
         ]),
     ]
     fig, bg = new_sheet("A-301", "Building section", "3/16\" = 1'-0\"", notes)
@@ -403,33 +418,33 @@ def sheet_a301(pdf):
     txt(ax, -14, st - 1.2, "BAIRD STREET  ±14' PAVEMENT", size=5.4, weight="bold")
     txt(ax, -14, st - 2.4, f"±EL {st:.1f} at this section", size=4.8, color=GREY)
     txt(ax, 0.4, EL_GAR - 2.2, "APRON", size=4.8, color=GREY)
-    txt(ax, BY0 - 2.4, EL_GAR + 4.2, "8' DOOR", size=4.6, color=GREY, rot=90)
-    cx = 9.6
+    txt(ax, BY0 - 2.6, EL_GAR + 4.2, "OPEN FRONT", size=4.6, color=GREY, rot=90)
+    cx = 10.4
     carp = [(cx, EL_GAR + 1.0), (cx + 0.3, EL_GAR + 2.6), (cx + 3.2, EL_GAR + 3.0), (cx + 5.0, EL_GAR + 4.8), (cx + 10.4, EL_GAR + 4.9),
             (cx + 12.6, EL_GAR + 3.3), (cx + 15.6, EL_GAR + 2.9), (cx + 16.2, EL_GAR + 1.0)]
     poly(ax, carp, fc="#f2f3f5", ec=FURN, lw=0.6, z=5)
     for wx in (cx + 3.1, cx + 12.8):
         ax.add_patch(plt.Circle((wx, EL_GAR + 1.05), 1.05, fc=PAPER, ec=FURN, lw=0.6, zorder=6))
-    txt(ax, 18, EL_GAR + 7.0, "GARAGE", size=6.2, weight="bold")
-    txt(ax, 31.2, EL_GAR + 5.0, "OWNER\nSTORAGE", size=5.0, weight="bold")
-    txt(ax, 13.4, EL_MAIN + 4.4, "UNIT A · LIVING", size=5.8, weight="bold")
-    txt(ax, 21.2, EL_MAIN + 4.4, "HALL", size=4.6, color=GREY)
-    txt(ax, 29.3, EL_MAIN + 4.4, "BEDROOM 1", size=5.6, weight="bold")
-    txt(ax, 13.4, EL_UP + 4.2, "UNIT B · LIVING", size=5.8, weight="bold")
-    txt(ax, 21.2, EL_UP + 4.2, "HALL", size=4.6, color=GREY)
-    txt(ax, 29.3, EL_UP + 4.2, "BEDROOM 1", size=5.6, weight="bold")
+    txt(ax, 18.5, EL_GAR + 7.0, "OPEN GARAGE", size=6.2, weight="bold")
+    txt(ax, 32.5, EL_GAR + 5.0, "UNEXCAVATED", size=5.0, color=EARTH, weight="bold")
+    for el, u in ((EL_MAIN, "A"), (EL_UP, "B")):
+        txt(ax, 13.2, el + 4.4, f"UNIT {u} · LIVING", size=5.6, weight="bold")
+        txt(ax, 20.95, el + 4.4, "BATH 1", size=4.4, color=GREY)
+        txt(ax, 29.3, el + 4.4, "BEDROOM 1", size=5.4, weight="bold")
+        txt(ax, 1.4, el + 5.2, "PORCH", size=4.6)
     txt(ax, 19, EL_PLATE + 2.0, "ATTIC / TRUSSES · 6:12", size=4.8, color=GREY)
-    txt(ax, 1.4, EL_MAIN + 5.2, "PORCH", size=4.6)
-    txt(ax, 1.4, EL_UP + 5.2, "PORCH", size=4.6)
-    txt(ax, 38.2, 917.4, "12\" CONC. WALL\n±12.5' retained\nengineered · drained", size=4.8, ha="left")
-    line(ax, [(36.4, 918.0), (38.0, 917.8)], lw=0.3)
-    txt(ax, 19, EL_MAIN - 0.85, "1-HR FLOOR/CEILING · 20\" OPEN-WEB TRUSSES · 5/8\" TYPE X BELOW", size=4.2, z=9)
+    txt(ax, 38.0, 917.4, "12\" CONC. WALL\n±10.5' retained\nengineered · drained", size=4.8, ha="left")
+    line(ax, [(31.4, 918.0), (37.8, 917.8)], lw=0.3)
+    txt(ax, 39.6, EL_MAIN - 4.0, "FROST WALL +\nSLAB ON FILL", size=4.6, ha="left")
+    line(ax, [(35.6, EL_MAIN - 2.4), (39.4, EL_MAIN - 3.6)], lw=0.3)
+    txt(ax, 19, EL_MAIN - 0.85, "1-HR FLOOR/CEILING · 20\" TRUSSES · R-30 · 5/8\" TYPE X BELOW", size=4.2, z=9)
     txt(ax, 19, EL_UP - 0.85, "1-HR FLOOR/CEILING BETWEEN UNITS (IRC R302.3)", size=4.2, z=9)
     for y, lab in ((0, "FRONT LOT LINE"), (ry, "REAR LOT LINE")):
         line(ax, [(y, 906), (y, 952.6)], color=ACCENT, lw=0.8, ls=(0, (9, 2.5, 1.5, 2.5)), z=12)
         txt(ax, y, 953.5, lab, size=4.8, color=ACCENT)
     dim(ax, (0, 908.6), (BY0, 908.6), 0, "8'-0\"", ext=False, size=5.0, color=ACCENT)
-    dim(ax, (BY0, 908.6), (WY1, 908.6), 0, "27'-0\"", ext=False, size=5.0)
+    dim(ax, (BY0, 908.6), (BY1, 908.6), 0, "22'-0\"", ext=False, size=5.0)
+    dim(ax, (BY1, 908.6), (WY1, 908.6), 0, "5'-0\"", ext=False, size=5.0)
     dim(ax, (WY1, 908.6), (ry, 908.6), 0, f"{ftin(ry - WY1)}", ext=False, size=5.0, color=ACCENT)
     dim(ax, (PAVE_N, 908.6), (0, 908.6), 0, "±7' R.O.W.", ext=False, size=4.8, color=GREY)
     level_marks(ax, -23.4, [(EL_GAR, "GARAGE SLAB"), (EL_MAIN, "UNIT A FLOOR"), (EL_UP, "UNIT B FLOOR"), (EL_PLATE, "TOP PLATE")])
@@ -437,7 +452,6 @@ def sheet_a301(pdf):
         line(ax, [(-22, el), (2.5 if el > EL_GAR else PAVE_N - 0.5, el)], lw=0.3, color=GREY, ls=(0, (8, 3, 2, 3)), z=3)
     line(ax, [(BY0 - 2, EL_REF + 35), (WY1 + 10, EL_REF + 35)], color=ACCENT, lw=0.6, ls=(0, (4, 3)), z=12)
     txt(ax, 22, EL_REF + 35.9, f"35' ZONING HEIGHT LIMIT (EL {EL_REF + 35:.1f})", size=4.8, color=ACCENT)
-    dim(ax, (WY1 + 3.0, EL_GAR), (WY1 + 3.0, EL_MAIN), 0, "11'-0\"", ext=False, size=4.8, side=-1)
     dim(ax, (WY1 + 3.0, EL_MAIN), (WY1 + 3.0, EL_UP), 0, "10'-0\"", ext=False, size=4.8, side=-1)
     scale_bar(ax, -22.5, 906.3, 16, 4, 0.42, size=5.2)
     view_title(ax, -23.4, 955.6, "A", "Section A-A", "North-south through the garage and rear wing, looking west", 9)

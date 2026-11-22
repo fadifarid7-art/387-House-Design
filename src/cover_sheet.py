@@ -31,7 +31,7 @@ def sheet_g001(pdf, m):
         bg.text(tx, top - 6.86 - i * 0.155, s, fontsize=5.6, va="top", color=INK)
     L = MARGIN + 0.45
     bg.text(L, top - 0.62, "387 BAIRD STREET", fontsize=30, fontweight="bold", va="center")
-    bg.text(L, top - 1.08, "Two-family dwelling, six bedrooms and six baths, over a 3-car garage · head-start permit set, Rev C",
+    bg.text(L, top - 1.08, "Two-family dwelling, six bedrooms and six baths, over an open 3-car garage · head-start permit set, Rev D",
             fontsize=12, va="center", color=INK)
     bg.text(L, top - 1.40, "Morgantown, Monongalia County, West Virginia 26505 · Tax District 13 (5th Ward), Map 29, Parcel 84 · Zoned R-2",
             fontsize=8, va="center", color=GREY)
@@ -44,14 +44,14 @@ def sheet_g001(pdf, m):
                 "It is not engineered and cannot be stamped as-is.\nEach professional must review, recalculate and take\nresponsibility for their own sheets.",
             ]),
             ("The building", [
-                ("Garage level", "3 cars side by side + 96 sf\nconditioned owner storage,\nlobby, mech room"),
-                ("Unit A", "Main level, 3 bedrooms each\nwith a private bath, ±780 sf"),
+                ("Garage level", "Open front, 3 numbered stalls,\nlobby and stair, bike closet.\nNo doors, no storage room"),
+                ("Unit A", "Main level, 3 bedrooms each\nwith a private tub bath, ±780 sf"),
                 ("Unit B", "Upper level, same plan"),
                 ("Total", "6 bedrooms, 6 baths"),
                 ("Footprint", f"{FOOTPRINT:,.0f} sf, {m['cov']:.0f} % of the lot"),
                 ("Height", f"{EL_MEAN_ROOF - EL_REF:.1f} ft, 2 storeys over a\nbasement garage"),
-                ("Structure", "Concrete retaining walls,\nsteel frame at the doors,\nwood trusses and walls"),
-                ("Services", "All-electric: heat pumps, 80 gal\nwater heaters, 400 A service"),
+                ("Structure", "Concrete retaining walls, steel\nframe at the open front, wood\ntrusses and walls"),
+                ("Services", "All-electric. Each flat has its own\nmeter, panel, heat pump, water\nheater, washer and dryer"),
             ]),
             ("The property", [
                 ("Owner of record", "R & L RENTALS LLC"),
@@ -62,13 +62,14 @@ def sheet_g001(pdf, m):
         ]),
         (c2, 4.0, [
             ("How your requests were handled", [
-                ("Most cars", "Three. The lot is 50 ft wide and\nside setbacks leave 35'-6\". Three\n8'-11\" stalls and the stair fill it.\nA duplex also requires three."),
-                ("Six bedrooms", "Three per flat, each with its own\nbath and entry hall. Rooms are\n80 to 106 sf (70 sf minimum)."),
-                ("Every floor drawn", "Each trade has a separate sheet\nfor the garage, Unit A and Unit B."),
-                ("Storage", "One 96 sf conditioned room on\nthe garage level, 16 ft rack."),
-                ("Tow trucks", "Each car has its own straight run\nto a door; no posts in the apron;\nflush floor. See C-103."),
-                ("Entrance", "One street-level door to a common\nstair, reached by a landing on the\nlot. No steps."),
-                ("City property", "Only the driveway apron is in the\nright-of-way. No walls, steps, posts\nor porches cross the lot line."),
+                ("Parking", "Three stalls, open front, no doors.\nEnd stall widened so each driver's\ndoor has ±2'-3\" to 2'-5\"."),
+                ("Six bedrooms", "Three per flat, each with its own\ntub bath. 77 to 94 sf."),
+                ("Separate utilities", "Two meters only. Garage and stair\nlights are automatic, on Unit A's\npanel (keynote 1, E-101)."),
+                ("No sump pump", "French drain runs by gravity to an\noutlet at the street edge (S-101)."),
+                ("No freezing", "No water pipe in the open garage.\nLines come up through the rear\nwing into heated space."),
+                ("Cleanouts", "At each stack, each turn of the\nmain drain and the drain corners."),
+                ("Trash", "Screened bay for 4 carts, on the lot."),
+                ("City property", "Only the driveway apron and the\ndrain outlet are in the right-of-way."),
             ]),
             ("Follows the code", [
                 "Side setbacks, lot coverage, height, parking count,\nporch standard, unit separation, egress, stairs,\nsmoke/CO alarms, energy code targets.",
@@ -79,7 +80,7 @@ def sheet_g001(pdf, m):
                 f"1.  Rear setback. {m['r_ne']:.1f} ft at the tightest corner against\n     20 ft required. The R-2 setbacks leave ±{m['env_area']:,.0f} sf of\n     buildable area on this lot, so nothing fits without it.",
                 "2.  Front setback. 8 ft against 10 ft, unless the block-\n     averaging rule sets it by the neighbours.",
                 "3.  Garage width. 78 % of the front against 65 %. Two\n     cars would comply, but then the duplex is one\n     parking space short. One or the other needs relief.",
-                "4.  Driveway width at the street (26 ft against 22 ft)\n     and a sidewalk waiver: City Engineer.",
+                "4.  City Engineer: driveway width at the street (26 ft\n     against 22 ft), a sidewalk waiver, and the gravity\n     drain outlet at the street edge.",
             ]),
             ("Order of work", [
                 "1.  Boundary and topographic survey.",
@@ -145,7 +146,7 @@ def sheet_g002(pdf, m):
                 ("Height", f"{EL_MEAN_ROOF - EL_REF:.1f} ft (35 max) ✓"),
                 ("Storeys", "2 over basement (2.5 max) ✓\nsubject to basement ruling"),
                 ("Min. height", "Two-family: 2 storeys ✓"),
-                ("Parking", "3 provided (1.5 x 2 = 3) ✓"),
+                ("Parking", "3 provided (1.5 x 2 = 3) ✓\nfor occupants' vehicles only"),
                 ("Garage width", "78 % of front (65 max) ✗"),
                 ("Front porch", "73 % of front (50 min.) ✓"),
                 ("HVAC units", "Rear yard, 2 ft+ off side line ✓"),
@@ -153,14 +154,14 @@ def sheet_g002(pdf, m):
                 ("Sidewalk", "5 ft required; request waiver"),
             ]),
             ("Right-of-way rule for this design", [
-                "Nothing permanent is built on city property except\nthe driveway apron, which is permitted work under a\ndriveway permit. Retaining walls, the entry landing,\ndrains, lights, meters, mailboxes and porches all stay\non the lot. Banks beside the apron are regraded,\nnot walled. This avoids an encroachment agreement.",
+                "Nothing permanent is built on city property except\nthe driveway apron and a buried drain outlet, both\npermitted work. Retaining walls, the entry landing,\ntrash bay, lights and porches stay on the lot. Banks\nbeside the apron are regraded, not walled. The\nutility's water meter pits are its own equipment.",
             ]),
         ]),
         (L + 4.42, 4.0, [
             ("Building code (2018 IRC, two-family)", [
                 ("Classification", "Two-family dwelling, IRC scope:\nseparate units, 3 storeys or\nfewer above grade"),
                 ("Unit separation", "R302.3: 1-hour floor/ceiling and\nwalls, tight to the roof deck"),
-                ("Garage", "R302.6: 5/8 in. Type X ceiling\nunder habitable rooms; R302.5:\n20-minute door to the stair"),
+                ("Garage", "Open on one side only, so still\na garage (R309). R302.6: 5/8 in.\nType X ceiling; R302.5: 20-minute\ndoor to the stair"),
                 ("Lot-line walls", "R302.1: under 5 ft needs a 1-hour\nwall. All walls here are 5 ft or\nmore; eaves kept 4 ft+ away"),
                 ("Egress", "R311: each unit has a door to\nthe enclosed stair leading\noutside, not through the garage"),
                 ("Stairs", "R311.7: 36 in. wide, 7-3/4 in. max\nriser, 10 in. min. tread, 6'-8\"\nheadroom, handrail 34 to 38 in."),
