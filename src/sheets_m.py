@@ -117,7 +117,8 @@ DV_X, DV_Y0 = m.X_C1 - 3.5 * IN, m.WD_Y1 - 3.5 * IN
 RH_X, RH_Y0 = m.X_H0 + 4.5 * IN, (m.RANGE[1] + m.RANGE[3]) / 2
 KSOF = (m.X_H0, m.YFI, m.X_H0 + 13 * IN, m.RANGE[3])         # soffit above the kitchen wall cabinets
 LS_DROP = (m.X_C0 + 3.5 * IN, m.AH_Y0 + 2.5 * IN)
-TSTAT = (m.X_H0, m.Y3 - 1.2)
+TSTAT = (m.X_H0, m.Y3 + 0.2)
+R1_Y = (D["D12"]["s0"] + D["D12"]["s1"]) / 2                 # return grille: centre of door leaf D12
 SOF_L = [(m.X_B3, m.Y2), (m.X_ST, m.Y2), (m.X_ST, SOF_Y1), (m.X_ST - SOF_W, SOF_Y1), (m.X_ST - SOF_W, m.Y2 + SOF_W),
          (m.X_B3, m.Y2 + SOF_W)]
 HP_U = (_sL, _cL)                                            # unit vector north along the west wall
@@ -138,7 +139,7 @@ EF_RUN = {"EF-1": EF1[0] - m.xw_o(EF1[1]), "EF-2": m.yr_o(EF2[0]) - EF2[1], "EF-
 RH_RUN = RH_Y0 - m.YF
 W2 = [w for w in m.WINDOWS if w[0] == "W2"][0]
 RH_CLEAR = (W2[2] + W2[3]) / 2 - RH_X                                # hood cap to the operable (east) sash of W2
-RA_TO_RANGE = math.dist((m.X_H1, AH_CY), ((m.RANGE[0] + m.RANGE[2]) / 2, RH_Y0))
+RA_TO_RANGE = math.dist((m.X_H1, R1_Y), ((m.RANGE[0] + m.RANGE[2]) / 2, RH_Y0))
 
 
 def ls_len(u):
@@ -254,12 +255,8 @@ def vt(bg, x, y, title, sub, size=8.5):
 
 
 def sheet(number, scale, notes):
-    """new_sheet with the index title; a long title is set smaller so it stays inside the title block."""
-    fig, bg = new_sheet(number, TITLE[number], scale, notes)
-    for t in bg.texts:
-        if t.get_text() == TITLE[number].upper() and len(t.get_text()) > 30:
-            t.set_fontsize(9.6 * 30 / len(t.get_text()))
-    return fig, bg
+    """new_sheet with the title from the sheet index."""
+    return new_sheet(number, TITLE[number], scale, notes)
 
 
 def wrap_list(items, width):
@@ -275,7 +272,7 @@ def wrap_list(items, width):
 # ----------------------------------------------------------------------------
 def zone_polys():
     R = m.ROOMS
-    return [R["HALL"], R["BATH 1"], R["BATH 2"], R["CLOSET 2"], R["W/D"], R["AIR HANDLER"], R["LINEN"], SOF_L,
+    return [R["HALL"], R["BATH 1"], R["BATH 2"], R["CLOSET 2"], R["W/D"], R["AIR HANDLER"], R["WATER HEATER"], SOF_L,
             [(m.TUBS[2][0], m.TUBS[2][1]), (m.TUBS[2][2], m.TUBS[2][1]), (m.TUBS[2][2], m.TUBS[2][3]), (m.TUBS[2][0], m.TUBS[2][3])],
             [(KSOF[0], KSOF[1]), (KSOF[2], KSOF[1]), (KSOF[2], KSOF[3]), (KSOF[0], KSOF[3])]]
 
@@ -318,18 +315,16 @@ def draw_supply(ax):
 
 
 def draw_return(ax):
-    d = D["D12"]
-    rect(ax, m.X_H1 - 0.16, AH_CY - 10 * IN, m.X_H1 + 0.02, AH_CY + 10 * IN, fc=RET, ec=RET, lw=0.6, z=12.6)     # 20 x 20 filter grille
+    rect(ax, m.X_H1 - 0.16, R1_Y - 10 * IN, m.X_H1 + 0.02, R1_Y + 10 * IN, fc=RET, ec=RET, lw=0.6, z=12.6)       # 20 x 20 filter grille in leaf D12
     for dy in (-0.5, 0.5):
-        ax.annotate("", xy=(m.X_H1 - 0.2, AH_CY + dy), xytext=(m.X_H1 - 1.0, AH_CY + dy),
+        ax.annotate("", xy=(m.X_H1 - 0.2, R1_Y + dy), xytext=(m.X_H1 - 1.0, R1_Y + dy),
                     arrowprops=dict(arrowstyle="-|>", lw=0.7, color=RET, mutation_scale=5, shrinkA=0, shrinkB=0), zorder=12.6)
     transfer(ax, m.E1, T1_Y - 0.5, m.X_H0, T1_Y + 0.5)                                            # T-1 over the bedroom 1 door
     transfer(ax, m.E1, T2_Y - 0.5, m.X_H0, T2_Y + 0.5)                                            # T-2 over the bedroom 2 door
     rect(ax, m.X_H0 + 0.06, T2_Y - 0.5, m.X_H0 + 0.06 + 8 * IN, T2_Y + 0.5, fc=RET_F, ec=RET, lw=0.7, z=11.5)   # its grille in the hall soffit
     transfer(ax, T3_X - 0.5, m.Y1, T3_X + 0.5, m.Y2)                                              # T-3 below the soffit
-    # service clearance in front of the closet door
-    rect(ax, m.X_H1 - 2.5, AH_CY - 1.25, m.X_H1, AH_CY + 1.25, fc="none", ec=INK, lw=0.5, z=11.2, ls=(0, (2, 2)))
-    del d
+    # service clearance in front of the air-handler door leaf
+    rect(ax, m.X_H1 - 2.5, R1_Y - 1.25, m.X_H1, R1_Y + 1.25, fc="none", ec=INK, lw=0.5, z=11.2, ls=(0, (2, 2)))
 
 
 def draw_exhaust(ax, hood=True):
@@ -402,7 +397,7 @@ def unit_tags(ax, u):
     tag(ax, m.E1 - 2.15, T1_Y, "T-1 12x8", RET)
     tag(ax, m.E1 - 1.3, T2_Y + 1.05, "T-2", RET)
     tag(ax, T3_X, m.Y1 - 1.25, "T-3 12x8", RET)
-    lead(ax, (m.X_H1 - 0.08, AH_CY - 0.75), (27.5, 24.7), "R-1 20x20", RET, size=4.2, weight="bold")
+    lead(ax, (m.X_H1 - 0.08, R1_Y - 0.8), (27.5, 24.7), "R-1 20x20", RET, size=4.2, weight="bold")
     for dn in ("D5", "D6", "D7"):
         x0, y0, x1, y1 = m.door_cut(D[dn])
         (hx, hy), a_, s_ = m.door_hinge(D[dn])
@@ -439,25 +434,25 @@ def unit_tags(ax, u):
     dim(ax, (m.X_ST - SOF_W, m.Y2), (m.X_ST - SOF_W, SOF_Y1), 0.75, size=4.6)
     dim(ax, (DV_X, DV_Y0), (DV_X, m.yr_o(DV_X)), -1.3, size=4.6)
     # keynotes on the plan
-    for n, (x, y) in {1: (27.4, 28.1), 2: (24.3, 28.85), 3: (20.5, 26.65), 4: (15.6, 23.25), 5: (24.6, 23.55), 6: (29.6, 23.75),
-                      7: (17.9, T1_Y - 1.2), 8: (25.0, 33.4), 9: (23.0, 15.9), 10: (28.0, 33.2), 12: (27.4, 22.95), 13: (18.2, 25.95)}.items():
+    for n, (x, y) in {1: (27.4, 27.95), 2: (27.4, 29.3), 3: (20.5, 25.75), 4: (15.6, 23.25), 5: (24.6, 23.55), 6: (29.6, 23.75),
+                      7: (17.9, T1_Y - 1.2), 8: (25.0, 33.4), 9: (23.0, 15.9), 10: (28.0, 33.2), 12: (27.4, 22.95), 13: (18.2, 26.05)}.items():
         keynote(ax, x, y, n)
     keynote(ax, 3.9, LS_Y[u] - 0.9 if u == "A" else LS_Y[u] - 5.9, 11)
     if u == "B":
         line(ax, [(4.4, LS_Y[u] - 5.5), (m.xw_o(LS_Y[u]) - 0.45, LS_Y[u] - 0.1)], color=REF, lw=0.35, z=13)
-    line(ax, [(26.8, 28.0), (m.AHU[2], AH_CY + 0.75)], lw=0.35, z=13)
-    line(ax, [(23.9, 28.4), (23.2, AH_CY + 0.6)], lw=0.35, z=13)
+    line(ax, [(26.8, 27.9), (m.AHU[2], AH_CY + 0.75)], lw=0.35, z=13)
+    line(ax, [(26.8, 29.2), (23.25, AH_CY + 0.7)], lw=0.35, z=13)
     line(ax, [(26.8, 22.95), (m.AHU[2] - 0.3, m.WD_Y1 - 0.1)], color=CND, lw=0.35, z=13)
-    line(ax, [(18.8, 25.9), (TSTAT[0] + 0.1, TSTAT[1] + 0.2)], color=HEAT, lw=0.35, z=13)
+    line(ax, [(18.8, 26.15), (TSTAT[0] + 0.1, TSTAT[1])], color=HEAT, lw=0.35, z=13)
 
 
 def unit_keynotes(u):
     dep = inch(CLG[u] - m.CLG_SOFFIT)
     p = "P-102" if u == "A" else "P-103"
     return [
-        (1, f"AIR HANDLER AHU-{u}: vertical, 21 x 21 in., on a 24 in. open return stand, supply plenum on top, {STRIP_KW} kW strip "
-            "heat. Keep 30 x 30 in. clear in the hall in front of the 2'-0\" closet door (dashed) for service."),
-        (2, f"20 x 8 from the plenum through a framed opening above the closet door into the hall soffit: {TOTAL_CFM} cfm, "
+        (1, f"AIR HANDLER AHU-{u}: vertical, 21 x 21 in., on a 24 in. return box, supply plenum on top, {STRIP_KW} kW strip heat. It shares the "
+            "mechanical closet with the water heater (WH). Keep 30 x 30 in. clear in the hall in front of door leaf D12 (dashed)."),
+        (2, f"20 x 8 from the plenum through a framed opening above the closet doors into the hall soffit: {TOTAL_CFM} cfm, "
             f"{fpm(TOTAL_CFM, 20, 8):.0f} fpm."),
         (3, f"MAIN TRUNK in the hall soffit: 16 x 8 south ({Q_S} cfm, {fpm(Q_S, 16, 8):.0f} fpm), 10 x 8 north ({Q_N} cfm). "
             "Galvanized steel, every joint sealed with mastic."),
@@ -467,7 +462,7 @@ def unit_keynotes(u):
         (6, f"BEDROOM 3 SOFFIT: L-shaped, 1'-4\" wide, underside 7'-0\" ({dep} deep), full length of the south wall and {ftin(SOF_Y1 - m.Y2)} up "
             f"the east wall. 12 x 6 to S-3 in the soffit face, then {rd(CFM[BA3])} in. round to S-8 above the bath 3 door. The stair wall's Type X "
             "board runs up behind the soffit; no opening in the stair wall."),
-        (7, "RETURN AIR: R-1 filter grille low in the air-handler closet door. T-1 and T-2: 12 x 8 transfer grilles above the bedroom "
+        (7, "RETURN AIR: R-1 filter grille low in door leaf D12, gasketed to the return box under the air handler. T-1 and T-2: 12 x 8 transfer grilles above the bedroom "
             "doors (T-2 turns down to a grille in the hall soffit). T-3: 12 x 8 through the wall below the soffit, top at 6'-10\". "
             "UC = bath door undercut 1 in."),
         (8, f"BATH FANS EF-1, EF-2, EF-3: {FAN_CFM} cfm each, 4 in. rigid duct to a wall cap with damper. EF-2 runs all the time at "
@@ -475,13 +470,13 @@ def unit_keynotes(u):
         (9, f"RANGE HOOD RH-1: 6 in. round up into the 13 in. soffit above the wall cabinets, {ftin(RH_RUN)} south to a cap on the front "
             f"wall under the porch roof. The WEST sash of window W2 must be the fixed one: the cap is {ftin(RH_CLEAR)} from the east sash."),
         (10, f"DRYER DV-1: 4 in. rigid metal. Riser at the back of the W/D closet, then north in the dropped ceiling past the air "
-             f"handler and over the bath 2 tub to a damper cap (no screen) on the rear wall. {ftin(DV_RUN)} run + {ftin(DRY_RISER)} riser + "
+             f"handler and water heater and over the bath 2 tub to a damper cap (no screen) on the rear wall. {ftin(DV_RUN)} run + {ftin(DRY_RISER)} riser + "
              f"2 elbows = {DV_EQ:.0f} equivalent ft; 35 max."),
         (11, f"LINE SET (3/8 + 3/4 in., insulated) drops in the closet corner into THIS flat's floor trusses, runs to the west wall, "
              f"leaves through the rim at about EL {LS_EL[u]:.1f} and runs in a cover to HP-{u}. About {ls_len(u)} ft."),
         (12, f"CONDENSATE: 3/4 in. PVC, trapped, with an overflow shut-off switch, sloped 1/8 in. per ft through the closet wall to "
              f"the washer standpipe box ({p}). No pump."),
-        (13, "THERMOSTAT at 5'-0\" on the hall west wall, away from the registers. One per flat."),
+        (13, "THERMOSTAT at 5'-0\" on the hall west wall beside the bedroom 2 door, away from the registers. One per flat."),
     ]
 
 
@@ -789,8 +784,8 @@ def sheet_m101(pdf):
         ("Garage level", [
             "Open to the street: not heated, no fan,",
             "no ducts, no equipment, no water piping.",
-            "UH-1 keeps the utility room (water heaters",
-            "and water entries) above freezing. UH-2",
+            "UH-1 keeps the utility room (the two water",
+            "service entries) above freezing. UH-2",
             "keeps the stair at 50 °F. Both have their",
             "own thermostat; circuit CL, Unit A panel.",
         ]),
@@ -903,12 +898,13 @@ def section_closet(fig, bg, L, B):
     """Section through the air-handler closet and the hall, looking north (Unit A)."""
     x0, x1, fpi = 19.2, 29.6, 32 / 12.0
     ax = plan_axes(fig, L, B, (x0, x1), (-1.25, 9.4), fpi)
-    vt(bg, L, B + 4.2, "2  Air-handler closet", "3/8\" = 1'-0\" · Unit A, looking north through the closet door")
+    vt(bg, L, B + 4.2, "2  Mechanical closet at the air handler", "3/8\" = 1'-0\" · Unit A, looking north · water heater is behind the air handler")
     cl, gt = sec_shell(ax, "A", x0, x1, [(x0, m.X_H0), (m.X_H1, m.X_C0), (m.X_C1, m.X_B3)], [(m.X_H0, m.X_H1), (m.X_C0, m.X_C1)])
     rect(ax, m.X_H1 - 0.01, 0, m.X_C0 + 0.01, 6.667, fc=PAPER, ec=BG_EDGE, lw=0.4, z=4.5)          # door opening
     rect(ax, m.X_H1 + 0.1, 0.04, m.X_H1 + 0.24, 6.6, fc=PAPER, ec=INK, lw=0.5, z=5)                # door leaf
     rect(ax, m.X_H1 + 0.06, 0.33, m.X_H1 + 0.28, 2.0, fc=RET, ec=RET, z=6)                         # 20 x 20 filter grille
-    for z in (0.75, 1.5):
+    rect(ax, m.X_C0, 0.25, m.AHU[2], STAND_H, fc=RET_F, ec=RET, lw=0.8, z=6.5)                     # return box under the unit, out to the door
+    for z in (0.55, 1.75):
         ax.annotate("", xy=(m.X_C0 + 0.45, z), xytext=(m.X_H1 - 0.95, z), arrowprops=dict(arrowstyle="-|>", lw=0.7, color=RET, mutation_scale=5), zorder=9)
     zb, zt = 7.0 + 2 * IN, 7.0 + 10 * IN
     xs0, xs1 = TR_CX - TR_W / 2, TR_CX + TR_W / 2
@@ -923,10 +919,7 @@ def section_closet(fig, bg, L, B):
     txt(ax, AH_CX, STAND_H + 2.9, "AHU-A\nblower", size=4.4, weight="bold")
     txt(ax, AH_CX, STAND_H + 0.75, "coil +\n5 kW strip", size=4.2)
     txt(ax, AH_CX, STAND_H + AHU_H + 0.75, "PLENUM", size=4.4, color=SUP, weight="bold")
-    for x in (a0, a1 - 0.12):
-        rect(ax, x, 0, x + 0.12, STAND_H, fc=BG_WALL, ec=INK, lw=0.4, z=7)                         # stand legs
-    rect(ax, a0, STAND_H - 0.12, a1, STAND_H, fc=BG_WALL, ec=INK, lw=0.4, z=7)
-    txt(ax, AH_CX, 0.95, "open\nreturn\nstand", size=4.2, color=RET)
+    txt(ax, AH_CX - 0.15, 1.1, "RETURN BOX\n(sheet metal)", size=4.2, color=RET, weight="bold")
     ax.add_patch(plt.Circle((DV_X, 7.0 + 6 * IN), 2 * IN, fc=EXH_F, ec=EXH, lw=0.9, zorder=8))      # dryer duct passing
     # line set and condensate
     xl = m.X_C0 + 0.22
@@ -939,10 +932,10 @@ def section_closet(fig, bg, L, B):
     lead(ax, (DV_X, 7.0 + 6 * IN), (R, 7.5), "DRYER DUCT 4 in. passing in\nthe 7 in. space beside the plenum", EXH, size=4.2, weight="bold", ha="left")
     lead(ax, (a1, STAND_H + 3.3), (R, 5.9), "30 A, 240 V feed. The breaker in\nthe heater kit is the disconnect\n(if none: switch at the door)", INK, size=4.2, ha="left")
     lead(ax, (xc + 0.2, STAND_H + 0.3), (R, 3.9), "CONDENSATE 3/4 in.: trap,\noverflow shut-off switch, then\nthrough the wall to the washer\nbox. Outlet must be higher\nthan the box: no pump", CND, size=4.2, weight="bold", ha="left")
-    lead(ax, (m.X_H1 + 0.28, 1.9), (R, 1.3), "R-1 FILTER GRILLE 20 x 20 in\nthe door, bottom 4 in. above\nthe floor. Gasket the door;\nseal the closet airtight", RET, size=4.2, weight="bold", ha="left")
+    lead(ax, (m.X_H1 + 0.28, 1.9), (R, 1.3), "R-1 FILTER GRILLE 20 x 20 in\ndoor leaf D12, bottom 4 in. above\nthe floor. Foam gasket between\nthe leaf and the return box", RET, size=4.2, weight="bold", ha="left")
     lead(ax, (xl, -0.7), (R, -0.75), "LINE SET to HP-A in the floor trusses", REF, size=4.2, weight="bold", ha="left")
     txt(ax, 21.4, 4.2, "30 in. CLEAR\nIN THE HALL\nFOR SERVICE", size=4.2)
-    lead(ax, (TSTAT[0] + 0.3, 5.0), (20.6, 5.55), "T-STAT 5'-0\"", HEAT, size=4.2, weight="bold", ha="left")
+    lead(ax, (TSTAT[0] + 0.3, 5.0), (20.6, 5.55), "T-STAT 5'-0\" (beyond)", HEAT, size=4.2, weight="bold", ha="left")
     lead(ax, (22.75, (zb + zt) / 2), (21.9, 6.3), "20 x 8 ABOVE\nTHE DOOR", SUP, size=4.2, weight="bold", ha="center")
     dim(ax, (a0 - 0.28, 0), (a0 - 0.28, STAND_H), 0.0, "2'-0\"", size=4.2, ext=False)
     dim(ax, (m.X_C1 - 0.2, STAND_H), (m.X_C1 - 0.2, STAND_H + AHU_H), 0.0, "ABOUT 4'-0\"", size=4.2, ext=False, side=-1)
@@ -952,9 +945,9 @@ def section_closet(fig, bg, L, B):
 
 
 def closet_plan(fig, bg, L, B):
-    x0, x1, y0, y1, fpi = 19.55, 26.75, 24.25, 28.25, 2.0
+    x0, x1, y0, y1, fpi = 19.55, 26.95, 24.0, 30.2, 2.0
     ax = plan_axes(fig, L, B, (x0, x1), (y0, y1), fpi)
-    vt(bg, L, B + 2.2, "3  Air-handler closet plan", "1/2\" = 1'-0\" · both flats")
+    vt(bg, L, B + 3.25, "3  Mechanical closet plan", "1/2\" = 1'-0\" · both flats")
     unit_plan(ax, "bg", "A", furniture=False, labels=False, with_porch=False)
     for p in zone_polys():
         poly(ax, p, fc=ZONE_F, ec="none", z=7.6, alpha=0.4)
@@ -964,21 +957,21 @@ def closet_plan(fig, bg, L, B):
     draw_condensate(ax)
     ax.add_patch(plt.Circle(LS_DROP, 0.13, fc=PAPER, ec=REF, lw=1.0, zorder=12))
     draw_tstat(ax, r=0.16)
-    for a in ax.patches + ax.lines:
-        a.set_clip_on(True)
     txt(ax, AH_CX, AH_CY + 0.35, "AHU\n21 x 21", size=5.0, color=SUP, weight="bold", z=14, box=True)
-    txt(ax, TR_CX, 25.0, "16 x 8", size=4.8, color=SUP, weight="bold", rot=90, z=14)
-    txt(ax, TR_CX, 27.9, "10 x 8", size=4.6, color=SUP, weight="bold", rot=90, z=14)
-    txt(ax, 23.15, AH_CY - 0.35, "20 x 8\nover door", size=4.4, color=SUP, weight="bold", z=14, rot=90)
-    txt(ax, 20.72, AH_CY + 0.45, "30 x 30 in.\nservice\nspace", size=4.6, z=14)
-    dim(ax, (m.X_C0, m.AH_Y1 + 0.02), (m.X_C1, m.AH_Y1 + 0.02), 0.42, size=4.8)
-    dim(ax, (m.X_C1 + 0.4, m.AH_Y0), (m.X_C1 + 0.4, m.AH_Y1), 0.0, size=4.8, ext=False, side=-1)
+    txt(ax, m.WH_UNIT[0] - 0.1, m.WH_UNIT[1], "WH\n80 gal\n(plumber)", size=4.6, color=GREY, weight="bold", z=14)
+    txt(ax, TR_CX, 24.75, "16 x 8", size=4.8, color=SUP, weight="bold", rot=90, z=14)
+    txt(ax, TR_CX, 28.6, "10 x 8", size=4.6, color=SUP, weight="bold", rot=90, z=14)
+    txt(ax, 23.15, AH_CY - 0.35, "20 x 8\nover doors", size=4.2, color=SUP, weight="bold", z=14, rot=90)
+    txt(ax, 20.72, R1_Y + 0.55, "30 x 30 in.\nservice\nspace", size=4.6, z=14)
+    dim(ax, (m.X_C0, m.HALL_Y1), (m.X_C1, m.HALL_Y1), 0.12, size=4.8, ext=False)
+    dim(ax, (m.X_C1 + 0.5, m.AH_Y0), (m.X_C1 + 0.5, m.HALL_Y1), 0.0, size=4.8, ext=False, side=-1)
     dim(ax, (m.X_C0, m.AHU[1] - 0.12), (m.AHU[0], m.AHU[1] - 0.12), 0.0, inch(m.AHU[0] - m.X_C0), size=4.2, ext=False, side=-1)
-    dim(ax, (m.AHU[2], m.AHU[3] + 0.1), (m.X_C1, m.AHU[3] + 0.1), 0.0, inch(m.X_C1 - m.AHU[2]), size=4.2, ext=False)
-    lead(ax, (DV_X, 24.75), (26.3, 24.45), "DRYER\n4 in.", EXH, size=4.2, weight="bold", ha="center")
-    lead(ax, LS_DROP, (24.35, 24.5), "LINE SET\nDOWN", REF, size=4.2, weight="bold", ha="center")
-    lead(ax, (m.AHU[2] - 0.3, 24.75), (25.35, 24.5), "COND.", CND, size=4.2, weight="bold", ha="center")
-    lead(ax, (m.X_H1 - 0.1, AH_CY + 0.75), (22.2, 27.9), "R-1", RET, size=4.6, weight="bold", ha="center")
+    dim(ax, (m.AHU[2], m.AHU[3] + 0.12), (m.X_C1, m.AHU[3] + 0.12), 0.0, inch(m.X_C1 - m.AHU[2]), size=4.2, ext=False)
+    lead(ax, (DV_X, 24.7), (26.35, 24.25), "DRYER\n4 in.", EXH, size=4.2, weight="bold", ha="center")
+    lead(ax, LS_DROP, (24.2, 24.3), "LINE SET\nDOWN", REF, size=4.2, weight="bold", ha="center")
+    lead(ax, (m.AHU[2] - 0.3, 24.75), (25.3, 24.3), "COND.", CND, size=4.2, weight="bold", ha="center")
+    lead(ax, (m.X_H1 - 0.1, R1_Y + 0.8), (22.5, 29.3), "R-1 in\nleaf D12", RET, size=4.4, weight="bold", ha="center")
+    lead(ax, (TSTAT[0] + 0.3, TSTAT[1]), (20.6, 27.6), "T", HEAT, size=4.6, weight="bold", ha="center")
     return ax
 
 
@@ -1022,23 +1015,18 @@ def sheet_m201(pdf):
     fig, bg = sheet("M-201", "AS NOTED", notes)
     section_hall(fig, bg, 0.6, 5.5)
     section_closet(fig, bg, 5.5, 5.5)
-    closet_plan(fig, bg, 9.75, 7.35)
-    bx, by = 9.75, 6.95
+    closet_plan(fig, bg, 9.75, 6.45)
+    bx, by = 9.75, 6.27
     bg.text(bx, by, "CLOSET NOTES", fontsize=6.6, fontweight="bold", color=INK, va="top")
     for i, ln in enumerate([
-        "Closet 2'-10\" x 2'-6\" inside, door 2'-0\": buy a unit no more",
-        "than 21 in. wide so it can be carried through the door.",
-        "Supply plenum the size of the unit, from the unit to the",
-        "ceiling; 20 x 8 take-off on the hall side, above the door.",
-        "Return: R-1 in the door feeds the open stand. If the",
-        "inspector does not accept the closet as the return path,",
-        "box the stand in sheet metal out to the grille.",
-        f"R-1 is {RA_TO_RANGE:.0f} ft from the range (10 ft min., IRC M1602.2).",
-        "Line set and condensate: sleeve and seal the floor and",
-        "wall holes. Low-voltage cable follows the line set.",
-        "Unit B: same closet; ceiling 8'-1\", so 13 in. over the soffit line.",
-        "TO CONFIRM: equipment model and its clearances; closet as",
-        "the return path (above); Manual J for each flat.",
+        "One closet 5'-0\" x 2'-10\" for the air handler and the 80 gal",
+        "water heater, pair of 2'-0\" doors. Buy an air handler no more",
+        "than 21 in. wide so it passes one leaf.",
+        "Return: sheet-metal box under the unit, open to R-1 in leaf",
+        "D12 and gasketed to it, so no return air is drawn from the",
+        f"closet itself (IRC M1602.2). R-1 is {RA_TO_RANGE:.0f} ft from the range.",
+        "Sleeve and seal the line-set and condensate holes.",
+        "TO CONFIRM: equipment model, clearances, Manual J per flat.",
     ]):
         bg.text(bx, by - 0.2 - i * 0.142, ln, fontsize=5.3, color=INK, va="top")
 

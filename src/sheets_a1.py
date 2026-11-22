@@ -32,6 +32,8 @@ BAND = "#cfe3f5"
 def fi(v):
     """Feet and inches to the nearest 1/2 in. (ftin() rounds to the inch)."""
     h = round(abs(v) * 24)
+    if h < 24:
+        return f"{h // 2}" + (" 1/2" if h % 2 else "") + '"'
     f, r = divmod(h, 24)
     i, half = divmod(r, 2)
     s = f"{f}'-{i}" + (" 1/2" if half else "") + '"'
@@ -210,9 +212,10 @@ def sheet_a101(pdf):
             "Ceiling 5/8 in. Type X, R-30 above (A-501).",
         ]),
         ("Utility room and stair", [
-            f"Utility: heated, {fi(util_w)} x {fi(util_d)}, with",
-            "both 80 gal water heaters. Its 2'-8\" door",
-            "swings INTO the room, never toward a car.",
+            f"Utility: heated, {fi(util_w)} x {fi(util_d)}: water",
+            "service entry and shut-offs for both flats.",
+            "No water heaters here (one in each flat).",
+            "Its 2'-8\" door swings INTO the room.",
             f"Stair to Unit A: {lo['risers']} risers at {lo['riser_in']:.2f} in.,",
             f"{lo['tread_in']} in. treads, flights {fi(flight)} wide between",
             "the concrete walls, 1-hour enclosure (A-402).",
@@ -223,8 +226,8 @@ def sheet_a101(pdf):
             "Nothing in the right-of-way but the apron.",
         ]),
         ("To confirm", [
-            "Wall, footing and beam sizes: engineer.",
-            "Lot lines and all setbacks: survey.",
+            "Wall, footing, beam sizes: engineer.",
+            "Lot lines and setbacks: survey.",
         ]),
     ]
     fig, bg = new_sheet("A-101", "Garage level plan", "3/16\" = 1'-0\"", notes)
@@ -243,7 +246,7 @@ def sheet_a101(pdf):
     # drain chases on the rear wall (coordination with P-101)
     for i, (cx, cy) in enumerate((m.CHASE_1, m.CHASE_2)):
         rect(ax, cx - 0.67, cy - 0.67, cx + 0.67, m.Y_GR_I, fc=PAPER, ec=RATED, lw=0.6, z=6.6)
-        txt(ax, cx, (cy - 0.67 + m.Y_GR_I) / 2, f"C{i + 1}", size=3.8, color=RATED, z=9)
+        txt(ax, cx, (cy - 0.67 + m.Y_GR_I) / 2, f"C{i + 1}", size=4.2, color=RATED, z=9)
 
     # ---- inside dimensions ----
     yf_in = m.YF + m.CONC
@@ -268,7 +271,7 @@ def sheet_a101(pdf):
     D(ax, (xg, m.YF), (xg, m.Y_GR_I), 0, fi(m.Y_GR_I - m.YF) + " DEEP", ext=False, size=4.8, at=0.3)
     # stair shaft
     D(ax, (x0, y1 - 0.75), (x1, y1 - 0.75), 0, fi(x1 - x0), ext=False, size=4.6)
-    txt(ax, (x0 + x1) / 2, y1 - 1.85, "MID LANDING", size=3.8, color=GREY)
+    txt(ax, (x0 + x1) / 2, y1 - 1.85, "MID LANDING", size=4.2, color=GREY)
 
     # ---- strings outside the walls ----
     yy = m.YF - 1.75
@@ -302,8 +305,8 @@ def sheet_a101(pdf):
     leader(ax, (m.xw_gi(27.0), 27.0), (2.8, 30.6), "BIKE HOOKS ON THIS WALL,\nAT THE BACK", ha="right", **T)
     leader(ax, (m.xw_o(15.0) + 0.5, 15.0), (1.2, 16.6), f"{inch(m.CONC)} CONCRETE RETAINING\nWALL ON 3 SIDES (S-102)", ha="right", **T)
     leader(ax, (m.HP[1][0] - 0.4, m.HP[1][1]), (2.2, 25.4), "HEAT-PUMP PADS\nA AND B (M-101)", ha="right", **T)
-    txt(ax, (m.CHASE_1[0] + m.CHASE_2[0]) / 2, 26.55, "C1, C2: DRAIN CHASES, 1-HOUR,\nINSULATED, 16 x 16 in. (P-101)", size=3.9, color=RATED, box=True)
-    leader(ax, (m.XE, 27.0), (50.9, 27.0), f"UTILITY ROOM (heated)\n{fi(util_w)} x {fi(util_d)} clear\nDoor swings in.\nWH A, WH B: 80 gal", arrow=False, **T)
+    txt(ax, (m.CHASE_1[0] + m.CHASE_2[0]) / 2, 26.55, "C1, C2: DRAIN CHASES, 1-HOUR,\nINSULATED, 16 x 16 in. (P-101)", size=4.2, color=RATED, box=True)
+    leader(ax, (m.XE, 27.0), (50.9, 27.0), f"UTILITY ROOM (heated)\n{fi(util_w)} x {fi(util_d)} clear\nDoor swings in.\nBoth water services\nenter here (P-101)", arrow=False, **T)
     leader(ax, (m.XE_GI - 0.6, m.UTIL[2] - m.CMU / 2), (50.9, 23.2), f"{inch(m.CMU)} CONCRETE OR\nGROUTED BLOCK:\nlobby wall and stair /\nutility wall (S-101)", **T)
     leader(ax, (m.XE, 15.5), (50.9, 15.5), f"COMMON STAIR\nflights {fi(flight)} wide\n{lo['risers']} risers to Unit A", arrow=False, **T)
     leader(ax, (m.XE - 1.0, 1.9), (46.4, 4.9), "TRASH BAY,\n4 CARTS, SCREENED\n(C-107)", **T)
@@ -338,7 +341,9 @@ def room_size(name):
 def room_table(bg, x, y, fs=5.0, rh=0.152):
     rows = [("ROOM", "CLEAR SIZE", "AREA")]
     for k in m.ROOMS:
-        rows.append((k.title().replace("W/D", "Washer / dryer").replace(" / K", " / k"), room_size(k), f"{m.area(k):.0f} sf"))
+        nm = {"W/D": "Washer / dryer", "AIR HANDLER": "Mech. closet, AHU", "WATER HEATER": "Mech. closet, WH",
+              "LIVING / KITCHEN": "Living / kitchen"}.get(k, k.title())
+        rows.append((nm, room_size(k), f"{m.area(k):.0f} sf"))
     rows.append(("NET, inside the walls", "less the stair", f"{m.net_area():.0f} sf"))
     return table(bg, x, y, [0.86, 0.86, 0.40], rows, fs=fs, rh=rh)
 
@@ -406,7 +411,8 @@ def unit_dims(ax, unit):
     D(ax, (m.X_H0, y), (m.X_ST, y), 0, side=-1, at=0.3, **I)                           # living / kitchen width
     D(ax, (30.6, m.YFI), (30.6, m.Y1), 0, at=0.62, **I)                        # living / kitchen depth
     D(ax, (m.KIT_BASE[2], 14.4), (m.ISLAND[0], 14.4), 0, ext=False, size=4.2)  # kitchen aisle
-    D(ax, (m.X_H0, 29.62), (m.X_H1, 29.62), 0, side=-1, ext=False, size=4.2)   # hall width
+    yh = (m.Y1 + m.Y2) / 2
+    D(ax, (m.X_H0, yh), (m.X_H1, yh), 0, at=0.3, ext=False, size=4.2)          # hall width, at the cased opening
     D(ax, (m.SHAFT_U[0], m.SHAFT_U[3] - 0.8), (m.SHAFT_U[1], m.SHAFT_U[3] - 0.8), 0, **I)   # stair shaft
     for (x0, y0, x1, y1) in m.TUBS:                                            # 5'-0" tub alcoves
         D(ax, (x1 - 0.62, y0), (x1 - 0.62, y1), 0, ext=False, size=4.4, color=BLUE, side=-1)
@@ -425,11 +431,10 @@ def unit_names(ax, unit):
     txt(ax, 23.7, 11.75, "KITCHEN", size=4.4, weight="bold")
     for i, (x0, y0, x1, y1) in enumerate(m.TUBS):
         txt(ax, x0 + 0.72, (y0 + y1) / 2, f"BATH {i + 1}", size=4.4, weight="bold", rot=90)
-    txt(ax, 21.42, 23.6, "HALL", size=4.0, color=GREY, rot=90)
-    txt(ax, 10.45, 23.35, f"CLOSET {fi(m.CL_Y - m.Y2)} deep", size=3.6, color=GREY)
-    txt(ax, 10.6, 24.75, f"CLOSET {fi(m.Y3 - m.CL_Y - m.PART)} deep", size=3.6, color=GREY)
-    txt(ax, 28.05, 32.3, f"CLOSET\n{fi(m.C3_X - m.X_B3)} wide", size=3.7, color=GREY)
-    txt(ax, 24.75, 28.95, "LINEN", size=3.4, color=GREY)
+    txt(ax, 21.42, 23.6, "HALL", size=4.2, color=GREY, rot=90)
+    txt(ax, 10.45, 23.35, f"CLOSET {fi(m.CL_Y - m.Y2)} deep", size=4.2, color=GREY)
+    txt(ax, 10.6, 24.75, f"CLOSET {fi(m.Y3 - m.CL_Y - m.PART)} deep", size=4.2, color=GREY)
+    txt(ax, 28.05, 32.3, f"CLOSET\n{fi(m.C3_X - m.X_B3)} wide", size=4.2, color=GREY)
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
 
 
@@ -521,10 +526,10 @@ def unit_sheet(pdf, number, unit):
     if A:
         yl = m.Y_GR_O
         line(ax, [(m.xw_o(yl) - 1.0, yl), (m.XE + 0.8, yl)], color=BLUE, lw=0.8, ls=(0, (6, 2.5)), z=7.6)
-        txt(ax, 13.2, yl + 0.42, "SLAB ON GRADE THIS SIDE (S-103)", size=4.0, color=BLUE, box=True)
-        txt(ax, 13.2, yl - 0.45, "FLOOR TRUSSES THIS SIDE (S-201)", size=4.0, color=BLUE, box=True)
-        txt(ax, 33.4, yl + 0.42, "SLAB ON GRADE", size=4.0, color=BLUE, box=True)
-        txt(ax, 33.4, yl - 0.45, "FLOOR TRUSSES", size=4.0, color=BLUE, box=True)
+        txt(ax, 13.2, yl + 0.42, "SLAB ON GRADE THIS SIDE (S-103)", size=4.2, color=BLUE, box=True)
+        txt(ax, 13.2, yl - 0.45, "FLOOR TRUSSES THIS SIDE (S-201)", size=4.2, color=BLUE, box=True)
+        txt(ax, 33.4, yl + 0.42, "SLAB ON GRADE", size=4.2, color=BLUE, box=True)
+        txt(ax, 33.4, yl - 0.45, "FLOOR TRUSSES", size=4.2, color=BLUE, box=True)
         # where the ground is above this floor
         nw, sw = m.OUT_U[3], m.OUT_U[0]
         a, b = 0.14, 0.42
@@ -537,12 +542,12 @@ def unit_sheet(pdf, number, unit):
     else:
         hx = m.X_H0 + (m.X_H1 - m.X_H0 - 22 * IN) / 2
         rect(ax, hx, 24.75, hx + 22 * IN, 24.75 + 30 * IN, fc="none", ec=BLUE, lw=0.6, ls=(0, (3, 2)), z=8)
-        txt(ax, hx + 11 * IN, 26.0, "ATTIC ACCESS\n22 x 30 in.", size=3.3, color=BLUE, rot=90, z=9.5)
+        txt(ax, hx + 11 * IN, 26.0, "ATTIC ACCESS\n22 x 30 in.", size=4.2, color=BLUE, rot=90, z=9.5)
     unit_dims(ax, unit)
     unit_names(ax, unit)
     cover = "ROOF OVERHANG ABOVE" if not A else "UNIT B PORCH ABOVE"
     txt(ax, 28.3, m.PORCH[1] + 1.55, f"COVERED PORCH  {fi(m.PORCH[2] - m.PORCH[0])} x {fi(m.PORCH[3] - m.PORCH[1])}", size=5.0, weight="bold", box=True)
-    txt(ax, 28.3, m.PORCH[1] + 0.75, f"cantilevered floor trusses, no posts · {cover.lower()} · guard 36 in. (A-402)", size=4.0, box=True)
+    txt(ax, 28.3, m.PORCH[1] + 0.75, f"cantilevered floor trusses, no posts · {cover.lower()} · guard 36 in. (A-402)", size=4.2, box=True)
     setbacks(ax)
 
     # ---- notes strip at the left ----
@@ -551,10 +556,11 @@ def unit_sheet(pdf, number, unit):
     amps = m.PANEL_A_AMPS if A else m.PANEL_B_AMPS
     yb = block(bg, xl, yb - 0.16, "This flat's own equipment", [
         f"Electric meter and {amps} A panel (hall wall).",
-        "Water meter and 1 in. service; 80 gal electric",
-        "water heater in the garage-level utility room.",
-        "2-ton heat pump on the west side yard, air",
-        "handler in the AHU closet, ducted (M-10" + ("2" if A else "3") + ").",
+        "Water meter and 1 in. service. 80 gal electric",
+        "water heater on a drain pan in the mechanical",
+        "closet off the hall, beside the air handler.",
+        "2-ton heat pump on the west side yard,",
+        "ducted air handler (M-10" + ("2" if A else "3") + ").",
         "Stacked washer / dryer, 27 x 31 in.",
         "30 in. range, refrigerator, dishwasher.",
         "All electric. Tenant pays own utilities.",
@@ -697,12 +703,13 @@ def sheet_a104(pdf):
     txt(ax, 34.4, 16.0, "LIVING / KITCHEN", size=5.0, weight="bold")
     txt(ax, 23.7, 11.75, "KITCHEN", size=4.4, weight="bold")
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.4, color=GREY)
-    txt(ax, (m.ISLAND[0] + m.ISLAND[2]) / 2, m.ISLAND[1] + 3.6, "ISLAND", size=3.8, color=GREY, rot=90, z=9)
-    txt(ax, (m.FRIDGE[0] + m.FRIDGE[2]) / 2, (m.FRIDGE[1] + m.FRIDGE[3]) / 2, "REF\n36 in.", size=3.8, color=GREY, z=8)
-    txt(ax, (m.WD[0] + m.WD[2]) / 2, (m.WD[1] + m.WD[3]) / 2, "W/D", size=3.8, color=GREY, z=8)
-    txt(ax, (m.AHU[0] + m.AHU[2]) / 2, (m.AHU[1] + m.AHU[3]) / 2, "AHU", size=3.4, z=8, weight="bold")
+    txt(ax, m.ISLAND[2] + 0.5, (m.ISLAND[1] + m.ISLAND[3]) / 2, "ISLAND 60 x 37 TOP", size=4.2, color=GREY, rot=90, z=9)
+    txt(ax, *m.WH_UNIT, "WH", size=4.2, z=8, weight="bold")
+    txt(ax, (m.FRIDGE[0] + m.FRIDGE[2]) / 2, (m.FRIDGE[1] + m.FRIDGE[3]) / 2, "REF\n36 in.", size=4.2, color=GREY, z=8)
+    txt(ax, (m.WD[0] + m.WD[2]) / 2, (m.WD[1] + m.WD[3]) / 2, "W/D", size=4.2, color=GREY, z=8)
+    txt(ax, (m.AHU[0] + m.AHU[2]) / 2, (m.AHU[1] + m.AHU[3]) / 2, "AHU", size=4.2, z=8, weight="bold")
     for i, (x0, y0, x1, y1) in enumerate(m.TUBS):
-        txt(ax, (x0 + x1) / 2, (y0 + y1) / 2, f"BATH {i + 1} · TUB 60 x 30", size=4.0, rot=90)
+        txt(ax, (x0 + x1) / 2, (y0 + y1) / 2, f"BATH {i + 1} · TUB 60 x 30", size=4.2, rot=90)
     # kitchen and living clearances
     K = dict(ext=False, size=4.2, color=BLUE)
     D(ax, (m.KIT_BASE[2], 14.3), (m.ISLAND[0], 14.3), 0, **K)
@@ -712,8 +719,7 @@ def sheet_a104(pdf):
     tv = [p for (r, k, p) in m.FURN if k == "tv"][0]
     sofa = [p for (r, k, p) in m.FURN if k == "sofa"][0]
     D(ax, (32.9, max(p[1] for p in tv)), (32.9, min(p[1] for p in sofa)), 0, **K)
-    D(ax, (max(s[0] for s in m.STOOLS) + 0.55, 18.9), (min(p[0] for p in sofa), 18.9), 0, "", **K)
-    D(ax, (m.X_H0, 22.6), (m.X_H1, 22.6), 0, fi(m.X_H1 - m.X_H0), ext=False, size=4.0, color=BLUE)
+    D(ax, (m.X_H0, 22.6), (m.X_H1, 22.6), 0, fi(m.X_H1 - m.X_H0), ext=False, size=4.2, color=BLUE)
     sb = plan_axes(fig, 9.0, 0.5, (0.0, 20.0), (0.0, 2.0), fpi)
     scale_bar(sb, 1.0, 1.1, 16, 4, 0.42, size=5.2)
     north_arrow(ax, xlim[1] - 3.2, ylim[1] - 3.6, 1.6, 6.0)
@@ -770,7 +776,7 @@ def sheet_a104(pdf):
     rows = [("ROOM", "PIECE", "SIZE (in.)", "ROOM", "PIECE", "SIZE (in.)")]
     flat = []
     for (room, kind, pts) in m.FURN:
-        flat.append((room.title().replace(" / K", " / k"), FURN_NAME[kind].title(), furn_size(kind, pts)[0]))
+        flat.append((room.title().replace(" / K", " / k"), FURN_NAME[kind].capitalize().replace("Tv", "TV"), furn_size(kind, pts)[0]))
     for room, c in m.CHAIRS.items():
         a, b = math.dist(c[0], c[1]), math.dist(c[1], c[2])
         flat.append((room.title(), "Desk chair space", f"{round(a * 12)} x {round(b * 12)}"))

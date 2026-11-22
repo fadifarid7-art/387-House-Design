@@ -22,7 +22,7 @@ IN = m.IN
 # ----------------------------------------------------------------------------
 P = m.ROOF_PITCH
 EAVE = m.EL_PLATE + m.HEEL                 # top of the roof truss at the outside wall face
-T_CONC = m.EL_B1_TOP                       # top of the garage walls = bearing of the Unit A floor trusses
+T_CONC = m.EL_B1_TOP                       # top of the garage walls: 1 1/2 in. sill plate under the trusses, like the nailer on B1
 Z_B1_BOT = m.EL_B1_TOP - m.B1_DEPTH        # underside of beam B1
 A_T0 = m.EL_A - 0.75 * IN - m.TRUSS_A      # underside of the Unit A floor trusses
 B_T1 = m.EL_B - 0.75 * IN                  # top / underside of the Unit B floor trusses
@@ -83,6 +83,12 @@ def fi(v, q=4):
     g = math.gcd(n, q) if n else 1
     frac = f" {n // g}/{q // g}" if n else ""
     return f"{'-' if v < 0 else ''}{f}'-{i}{frac}\""
+
+
+def ftd(v):
+    """Feet-inches rounded DOWN to the inch (clear heights)."""
+    tot = int(math.floor(v * 12 + 1e-6))
+    return f"{tot // 12}'-{tot % 12}\""
 
 
 def inch(v, q=16):
@@ -339,6 +345,7 @@ def front_elev(ax, xl, yl, big=False):
         for wx in (c + 0.35, c + m.CAR_W - 1.05):
             rect(ax, wx, m.EL_GAR, wx + 0.7, m.EL_GAR + 0.9, fc="#a4abb3", ec="none", z=2.55)
     rect(ax, m.COL_X[0] - 0.25, Z_B1_BOT, m.SHAFT_X0, m.EL_B1_TOP, fc=STEEL, ec=INK, lw=0.5, z=4)
+    rect(ax, m.COL_X[0] - 0.25, m.EL_B1_TOP, m.SHAFT_X0, A_T0, fc=WOODC, ec=INK, lw=0.3, z=4)
     cx = m.COL_X[1]
     rect(ax, cx - 0.25, m.EL_GAR, cx + 0.25, Z_B1_BOT, fc=STEEL, ec=INK, lw=0.4, z=4)
     rect(ax, m.ENTRY[0], m.EL_GAR, m.ENTRY[1], m.EL_GAR + DOOR_H, fc="#d6dbe0", ec=INK, lw=0.7, z=4)
@@ -398,14 +405,16 @@ def front_labels(ax, xl, yl):
         lvl(ax, 4.75, el, nm, ha="right", size=4.3, el_txt=et, line_to=X0 if el < m.EL_PLATE else 5.3)
     txt(ax, (m.OPEN[0] + m.OPEN[1]) / 2, m.EL_GAR - 1.0, f"GARAGE SLAB AND ENTRY LANDING  EL {m.EL_GAR:.1f}", size=4.6, weight="bold", z=12)
     note(ax, (XE + OH_S, m.ridge_el(XE)), (XE - 3.0, 951.0), f"RIDGE (EAST) EL {m.EL_RIDGE_LO:.1f}", size=4.2, ha="right")
-    # zoning height
-    line(ax, [(X0 - 1, ag + 35), (XE + 2.5, ag + 35)], color=ACCENT, lw=0.7, ls=(0, (4, 3)), z=12)
+    # zoning height: mean roof level (midway between the eave and the highest ridge) above average grade
+    zm = ag + m.zoning_height()
+    line(ax, [(X0 - 1, ag + 35), (XE + 4.4, ag + 35)], color=ACCENT, lw=0.7, ls=(0, (4, 3)), z=12)
     txt(ax, (X0 + XE) / 2, ag + 35.75, f"35 FT ZONING HEIGHT LIMIT = EL {ag + 35:.1f}  (average existing grade at the four corners EL {ag:.1f} + 35 ft)",
         size=4.4, color=ACCENT)
-    line(ax, [(X0 - 2.4, ag), (X0 + 3, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
-    dim(ax, (XE + 3.7, ag), (XE + 3.7, m.EL_RIDGE_HI), 0, f"{ftin(m.EL_RIDGE_HI - ag)} AVG. GRADE TO RIDGE", ext=False, size=4.0, color=ACCENT, side=-1)
-    dim(ax, (XE + 3.7, m.EL_RIDGE_HI), (XE + 3.7, ag + 35), 0, f"{ftin(ag + 35 - m.EL_RIDGE_HI)} SPARE", ext=False, size=4.0, color=ACCENT, side=-1)
-    line(ax, [(XE - 4, ag), (XE + 4.2, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
+    line(ax, [(XE - 9, zm), (XE + 4.4, zm)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
+    txt(ax, XE - 0.5, zm + 0.5, f"MEAN ROOF LEVEL EL {zm:.1f}", size=3.7, color=ACCENT, ha="right", z=12)
+    dim(ax, (XE + 3.7, ag), (XE + 3.7, zm), 0, f"ZONING HEIGHT {ftin(m.zoning_height())} (avg. grade to mean roof)", ext=False, size=4.0, color=ACCENT, side=-1)
+    dim(ax, (XE + 3.7, zm), (XE + 3.7, ag + 35), 0, f"{ftin(35 - m.zoning_height())} SPARE", ext=False, size=4.0, color=ACCENT, side=-1)
+    line(ax, [(XE - 4, ag), (XE + 4.4, ag)], color=ACCENT, lw=0.5, ls=(0, (4, 3)), z=12)
     txt(ax, XE + 0.3, ag - 0.6, f"AVG. GRADE EL {ag:.1f}", size=3.7, color=ACCENT, ha="left", z=12)
     # widths
     dim(ax, (X0, 953.2), (XE, 953.2), 0, f"FACADE {ftin(m.FACADE_W)}", ext=False, size=4.6)
@@ -554,7 +563,7 @@ def sheet_a201(pdf):
             f"Top plate {m.EL_PLATE:.2f} · truss top at eave {EAVE:.2f}",
             f"Ridge {m.EL_RIDGE_LO:.2f} (east) to {m.EL_RIDGE_HI:.2f} (west)",
             f"Average existing grade at 4 corners {ag:.1f}",
-            f"Height to the ridge {ftin(m.EL_RIDGE_HI - ag)} (35 ft limit)",
+            f"Zoning height (mean roof) {ftin(m.zoning_height())}; limit 35 ft",
         ]),
         ("Confirm before pricing", [
             "Ground is 1 m state LiDAR, not a survey:",
@@ -618,7 +627,7 @@ def garage_front_labels(ax, xl, yl):
     xh = 34.9
     dim(ax, (xh, g), (xh, Z_B1_BOT), 0, f"{ftin(m.OPEN_CLEAR_H)} CLEAR", ext=False, size=4.8)
     dim(ax, (xh, Z_B1_BOT), (xh, m.EL_B1_TOP), 0, "14\"", ext=False, size=4.4)
-    dim(ax, (xh, m.EL_B1_TOP), (xh, m.EL_A), 0, "20 3/4\"", ext=False, size=4.4)
+    dim(ax, (xh, m.EL_B1_TOP), (xh, m.EL_A), 0, inch((m.EL_A - m.EL_B1_TOP) * 12, 4) + "\"", ext=False, size=4.4)
     dim(ax, (XE + 1.9, g), (XE + 1.9, m.EL_A), 0, fi(m.EL_A - g), ext=False, size=4.8, side=-1)
     for el in (g, m.EL_A):
         line(ax, [(XE + 0.2, el), (XE + 2.3, el)], lw=0.25, color=GREY, z=9)
@@ -631,7 +640,7 @@ def garage_front_labels(ax, xl, yl):
     note(ax, (m.COL_X[0], m.EL_B1_TOP - 0.3), (6.2, 926.6), "B1 bears on the concrete\nreturn pier", size=4.4, ha="left")
     note(ax, (m.COL_X[2], m.EL_B1_TOP - 0.3), (39.2, 926.6), "B1 bears on the lobby\nwall pier", size=4.4, ha="left")
     note(ax, (m.COL_X[1] + 0.25, g + 5.3), (29.6, g + 5.0), "HSS 6x6 post\n(prelim.) on its\nown footing", size=4.4, ha="left")
-    note(ax, (9.4, 922.9), (4.0, 920.4), "Top of concrete EL 923.77.\nGround at the front wall is\nabout EL 922 here", size=4.2, ha="left")
+    note(ax, (9.4, 922.9), (4.0, 920.4), f"Top of concrete EL {T_CONC:.2f}.\nGround at the front wall is\nabout EL 922 here", size=4.2, ha="left")
     note(ax, (12.5, 919.0), (4.0, 917.2), "Wing wall (C-107):\ntop 6 in. above the\nyard it retains", size=4.2, ha="left")
     txt(ax, (m.ENTRY[0] + m.ENTRY[1]) / 2, g + 1.9, "STREET\nDOOR\n3'-0\" x\n6'-8\"", size=4.2, z=9)
     note(ax, (37.6, g + 4.0), (37.9, g + 8.2), "8 in. concrete or grouted-block lobby wall", size=4.2, ha="left")
@@ -878,10 +887,11 @@ def sheet_a202(pdf):
             "so the garage level is fully buried here.",
         ]),
         ("Roof", [
-            "Both side walls are gable ends with 8 in.",
-            "rakes. The ridge sits at mid-depth of each",
-            "wall; it is higher at the west because the",
-            "building is deeper there (4:12 both ways).",
+            "Both side walls are gable ends. The 8 in.",
+            "rakes and the rear eave are within 5 ft of",
+            "a lot line: 1-hour underside (R302.1).",
+            "The ridge is at mid-depth of each wall and",
+            "is higher at the west (deeper building).",
         ]),
         ("3, 4 Side yards", [
             "Both walls are 5'-2\" from the side lot",
@@ -903,7 +913,7 @@ def sheet_a202(pdf):
     gap = (SHEET_W - 2 * MARGIN - TB_W - w1 - w2) / 3
     l1 = MARGIN + gap
     l2 = l1 + w1 + gap
-    b1 = 4.42
+    b1 = 4.48
     ax = plan_axes(fig, l1, b1, xl1, yl, 8.0)
     east_elev(ax, xl1, yl)
     east_labels(ax, xl1, yl)
@@ -914,10 +924,10 @@ def sheet_a202(pdf):
     title_under(bg, (l2, b1), 2, "West elevation", f"{SCALE8} · from 442 Baird, square to the west wall · street on the right")
     # --- 3: west side yard at heat pump A
     f3 = 16 / 3
-    yl3 = (911.4, 928.2)
+    yl3 = (910.9, 928.3)
     yc = m.HP[0][1]
     xl3 = (west_x(yc) - 3.2, m.xw_o(yc) + 4.6)
-    b3 = 0.78
+    b3 = 0.72
     ax3 = plan_axes(fig, l1, b3, xl3, yl3, f3)
     xo, xi, top = side_yard(ax3, yc, True, xl3, yl3)
     lx = west_x(yc)
@@ -943,7 +953,7 @@ def sheet_a202(pdf):
     dim(ax3, (xi + 1.0, m.EL_GAR), (xi + 1.0, elev(xo, yc)), 0, f"{ftin(elev(xo, yc) - m.EL_GAR)} OF EARTH RETAINED", ext=False, size=4.0, side=-1)
     line(ax3, [(xo - 0.3, elev(xo, yc)), (xi + 1.4, elev(xo, yc))], lw=0.25, color=GREY, z=8)
     note(ax3, (xo + 0.25, top - 0.25), (xo + 2.0, 922.0), "concrete curb to\n8 in. above grade", size=3.8, ha="left")
-    note(ax3, (xo - 1.45, m.EL_DRAIN_HI + 0.17), (lx - 2.9, 912.2), f"French drain, invert EL {m.EL_DRAIN_HI:.1f} (high end)", size=3.8, ha="left", color=BLUE)
+    note(ax3, (xo - 1.45, m.EL_DRAIN_HI + 0.17), (lx - 2.9, 911.6), f"French drain, invert EL {m.EL_DRAIN_HI:.1f} (high end)", size=3.8, ha="left", color=BLUE)
     title_under(bg, (l1, b3), 3, "West side yard at heat pump A", f"{SCALE316} · looking north")
     # --- 4: east side yard at the meter stack
     yc4 = m.E_METER[1]
@@ -964,7 +974,7 @@ def sheet_a202(pdf):
     for (wx, _wy) in m.WATER_METERS:
         ax4.add_patch(plt.Circle((wx, elev(wx, yc4) - m.WATER_DEPTH), 0.12, fc=BLUE, ec=BLUE, zorder=6))
     wx = m.WATER_METERS[0][0]
-    note(ax4, (wx, elev(wx, yc4) - m.WATER_DEPTH), (XE + 1.5, 912.4), "two 1 in. water services,\n42 in. cover (C-106)", size=3.8, ha="left", color=BLUE)
+    note(ax4, (wx, elev(wx, yc4) - m.WATER_DEPTH), (XE + 2.0, 911.9), "two 1 in. water services,\n42 in. cover (C-106)", size=3.8, ha="left", color=BLUE)
     txt(ax4, xl4[0] + 0.2, m.EL_GAR + 0.5, f"STAIR EL {m.EL_GAR:.1f}", size=4.2, weight="bold", ha="left")
     dim(ax4, (XE + 2.6, m.EL_GAR), (XE + 2.6, g), 0, f"{ftin(g - m.EL_GAR)} RETAINED", ext=False, size=4.0, side=-1)
     title_under(bg, (l4, b3), 4, "East side yard at the meters", f"{SCALE316} · looking north")
@@ -1109,6 +1119,7 @@ def section(ax, X, xl, yl, stair=False):
         ww = [(y, elev(wx0 - 0.5, y) + WALL_SITE_FREEBOARD) for y in np.linspace(wy1, wy0, 8)]
         poly(ax, [(wy1, apron_el(X, wy1)), (wy0, g)] + ww[::-1], fc="#dfe2e5", ec=GREY, lw=0.5, z=3)
     drain = retaining(ax, X, yl)
+    rect(ax, yri, T_CONC, yri + 0.46, A_T0, fc=WOODC, ec=INK, lw=0.4, z=5)
     # --- Unit A floor: trusses over the garage (R-30 in the bottom, 5/8 Type X below), slab on grade behind
     t0 = (m.SHAFT_U[3] + 0.1) if stair else m.PORCH[1] + 0.12
     truss_band(ax, t0, yri + 0.46, A_T0, m.EL_A - 0.75 * IN)
@@ -1141,6 +1152,7 @@ def section(ax, X, xl, yl, stair=False):
             opening_in_wall(ax, yf, yfi, fl + sill, fl + sill + hgt)
     else:
         i_beam(ax, m.B1_Y, m.EL_B1_TOP, m.B1_DEPTH)
+        rect(ax, m.B1_Y - 0.28, m.EL_B1_TOP, m.B1_Y + 0.28, A_T0, fc=WOODC, ec=INK, lw=0.4, z=7)
         rect(ax, yf, m.EL_A, yfi, B_T0, fc=POCHE, ec=INK, lw=0.4, z=6)
         rect(ax, yf, m.EL_B, yfi, m.EL_PLATE, fc=POCHE, ec=INK, lw=0.4, z=6)
     # --- Unit B floor trusses (clear span front wall to rear wall, cantilevered 4'-0" for the porch)
@@ -1198,7 +1210,7 @@ def section2_fit(ax, X, q):
     lo, up = m.STAIR_LO, m.STAIR_UP
     y1 = m.SHAFT_U[3]
     # concrete wall between the stair and the utility room; rated walls above
-    rect(ax, y1, g, m.UTIL[2], T_CONC, fc=CONC_FC, ec=INK, lw=0.8, z=4.1)
+    rect(ax, y1, g, m.UTIL[2], A_T0, fc=CONC_FC, ec=INK, lw=0.8, z=4.1)
     rect(ax, y1, m.EL_A, m.Y_ST, B_T0, fc=POCHE, ec=ACCENT, lw=0.6, z=6)
     rect(ax, y1, m.EL_B, m.Y_ST, Z_CLG_B, fc=POCHE, ec=ACCENT, lw=0.6, z=6)
     # lower stair: 2 flights; upper stair: 2 flights; the far (west) flights are seen beyond
@@ -1211,10 +1223,9 @@ def section2_fit(ax, X, q):
         rect(ax, m.YFI, fl_top - 0.85, ST_Y0, fl_top, fc=WOODC, ec=INK, lw=0.7, z=6)
         line(ax, [(ST_Y0 + run, zmid + GUARD), (ST_Y0, fl_top + GUARD)], lw=0.4, color=GREY, z=5)
     line(ax, [(ST_Y0, m.EL_B), (ST_Y0, m.EL_B + GUARD)], lw=1.0, z=7)
-    # utility room: two 80 gal water heaters
-    for (wx, wy) in m.WH:
-        ax.add_patch(FancyBboxPatch((wy - m.WH_R + 0.15, g + 0.15), 2 * m.WH_R - 0.3, WH_H - 0.3, boxstyle="round,pad=0.15,rounding_size=0.3",
-                                    fc=PAPER, ec=INK, lw=0.6, zorder=5))
+    # utility room (heated): water services enter through the east wall below grade; floor drain
+    ax.add_patch(plt.Circle((m.WATER_ENTRY[1], m.EL_WATER_ENTRY), 0.2, fc=PAPER, ec=BLUE, lw=0.8, zorder=6))
+    rect(ax, m.UTIL[2] + 1.6, g - 0.12, m.UTIL[2] + 2.2, g, fc=PAPER, ec=BLUE, lw=0.6, z=6)
     # bath 3 on both floors: tub cut lengthwise, north wall, pipe space with stack 3 beyond
     for fl, top in ((m.EL_A, Z_CLG_A), (m.EL_B, Z_CLG_B)):
         rect(ax, m.Y_ST, fl, m.B3_Y1, fl + TUB_H, fc=PAPER, ec=INK, lw=0.7, z=5)
@@ -1236,12 +1247,12 @@ def section1_labels(ax, X, xl, yl, q):
     lot_line(ax, 0.0, yl[0] + 0.8, 947.5, "FRONT LOT LINE", size=4.2)
     lot_line(ax, ry, yl[0] + 0.8, 947.5, "REAR LOT LINE", size=4.2)
     txt(ax, xl[0] + 0.4, q["st"] - 1.1, f"BAIRD ST ±EL {q['st']:.1f}", size=4.2, weight="bold", ha="left", z=12)
-    zb = 911.9
+    zb = 910.5
     for a, b, c in ((0, yf, ACCENT), (yf, yro, INK), (yro, yR, INK), (yR, ry, ACCENT)):
         dim(ax, (a, zb), (b, zb), 0, ftin(b - a), ext=False, size=4.2, color=c)
-    txt(ax, (yf + yro) / 2, zb - 0.75, "garage level", size=3.7, color=GREY, z=12)
-    txt(ax, (yro + yR) / 2, zb - 0.75, "slab on grade", size=3.7, color=GREY, z=12)
-    txt(ax, (yR + ry) / 2 + 0.8, zb - 0.75, "(5'-2\" square)", size=3.7, color=ACCENT, z=12)
+    txt(ax, (yf + yro) / 2 - 5.5, zb + 0.55, "garage level", size=3.7, color=GREY, z=12)
+    txt(ax, (yro + yR) / 2 + 2.6, zb + 1.4, "slab on grade", size=3.7, color=GREY, z=12)
+    txt(ax, ry + 3.6, zb + 0.5, "(5'-2\" square)", size=3.7, color=ACCENT, z=12)
     # rooms
     txt(ax, 21.5, g + 7.3, "OPEN GARAGE", size=5.0, weight="bold", z=9)
     for fl, u in ((m.EL_A, "A"), (m.EL_B, "B")):
@@ -1250,7 +1261,7 @@ def section1_labels(ax, X, xl, yl, q):
         txt(ax, (m.Y4 + q["yRi"]) / 2, fl + 5.6, "BEDROOM 2", size=4.4, weight="bold", z=9)
         txt(ax, (m.PORCH[1] + yf) / 2, fl + 4.3, "PORCH", size=3.6, rot=90, z=9)
     # heights
-    dim(ax, (17.6, g), (17.6, Z_CLG_GAR), 0, f"{ftin(m.CLG_GAR)} CLG", ext=False, size=4.0, side=-1)
+    dim(ax, (17.6, g), (17.6, Z_CLG_GAR), 0, f"{ftd(m.CLG_GAR)} CLG", ext=False, size=4.0, side=-1)
     dim(ax, (12.2, g), (12.2, Z_B1_BOT), 0, f"{ftin(m.OPEN_CLEAR_H)} UNDER B1", ext=False, size=4.0, side=-1)
     dim(ax, (13.0, m.EL_A), (13.0, Z_CLG_A), 0, ftin(m.CLG_A), ext=False, size=4.0, side=-1)
     dim(ax, (13.0, m.EL_B), (13.0, Z_CLG_B), 0, ftin(m.CLG_B), ext=False, size=4.0, side=-1)
@@ -1282,11 +1293,11 @@ def section2_labels(ax, X, xl, yl, q):
     lo, up = m.STAIR_LO, m.STAIR_UP
     lot_line(ax, ry, yl[0] + 0.8, 947.5, "REAR LOT LINE", size=4.2)
     lot_line(ax, 0.0, yl[0] + 0.8, 947.5, "FRONT LOT LINE", size=4.2, ha="left")
-    zb = 911.9
+    zb = 910.5
     for a, b, c in ((0, yf, ACCENT), (yf, m.SHAFT_U[3], INK), (m.SHAFT_U[3], yro, INK), (yro, ry, ACCENT)):
         dim(ax, (a, zb), (b, zb), 0, ftin(b - a), ext=False, size=4.0, color=c)
-    txt(ax, (yf + m.SHAFT_U[3]) / 2, zb - 0.75, "stair", size=3.7, color=GREY, z=12)
-    txt(ax, (m.SHAFT_U[3] + yro) / 2, zb - 0.75, "utility", size=3.7, color=GREY, z=12)
+    txt(ax, (yf + m.SHAFT_U[3]) / 2 + 3.0, zb + 0.55, "stair", size=3.7, color=GREY, z=12)
+    txt(ax, (m.SHAFT_U[3] + yro) / 2, zb + 1.3, "utility", size=3.7, color=GREY, z=12)
     for el, s_ in ((g, f"SLAB {g:.1f}"), (m.EL_A, f"A {m.EL_A:.1f}"), (m.EL_B, f"B {m.EL_B:.1f}")):
         txt(ax, 3.2, el + 0.5, s_, size=3.9, weight="bold", z=10)
         line(ax, [(0.6, el), (m.PORCH[1] if el > g else 5.6, el)], lw=0.3, color=GREY, ls=(0, (8, 3, 2, 3)), z=8)
@@ -1296,8 +1307,7 @@ def section2_labels(ax, X, xl, yl, q):
     txt(ax, 17.0, m.EL_B - 2.4, f"UNIT A TO UNIT B\n{up['risers']} risers at {inch(up['riser_in'])} in.", size=3.7, z=9, box=True)
     txt(ax, 17.2, m.EL_B + 5.6, "COMMON STAIR\n1-hour enclosure", size=4.0, weight="bold", z=9)
     txt(ax, (m.UTIL[2] + m.UTIL[3]) / 2, g + 7.3, "UTILITY\n(heated)", size=3.9, weight="bold", z=9)
-    txt(ax, m.WH[0][1], g + 2.6, "WH\nA", size=3.6, z=9)
-    txt(ax, m.WH[1][1], g + 2.6, "WH\nB", size=3.6, z=9)
+    note(ax, (m.WATER_ENTRY[1], m.EL_WATER_ENTRY), (yR + 2.2, g + 3.6), "WATER SERVICES IN,\nshutoffs, floor drain.\nWater heaters are\nin the flats", size=3.6, ha="left", color=BLUE)
     for fl in (m.EL_A, m.EL_B):
         txt(ax, (m.Y_ST + m.B3_Y1) / 2, fl + 4.0, "BATH 3", size=3.9, weight="bold", z=9)
     note(ax, (m.STACK_3[1], m.EL_B + 5.0), (yR + 2.0, m.EL_B + 6.2), "PIPE SPACE:\nstack 3 and\nUnit B water\nlines", size=3.6, ha="left")
@@ -1323,7 +1333,7 @@ def section1_lower_labels(ax, X, xl, yl, q):
     txt(ax, 20.6, g + 0.55, f"GARAGE SLAB EL {g:.1f}", size=4.8, weight="bold", z=12)
     txt(ax, 22.4, g + 6.4, "OPEN GARAGE", size=6.0, weight="bold", z=9)
     txt(ax, m.CAR_Y0 + 8.3, g + 3.1, "design car 16'-0\"", size=4.0, color=GREY, z=9)
-    dim(ax, (m.CAR_Y0 + 17.2, g), (m.CAR_Y0 + 17.2, Z_CLG_GAR), 0, f"{ftin(m.CLG_GAR)} CLEAR TO CEILING", ext=False, size=4.4)
+    dim(ax, (m.CAR_Y0 + 17.2, g), (m.CAR_Y0 + 17.2, Z_CLG_GAR), 0, f"{ftd(m.CLG_GAR)} CLEAR TO CEILING", ext=False, size=4.4)
     dim(ax, (yf + 1.5, g), (yf + 1.5, Z_B1_BOT), 0, f"{ftin(m.OPEN_CLEAR_H)} CLEAR UNDER B1", ext=False, size=4.4, side=-1)
     line(ax, [(m.B1_Y, Z_B1_BOT), (yf + 1.9, Z_B1_BOT)], lw=0.25, color=GREY, z=8)
     dim(ax, (yf, g + 0.9), (yri, g + 0.9), 0, f"{ftin(yri - yf)} CLEAR DEPTH", ext=False, size=4.4)
@@ -1364,33 +1374,34 @@ def sheet_a301(pdf):
             "for the concrete and excavation trades.",
         ]),
         ("2 Section through the stair", [
-            f"Cut at X = {XS2:.0f} ft: street door, the two",
-            "stairs, utility room with both water",
-            "heaters, bath 3 above it on both floors.",
+            f"Cut at X = {XS2:.0f} ft: street door, both stairs,",
+            "the heated utility room (water entry;",
+            "the water heaters are in the flats) and",
+            "bath 3 above it on both floors.",
         ]),
         ("Heights", [
-            f"Garage {ftin(m.CLG_GAR)} clear, {ftin(m.OPEN_CLEAR_H)} under beam B1",
+            f"Garage {ftd(m.CLG_GAR)} clear, {ftin(m.OPEN_CLEAR_H)} under beam B1",
             f"Unit A ceiling {ftin(m.CLG_A)} · Unit B {ftin(m.CLG_B)}",
-            f"Duct soffits {ftin(m.CLG_SOFFIT)} (dashed) · floor to floor",
-            "11'-0\" and 10'-0\"",
+            f"Duct soffits {ftin(m.CLG_SOFFIT)} (dashed). Floor to floor",
+            "11'-0\" and 10'-0\".",
         ]),
         ("Fire and insulation", [
             "Red lines: 5/8 in. Type X garage ceiling",
             "(R302.6); 1-hour floor/ceiling between the",
-            "flats (R302.3); 1-hour rear soffit; 1-hour",
-            "stair walls. R-30 over the garage, R-49",
-            "attic, R-20 walls, R-10 under the slab.",
+            "flats (R302.3); 1-hour rear soffit and",
+            "rakes; 1-hour stair walls. R-30 over the",
+            "garage, R-49 attic (vents: front soffit",
+            "and ridge), R-20 walls, R-10 under slab.",
         ]),
         ("Preliminary", [
             "Wall, footing, beam and truss sizes are",
-            "assumptions for the engineer. Ground is",
-            "LiDAR ±0.5 ft. Rear yard grades: C-105.",
+            "for the engineer. Ground is LiDAR ±0.5 ft.",
             "No sump: drains fall to the street by",
             "gravity; the survey must confirm the fall.",
         ]),
     ]
     fig, bg = new_sheet("A-301", TITLE["A-301"], "As noted", notes)
-    yl = (911.0, 952.0)
+    yl = (909.8, 951.6)
     xl1, xl2 = (-11.5, 53.5), (0.0, 38.2)
     w1, w2 = (xl1[1] - xl1[0]) / 8, (xl2[1] - xl2[0]) / 8
     gap = (SHEET_W - 2 * MARGIN - TB_W - w1 - w2) / 3
@@ -1409,7 +1420,7 @@ def sheet_a301(pdf):
     section2_labels(ax2, XS2, xl2, yl, q2)
     title_under(bg, (l2, b1), 2, "Section through the stair", f"{SCALE8} · X = {XS2:.0f} ft, looking west")
     f3 = 16 / 3
-    xl3, yl3 = (-9.6, 52.0), (910.6, 931.0)
+    xl3, yl3 = (-9.6, 52.0), (910.2, 930.6)
     b3 = 0.78
     l3 = MARGIN + (SHEET_W - 2 * MARGIN - TB_W - (xl3[1] - xl3[0]) / f3) / 2
     ax3 = plan_axes(fig, l3, b3, xl3, yl3, f3)

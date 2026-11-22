@@ -33,17 +33,19 @@ HEEL = m.FTG_W - m.CONC - TOE               # F1 heel, toward the retained soil 
 EL_F1_BOT = m.EL_FTG_TOP - m.FTG_T          # bottom of the retaining-wall footing
 STEM_T, STEM_FW, STEM_FT = 8 * IN, 20 * IN, 10 * IN      # stem wall and its footing F4
 INT_FW, INT_FT = 16 * IN, 8 * IN            # footing F3 under the 8 in. garage-level walls
-PAD, PAD_T = 4.0, 14 * IN                   # pad footing F2 under the steel post
 BRG_PAD, BRG_PAD_T = 3.0, 12 * IN           # local pad under the east bearing of B1
+PAD, PAD_T = m.B1_PAD, 14 * IN              # pad footing F2 under the steel post (5'-0" square, prelim.)
 SILL = 1.5 * IN                             # treated sill plate / nailer
-EL_BRG = m.EL_B1_TOP                        # floor-truss bearing level (underside of the 20 in. trusses)
-EL_TOC = EL_BRG - SILL                      # top of concrete under the sill plate
+EL_TOC = m.EL_B1_TOP                        # top of concrete = top of steel B1 (EL 923.65)
+EL_BRG = EL_TOC + SILL                      # floor-truss bearing level, on the sill plate / nailer
+EL_F3_TOP = EL_F1_BOT + INT_FT              # F3 and the east bearing pad: bottoms at the same frost level as F1
+EL_F2E_TOP = EL_F1_BOT + BRG_PAD_T
 FROST = 3.0
 BACKFILL = 4.0                              # assumed width of the backfilled over-dig behind the garage walls
 SLAB_G, STONE_G = 6 * IN, 6 * IN            # garage slab
 SLAB_A, STONE_A, INSUL_A = 5 * IN, 4 * IN, 2 * IN        # Unit A slab on grade
 EL_UPSTAND = m.EL_A - SLAB_A                # top of the 6 in. upstand on the garage rear wall
-DRAIN_OFF = HEEL + 0.75                     # French-drain centre line, ft outside the wall face
+DRAIN_OFF = 0.75                            # French-drain centre line, ft outside the wall face (on the footing heel)
 Y_TD = m.YF - 0.6                           # trench drain centre line (brief)
 Y_SLAB_S = Y_TD - 0.5                       # south edge of the garage slab = joint to the apron
 THICK_W, THICK_D = 2.0, 12 * IN             # thickened slab edge at the opening
@@ -130,6 +132,8 @@ DR_FALL = m.EL_DRAIN_HI - m.EL_DRAIN_OUT
 DR_SLOPE = DR_FALL / DR_LEN
 DR_INV = [m.EL_DRAIN_HI - DR_SLOPE * s for s in DR_STA]
 DR_NAMES = ["CO-1", "CO-2", "CO-3", "CO-4", "OUTLET"]
+DR_S_X = (m.EL_DRAIN_HI - m.EL_FTG_TOP) / DR_SLOPE          # station where the invert meets the top of footing
+DR_X_REAR = (DR_S_X - DR_STA[1]) / DR_SEG[1] * LN           # ... measured along the rear wall from the NW corner
 
 
 def ground_w(s):
@@ -269,7 +273,7 @@ def sheet_s001(pdf):
         ("Sheets",
          "S-101 foundations. S-102 retaining walls and drains. S-103 slabs. S-104 steel. S-201 to S-301 framing."),
     )
-    fig, bg = new_sheet("S-001", two_line(TITLE["S-001"]), "No scale", notes)
+    fig, bg = new_sheet("S-001", TITLE["S-001"], "No scale", notes)
     hw = m.OPEN[0] - m.xw_o(m.YF)
     lobby = m.XE - m.OPEN[1]
     rg = [ground_w(0) - m.EL_GAR, ground_w(LW) - m.EL_GAR, ground_n(LN) - m.EL_GAR, ground_e(LE) - m.EL_GAR]
@@ -349,7 +353,8 @@ def sheet_s001(pdf):
                   "anchored. No backfill above half height before then, unless the engineer designs them as "
                   "cantilevers (bigger footings). The rear wall's unbalanced push is the hard part."),
             _item(f"BEAM B1, ITS POST AND BEARINGS. About 2.5 kips per ft from three levels (S-104). The post "
-                  "load is about 32 to 43 kips; the 4'-0\" pad carries 32 kips at 2,000 psf, so expect it to grow."),
+                  f"load is about 32 kips (two simple spans) to 43 kips (one continuous beam). The {ftin(PAD)} "
+                  "square pad is preliminary: the engineer sizes it for a continuous beam."),
             _item(f"OPEN GARAGE FRONT. Only the {ftin(hw)} concrete return pier (west) and the 8 in. lobby front "
                   f"wall (east, {ftin(lobby)} long with a 3'-0\" door in it) stand in that wall line to resist "
                   "sideways load. The engineer checks them as shear piers or calls for a steel moment frame "
@@ -358,22 +363,22 @@ def sheet_s001(pdf):
                   "the rear bearing, guard-post loads."),
             _item("LONG FLOOR TRUSSES. Unit B: 24 in. deep, clear span 20'-0\" to 30'-9\". Stiffness (L/480 live "
                   "or better), vibration and bearing govern. They must not lean on Unit A's partitions."),
-            _item(f"FROST IN AN OPEN GARAGE. As modelled, the bottom of the wall footings is EL {EL_F1_BOT:.2f}, "
-                  f"only {ftin(m.EL_GAR - EL_F1_BOT)} below the slab. The garage is open and unheated and the "
-                  "frost depth is 36 in. The engineer confirms frost protection, above all along the open "
-                  "front (pier, lobby front wall, post pad, slab edge). Going deeper is limited by the gravity "
-                  f"drain outlet at EL {m.EL_DRAIN_OUT:.1f}."),
+            _item(f"FROST IN AN OPEN GARAGE. The garage is open and unheated, so every garage-level footing has "
+                  f"its bottom at EL {EL_F1_BOT:.2f}, 36 in. below the slab (top of wall footings EL "
+                  f"{m.EL_FTG_TOP:.2f}). The engineer confirms this along the open front (pier, lobby front "
+                  "wall, post pad, slab edge)."),
+            _item(f"DRAIN AGAINST FOOTING. The French drain lies on the footing heel beside the wall. East of mid "
+                  f"rear wall its invert is below the top of footing (EL {m.EL_FTG_TOP:.2f}) by up to 4 in.: "
+                  "there the pipe moves just outside the heel, or the engineer lowers the heel (S-102)."),
             _item("EXCAVATION beside three neighbours: shoring by a specialist engineer (C-104)."),
         ]),
     ]
     c3 = [
-        ("Bearing level: decide before forming", [
-            _para(f"The model puts the top of beam B1 at EL {m.EL_B1_TOP:.2f}, which is the underside of the 20 in. "
-                  "floor trusses. The 1 1/2 in. treated sill plate on the concrete walls and the nailer on B1 need "
-                  f"that 1 1/2 in. These sheets set the top of concrete at EL {EL_TOC:.2f} so the trusses bear at "
-                  f"EL {EL_BRG:.2f}. B1 must drop the same 1 1/2 in. (clear height under it becomes "
-                  f"{ftin(m.OPEN_CLEAR_H - SILL)}) or the nailer must go. Engineer, architect and truss supplier "
-                  "settle this before shop drawings."),
+        ("Bearing level", [
+            _para(f"Top of the concrete garage walls and top of steel beam B1 are both EL {EL_TOC:.2f}. A 1 1/2 in. "
+                  "treated sill plate on the concrete, and a 1 1/2 in. nailer on B1, bring the floor-truss "
+                  f"bearing to EL {EL_BRG:.2f}, the underside of the 20 in. trusses. Clear height under B1 is "
+                  f"{ftin(m.OPEN_CLEAR_H)}."),
         ]),
         ("Sequence that matters", [
             _item("1. Shoring and excavation (C-104)."),
@@ -404,7 +409,7 @@ def sheet_s001(pdf):
         ]),
         ("Preliminary member list", [
             _item(f"F1 retaining-wall footing {ftin(m.FTG_W)} x 14 in.; F2 post pad {ftin(PAD)} square x 14 in.; "
-                  "F3 16 x 8 in.; F4 stem-wall footing 20 x 10 in."),
+                  "F3 16 x 8 in.; F4 stem-wall footing 20 x 10 in. Garage-level footing bottoms EL 911.50."),
             _item("Garage walls 12 in. concrete; lobby, stair and utility walls 8 in.; stem walls 8 in."),
             _item("B1 W14x34; post HSS 6x6x3/8."),
             _item("Garage slab 6 in.; Unit A slab on grade 5 in."),
@@ -468,19 +473,20 @@ def sheet_s101(pdf):
          f"F1 garage retaining walls and west pier: {ftin(m.FTG_W)} x 14 in., toe {ftin(TOE)} inside, heel {ftin(HEEL)} "
          f"toward the soil. Top EL {m.EL_FTG_TOP:.2f}.",
          f"F2 pad under the steel post: {ftin(PAD)} x {ftin(PAD)} x 14 in. Top EL {m.EL_FTG_TOP:.2f}. "
-         f"Similar {ftin(BRG_PAD)} pad under the east bearing of B1.",
-         f"F3 under 8 in. lobby, stair and utility walls: 16 x 8 in. Top EL {m.EL_FTG_TOP:.2f}.",
+         f"{ftin(BRG_PAD)} pad under the east bearing of B1.",
+         f"F3 under 8 in. lobby, stair and utility walls: 16 x 8 in. Bottom of F1, F2 and F3: EL {EL_F1_BOT:.2f}, "
+         "36 in. below the garage slab (frost).",
          "F4 under 8 in. stem walls: 20 x 10 in., bottom 36 in. min. below finish grade and at least 2'-0\" below "
          "the Unit A slab."),
         ("Stem walls",
-         "Top of wall is 8 in. above finish grade and never below the Unit A floor. Elevations shown use existing "
-         "ground (LiDAR); adjust to the C-105 finish grades.",
+         "Top of wall 8 in. above finish grade, never below the Unit A floor. Elevations use existing ground "
+         "(LiDAR); adjust to C-105.",
          "Near the garage walls the stem footing must not sit on backfill: step it down or span it (engineer)."),
         ("Concrete, approx.",
          f"F1 {q_f1:.0f} cy, F3 {q_f3:.1f} cy, F4 {q_f4:.1f} cy, garage walls to EL {EL_TOC:.2f} {q_rw:.0f} cy. "
          "Stem walls vary with grade."),
     )
-    fig, bg = new_sheet("S-101", two_line(TITLE["S-101"]), "3/16\" = 1'-0\"", notes)
+    fig, bg = new_sheet("S-101", TITLE["S-101"], "3/16\" = 1'-0\"", notes)
     view = ((-7.0, 56.0), (-7.5, 44.0))
     left = MARGIN + (SHEET_W - 2 * MARGIN - TB_W - (view[0][1] - view[0][0]) / FPI) / 2
     ax = frame(fig, view, left, 0.55)
@@ -558,8 +564,8 @@ def sheet_s101(pdf):
     lead(ax, NWG, (-6.6, 33.2), f"GARAGE NW CORNER\nexisting ground EL {gnd['nwg']:.1f}\ntop of stem wall EL {top['nwg']:.1f}", size=4.6)
     # call-outs
     lead(ax, (m.xw_o(m.YF) + 2.6, m.YF + 0.5), (12.6, 14.4), f"CONCRETE RETURN PIER 12 in. x {ftin(m.OPEN[0] - m.xw_o(m.YF))}\nwest bearing of beam B1 (S-104)", size=4.6)
-    lead(ax, (m.COL_X[1] + 1.2, m.B1_Y + 1.2), (30.2, 15.3), f"F2  PAD {ftin(PAD)} x {ftin(PAD)} x 14 in.\nunder HSS 6x6 post", size=4.6)
-    lead(ax, (m.COL_X[2], m.B1_Y + 1.0), (30.2, 13.0), f"{ftin(BRG_PAD)} PAD, east bearing of B1", size=4.6)
+    lead(ax, (m.COL_X[1] + 1.2, m.B1_Y + 1.6), (29.2, 16.3), f"F2  PAD {ftin(PAD)} x {ftin(PAD)} x 14 in. (prelim.)\nunder HSS 6x6 post", size=4.6)
+    lead(ax, (m.COL_X[2] - 0.6, m.B1_Y + 1.0), (31.3, 14.2), f"{ftin(BRG_PAD)} PAD, east\nbearing of B1", size=4.6)
     lead(ax, (20.0, m.Y_GR_I - 0.6), (18.5, 22.3), f"F1  {ftin(m.FTG_W)} x 14 in. UNDER 12 in. WALLS\ntoe {ftin(TOE)} · wall 12 in. · heel {ftin(HEEL)}\nTOP OF FOOTING EL {m.EL_FTG_TOP:.2f}", size=4.8, ha="center", va="top", dot=True)
     lead(ax, (m.GAR_X1 + 0.33, 17.5), (30.6, 19.4), "F3  16 x 8 in. UNDER 8 in. WALLS\n(concrete or grouted block)", size=4.6, ha="right")
     lead(ax, (16.0, m.yr_o(16.0) - 0.8), (13.6, 34.6), "F4  20 x 10 in.\nUNDER 8 in.\nSTEM WALLS", size=4.6, ha="center", va="top")
@@ -579,7 +585,7 @@ def sheet_s101(pdf):
     view_title(ax, 31.5, 42.6, "1", "Foundation and footing plan", "3/16\" = 1'-0\" · footings dashed · concrete walls grey · red dimensions tie the corners to the lot lines", 9)
     north_arrow(ax, 53.2, 34.6, 1.7, 6.5)
     scale_bar(ax, -5.5, -6.2, 16, 4, 0.42, size=5.2)
-    txt(ax, -6.6, -2.0, "Wall lengths are along the outside face.\nAll footing tops EL 913.50 except F4.\nRounded to 1 in.", size=4.6, ha="left", color=GREY)
+    txt(ax, -6.6, -2.0, f"Wall lengths are along the outside face.\nBottom of F1, F2, F3: EL {EL_F1_BOT:.2f} (36 in. frost).\nRounded to 1 in.", size=4.6, ha="left", color=GREY)
     save(fig, "S-101", pdf)
 
 
@@ -588,7 +594,7 @@ def sheet_s101(pdf):
 # ----------------------------------------------------------------------------
 def wall_elevations(fig, left, bottom):
     tot = LW + LN + LE
-    ax = plan_axes(fig, left, bottom, (-8.0, tot + 8.0), (909.9, 928.6), 8.0)
+    ax = plan_axes(fig, left, bottom, (-8.0, tot + 8.0), (909.2, 928.3), 8.0)
     X0, X1, X2, X3 = 0.0, LW, LW + LN, tot
     S = np.concatenate([np.linspace(0, LW, 21), LW + np.linspace(0, LN, 37), LW + LN + np.linspace(0, LE, 21)])
     Gd = np.array([ground_w(s) for s in np.linspace(0, LW, 21)] + [ground_n(s) for s in np.linspace(0, LN, 37)]
@@ -607,8 +613,8 @@ def wall_elevations(fig, left, bottom):
     line(ax, [(X0 - 1.5, EL_TOC), (X3 + 1.5, EL_TOC)], lw=0.4, color=GREY, ls=(0, (1, 2)), z=5)
     # fold lines, cross walls
     for x, lab in ((X1, "NW CORNER"), (X2, "NE CORNER")):
-        line(ax, [(x, EL_F1_BOT - 1.4), (x, 927.6)], lw=0.6, ls=(0, (8, 2, 2, 2)), z=7)
-        txt(ax, x, 928.05, lab, size=4.8, weight="bold")
+        line(ax, [(x, EL_F1_BOT - 1.5), (x, 927.4)], lw=0.6, ls=(0, (8, 2, 2, 2)), z=7)
+        txt(ax, x, 927.8, lab, size=4.8, weight="bold")
     for a, b in ((X0, X0 + m.CONC), (X1 + m.GAR_X1 - NWG[0], X1 + m.SHAFT_X0 - NWG[0]),
                  (X2 + m.Y_GR_O - m.UTIL[2], X2 + m.Y_GR_O - m.SHAFT_U[3]), (X3 - m.CMU, X3)):
         rect(ax, a, m.EL_FTG_TOP, b, EL_TOC, fc="#c3c7cc", ec=GREY, lw=0.4, z=4)
@@ -621,7 +627,7 @@ def wall_elevations(fig, left, bottom):
         xo = x + (0.6 if i == 0 else -0.6 if i == 3 else 0.6)
         line(ax, [(xo, DR_INV[i]), (xo, gx + 0.3)], color=BLUE, lw=0.7, z=8)
         rect(ax, xo - 0.25, gx + 0.3, xo + 0.25, gx + 0.55, fc=BLUE, ec=BLUE, z=8)
-        txt(ax, x + (0.4 if i != 3 else -0.4), 911.72, f"{DR_NAMES[i]}  INV {DR_INV[i]:.2f}", size=4.6, color=BLUE, weight="bold",
+        txt(ax, x + (0.4 if i != 3 else -0.4), EL_F1_BOT - 0.55, f"{DR_NAMES[i]}  INV {DR_INV[i]:.2f}", size=4.6, color=BLUE, weight="bold",
             ha="left" if i != 3 else "right")
     # sleeves
     sx = X2 + m.Y_GR_O - m.WATER_ENTRY[1]
@@ -630,10 +636,10 @@ def wall_elevations(fig, left, bottom):
     lead(ax, (sx, m.EL_WATER_ENTRY - 0.3), (sx + 2.6, 916.0), f"2 SLEEVES, 1 in. WATER\nSERVICES, EL {m.EL_WATER_ENTRY:.1f} (P-101)", size=4.4, dot=False)
     bx = X1 + m.CHASE_2[0] - NWG[0]
     rect(ax, bx - 0.4, EL_TOC + 0.25, bx + 0.4, EL_UPSTAND - 0.25, fc=PAPER, ec=INK, lw=0.6, z=8)
-    lead(ax, (bx, EL_UPSTAND - 0.25), (bx + 1.6, 927.0), f"SLEEVE THROUGH THE UPSTAND FOR BATH 2 DRAINS AT CHASE 2,\n{ftin(m.CHASE_2[0] - NWG[0])} from the NW corner; size and level by P-101", size=4.4, dot=False)
+    lead(ax, (bx, EL_UPSTAND - 0.25), (bx + 1.6, 926.9), f"SLEEVE THROUGH THE UPSTAND FOR BATH 2 DRAINS AT CHASE 2,\n{ftin(m.CHASE_2[0] - NWG[0])} from the NW corner; size and level by P-101", size=4.4, dot=False)
     # names and lengths
     for a, b, lab, L in ((X0, X1, "WEST WALL", LW), (X1, X2, "NORTH (REAR) WALL", LN), (X2, X3, "EAST WALL", LE)):
-        dim(ax, (a, EL_F1_BOT), (b, EL_F1_BOT), -(EL_F1_BOT - 911.1), f"{lab}  {ftin(L)}", size=5.4, side=-1)
+        dim(ax, (a, EL_F1_BOT), (b, EL_F1_BOT), -1.2, f"{lab}  {ftin(L)}", size=5.4, side=-1)
     # retained heights
     for x, g, sd in ((X0, Gd[0], 1), (X1, Gd[20], 1), (X2, Gd[57], 1), (X3, Gd[78], -1)):
         xo = x + (2.6 if x == X0 else -2.6 if x == X3 else 2.2)
@@ -645,8 +651,8 @@ def wall_elevations(fig, left, bottom):
     # levels
     eltag(ax, X3 + 1.5, EL_TOC, f"TOP OF CONCRETE EL {EL_TOC:.2f}", size=4.6, w=0.8)
     eltag(ax, X3 + 1.5, m.EL_GAR, f"SLAB EL {m.EL_GAR:.2f}", size=4.6, w=0.8)
-    eltag(ax, X3 + 1.5, m.EL_FTG_TOP - 0.25, f"FTG TOP EL {m.EL_FTG_TOP:.2f}", size=4.6, w=0.8)
-    eltag(ax, X3 + 1.5, EL_F1_BOT - 0.75, f"FTG BOTTOM {EL_F1_BOT:.2f}", size=4.6, w=0.8)
+    eltag(ax, X3 + 1.5, m.EL_FTG_TOP + 0.1, f"FTG TOP EL {m.EL_FTG_TOP:.2f}", size=4.6, w=0.8)
+    eltag(ax, X3 + 1.5, EL_F1_BOT - 0.2, f"FTG BOTTOM {EL_F1_BOT:.2f}, 36 in. FROST", size=4.6, w=0.8)
     dim(ax, (X0 - 1.6, m.EL_FTG_TOP), (X0 - 1.6, EL_TOC), 0, f"{ftin(EL_TOC - m.EL_FTG_TOP)} WALL", ext=False, size=4.8)
     # labels
     xm = (X1 + X2) / 2
@@ -656,27 +662,29 @@ def wall_elevations(fig, left, bottom):
     lead(ax, (X0 + 13.5, max(EL_TOC, ground_w(13.5) + 8 * IN) - 0.3), (X0 + 2.0, 927.2), "UPSTAND AT THE OUTSIDE FACE, STEPPED TO STAY\n8 in. ABOVE FINISH GRADE (C-105)", size=4.4, dot=False)
     txt(ax, X0 + LW / 2, 918.6, "EXISTING GROUND\nAT THE OUTSIDE FACE\n(LiDAR, dashed)", size=4.4, color=EARTH, z=9)
     txt(ax, X2 + LE / 2 + 4.6, 922.6, "wall is exposed above\nthe ground line", size=4.4, color=GREY, z=9)
-    txt(ax, xm, m.EL_GAR - 0.5, "FRENCH DRAIN INVERT (blue), beside the footing heel", size=4.4, color=BLUE, z=9, box=True)
-    txt(ax, X0 - 0.4, 910.5, "SW (street end)", size=4.4, ha="right", color=GREY)
-    txt(ax, X3 + 0.4, 910.5, "SE (street end)", size=4.4, ha="left", color=GREY)
+    txt(ax, X1 + 12.5, m.EL_GAR - 0.55, "FRENCH DRAIN INVERT (blue), on the footing heel beside the wall", size=4.4, color=BLUE, z=9, box=True)
+    xc = X1 + DR_X_REAR
+    lead(ax, (xc, m.EL_FTG_TOP), (xc - 1.0, 916.3), f"From {ftin(DR_X_REAR)} east of the NW corner to CO-4 the invert is below\nthe top of footing: pipe moves outside the heel (see D)", size=4.4, color=BLUE, ha="right")
+    txt(ax, X0 - 0.4, EL_F1_BOT - 1.75, "SW (street end)", size=4.4, ha="right", color=GREY)
+    txt(ax, X3 + 0.4, EL_F1_BOT - 1.75, "SE (street end)", size=4.4, ha="left", color=GREY)
     return ax
 
 
 def wall_section(fig, left, bottom):
     g0 = 922.0
-    ylo, yhi = 911.3, 926.6
+    ylo, yhi = 910.45, 926.2
+    sub_g = m.EL_GAR - SLAB_G - STONE_G
     ax = plan_axes(fig, left, bottom, (-5.6, 8.6), (ylo, yhi), 8 / 3.0)
     lot = m.CONC + m.SB_SIDE + m.M
     grade = [(1.0, g0), (2.0, g0 - 0.2), (4.0, g0 - 0.55), (lot, g0 - 0.1), (8.6, g0 + 0.25)]
-    poly(ax, [(-5.6, ylo), (8.6, ylo)] + grade[::-1] + [(1.0, m.EL_FTG_TOP), (-5.6, m.EL_FTG_TOP)], fc=SOIL, ec="none", z=1)
+    poly(ax, [(-5.6, ylo), (8.6, ylo)] + grade[::-1] + [(1.0, sub_g), (-5.6, sub_g)], fc=SOIL, ec="none", z=1)
     line(ax, grade, lw=1.0, color=EARTH, z=6)
-    inv = (m.EL_DRAIN_HI + DR_INV[3]) / 2
+    inv = (m.EL_DRAIN_HI + DR_INV[1]) / 2
     px = m.CONC + DRAIN_OFF
-    # drain stone, backfill, cap
-    poly(ax, [(1.0, m.EL_FTG_TOP), (1.0 + HEEL, m.EL_FTG_TOP), (1.0 + HEEL, inv - 0.35), (px + 0.9, inv - 0.35), (px + 0.9, m.EL_GAR + 0.3),
-              (1.0, m.EL_GAR + 0.3)], fc=STONE, ec="none", z=2, hatch="ooo")
-    line(ax, [(1.0 + HEEL, inv - 0.35), (px + 0.9, inv - 0.35), (px + 0.9, m.EL_GAR + 0.3), (1.0 + HEEL, m.EL_GAR + 0.3), (1.0 + HEEL, g0 - 1.35)],
-         lw=0.7, color=BLUE, ls=(0, (3, 1.5)), z=5)
+    # drain stone on the heel, backfill, cap
+    rect(ax, 1.0, m.EL_FTG_TOP, 1.0 + HEEL, m.EL_GAR + 0.3, fc=STONE, ec="none", z=2, hatch="ooo")
+    line(ax, [(1.12, m.EL_FTG_TOP + 0.05), (1.0 + HEEL, m.EL_FTG_TOP + 0.05), (1.0 + HEEL, m.EL_GAR + 0.3), (1.12, m.EL_GAR + 0.3)], lw=0.7, color=BLUE, ls=(0, (3, 1.5)), z=5)
+    line(ax, [(1.0 + HEEL, m.EL_GAR + 0.3), (1.0 + HEEL, g0 - 1.35)], lw=0.7, color=BLUE, ls=(0, (3, 1.5)), z=5)
     poly(ax, [(1.0, m.EL_GAR + 0.3), (1.0 + HEEL, m.EL_GAR + 0.3), (1.0 + HEEL, g0 - 1.35), (1.0, g0 - 1.0)], fc="#f5f1e4", ec="none", z=2, hatch="...")
     poly(ax, [(1.0, g0 - 1.0), (1.0 + HEEL, g0 - 1.35), (1.0 + HEEL, g0 - 0.38), (2.0, g0 - 0.2), (1.0, g0)], fc="#cdbfa8", ec="none", z=2)
     ax.add_patch(plt.Circle((px, inv + 2 * IN), 2.2 * IN, fc=PAPER, ec=BLUE, lw=1.2, zorder=6))
@@ -719,20 +727,23 @@ def wall_section(fig, left, bottom):
     dim(ax, (0, yb), (m.CONC, yb), 0, "12\"", ext=False, size=4.6, side=-1)
     dim(ax, (m.CONC, yb), (m.CONC + HEEL, yb), 0, ftin(HEEL), ext=False, size=4.6, side=-1)
     dim(ax, (-1.7, EL_F1_BOT), (-1.7, m.EL_FTG_TOP), 0, "14\"", ext=False, size=4.6)
+    dim(ax, (-2.5, EL_F1_BOT), (-2.5, m.EL_GAR), 0, f"{ftin(m.EL_GAR - EL_F1_BOT)} FROST", ext=False, size=4.6)
+    line(ax, [(-2.7, EL_F1_BOT), (-TOE, EL_F1_BOT)], lw=0.3, color=GREY, z=3)
+    txt(ax, -4.3, (m.EL_FTG_TOP + sub_g) / 2, "COMPACTED FILL", size=4.4, color=EARTH)
     dim(ax, (-3.9, m.EL_GAR), (-3.9, EL_TOC), 0, ftin(EL_TOC - m.EL_GAR), ext=False, size=5.0)
     dim(ax, (8.2, m.EL_GAR), (8.2, g0 + 0.15), 0, "RETAINED HEIGHT VARIES: SEE ELEVATIONS", ext=False, size=4.6, side=-1)
     line(ax, [(1.0, m.EL_GAR), (8.3, m.EL_GAR)], lw=0.3, color=GREY, ls=(0, (2, 2)), z=3)
     eltag(ax, -5.5, m.EL_A + 0.22, f"UNIT A FLOOR EL {m.EL_A:.2f}", size=5.0, w=0.0)
     eltag(ax, -5.5, EL_TOC - 0.5, f"TOP OF CONCRETE EL {EL_TOC:.2f}\nTRUSS BEARING EL {EL_BRG:.2f}", size=4.8, w=0.0)
     eltag(ax, -5.5, m.EL_GAR + 0.25, f"GARAGE SLAB EL {m.EL_GAR:.2f}", size=5.0, w=0.0)
-    eltag(ax, -5.5, m.EL_FTG_TOP - 0.55, f"TOP OF FOOTING EL {m.EL_FTG_TOP:.2f}", size=4.8, w=0.0)
+    eltag(ax, -5.5, m.EL_FTG_TOP - 0.45, f"TOP OF FOOTING EL {m.EL_FTG_TOP:.2f}\nBOTTOM EL {EL_F1_BOT:.2f}", size=4.8, w=0.0)
     txt(ax, -2.9, 919.0, "OPEN GARAGE", size=5.4, color=GREY, weight="bold")
     txt(ax, -3.7, 924.65, "UNIT A FLOOR TRUSSES RUN\nPARALLEL TO THIS WALL", size=4.4, color=GREY)
     # keynote bubbles
-    ks = [((0.5, 918.2), (-1.3, 917.3), 1), ((-0.6, EL_F1_BOT + 0.75), (-2.9, 912.25), 2), ((-2.6, m.EL_GAR - 0.2), (-2.6, 915.6), 3),
-          ((0.72, EL_TOC + 0.06), (-1.1, 922.7), 4), ((-0.5, 924.7), (-1.9, 926.15), 5), ((1.03, 920.3), (2.3, 921.25), 6),
-          ((1.13, 917.4), (3.9, 918.6), 7), ((px, inv + 0.17), (6.3, 913.3), 8), ((2.2, 918.0), (4.6, 916.4), 9),
-          ((1.6, g0 - 0.6), (3.0, g0 + 1.2), 10), ((lot, 914.2), (7.3, 915.2), 11), ((0.75, 926.1), (2.6, 926.1), 12),
+    ks = [((0.5, 918.2), (-1.3, 917.3), 1), ((-0.6, EL_F1_BOT + 0.75), (-1.6, EL_F1_BOT - 0.55), 2), ((-3.6, m.EL_GAR - 0.2), (-3.6, 915.6), 3),
+          ((0.72, EL_TOC + 0.06), (-1.1, 922.7), 4), ((-0.5, 924.7), (-1.9, 925.93), 5), ((1.03, 920.3), (2.3, 921.25), 6),
+          ((1.13, 917.4), (3.9, 918.6), 7), ((px, inv + 0.17), (4.6, 912.4), 8), ((2.2, 918.0), (4.6, 916.4), 9),
+          ((1.6, g0 - 0.6), (3.0, g0 + 1.2), 10), ((lot, 914.2), (7.3, 915.2), 11), ((0.75, 925.9), (2.6, 925.9), 12),
           ((-2.5, EL_BRG - 0.052), (-2.5, 922.5), 13)]
     for p, q, n in ks:
         knote(ax, p, q, n)
@@ -791,36 +802,35 @@ def sheet_s102(pdf):
          "4 in. solid riser with a threaded cap in a flush box at each corner (CO-1 to CO-4), so every run can be "
          "flushed and cameraed."),
     )
-    fig, bg = new_sheet("S-102", two_line(TITLE["S-102"]), "As noted", notes)
+    fig, bg = new_sheet("S-102", TITLE["S-102"], "As noted", notes)
     L = MARGIN + 0.3
     # B: unfolded elevations
-    wall_elevations(fig, L + 0.75, 7.9)
+    wall_elevations(fig, L + 0.75, 7.88)
     vtitle(bg, L, 10.48, "B", "Garage retaining walls unfolded, seen from inside the garage", "1/8\" = 1'-0\" · lengths along the outside face · ground from LiDAR at the outside face · preliminary")
     # banner
     bx0, bx1 = L, SHEET_W - MARGIN - TB_W - 0.3
     bg.add_patch(Rectangle((bx0, 7.3), bx1 - bx0, 0.52, fc="#fbeeee", ec=ACCENT, lw=1.0))
     bg.text(bx0 + 0.12, 7.66, "GRAVITY ONLY: NO SUMP PUMP.", fontsize=9.0, fontweight="bold", color=ACCENT, va="center")
-    out_g = elev(*m.DRAIN_OUT)
     bg.text(bx0 + 2.62, 7.66, f"Foundation water leaves through the French drain to the street edge. On paper the pipe falls {DR_FALL * 12:.0f} in. in {DR_LEN:.0f} ft, "
-            f"but the outlet invert (EL {m.EL_DRAIN_OUT:.1f}) is at the LiDAR ground level there (EL {out_g:.1f}) and",
+            f"but the outlet invert (EL {m.EL_DRAIN_OUT:.1f}) is only about 6 to 8 in.",
             fontsize=6.0, color=INK, va="center")
-    bg.text(bx0 + 0.12, 7.44, f"about {(m.EL_DRAIN_OUT - street_el(m.DRAIN_OUT[0])) * 12:.0f} in. above the pavement. Count on only about 6 in. of fall until the SURVEY confirms these levels. "
+    bg.text(bx0 + 0.12, 7.44, "above the street edge: the SURVEY must confirm it. "
             "If the fall cannot be confirmed, the garage floor (and the whole building with it) is RAISED. A pump is never added.",
             fontsize=6.0, color=INK, va="center")
     # C: typical section
-    wall_section(fig, L + 0.05, 0.92)
+    wall_section(fig, L + 0.05, 0.78)
     vtitle(bg, L, 7.02, "C", "Typical wall section: west and east walls", "3/8\" = 1'-0\" · east wall shown looking north; west wall opposite hand · rear wall top: S-103 detail D")
     keys = [
         "12 in. concrete wall, 4,000 psi. PRELIM. bars: #5 at 12 in. vertical each face, #4 at 12 in. horizontal each face. Engineer to design.",
-        f"Footing F1 {ftin(m.FTG_W)} x 14 in.: toe {ftin(TOE)}, heel {ftin(HEEL)} toward the soil. PRELIM. #5 at 12 in. across the bottom, 3 #5 lengthwise. "
-        "Keyed joint (2x4 keyway) and #5 dowels at 12 in. into the wall. On undisturbed soil passed by the soil engineer.",
+        f"Footing F1 {ftin(m.FTG_W)} x 14 in.: toe {ftin(TOE)}, heel {ftin(HEEL)} toward the soil; bottom EL {EL_F1_BOT:.2f}, 36 in. below the slab (frost). "
+        "PRELIM. #5 at 12 in. across the bottom, 3 #5 lengthwise. Keyed joint (2x4 keyway) and #5 dowels at 12 in. On undisturbed soil passed by the soil engineer.",
         "Wall to slab: 6 in. garage slab on 6 in. compacted stone (S-103), 1/2 in. isolation joint, sealed. The footing, not the slab, holds the wall base against sliding (engineer to confirm).",
         "Treated 2x6 sill plate on sill sealer, 5/8 in. anchor bolts at 32 in. (prelim.).",
         "Wall to floor: THE UNIT A FLOOR PROPS THE TOP OF THE WALL. Blocking panels between the end truss and the next two trusses at 4 ft, subfloor nailed to them, straps as engineered. Rear wall: trusses bear on it (S-103).",
         "Sheet membrane waterproofing (60-mil self-adhered, or equal) from the footing to finish grade, lapped 6 in. onto the footing, termination bar at the top.",
         "Dimpled drainage board with filter fabric over the membrane, full height, open at the bottom into the drain stone.",
-        f"FRENCH DRAIN: 4 in. perforated PVC, holes down, in 12 in. of washed stone wrapped in filter fabric, beside the footing heel. "
-        f"Invert EL {m.EL_DRAIN_HI:.2f} (CO-1) falling to {DR_INV[3]:.2f} (CO-4). Never dig below the footing bottom, EL {EL_F1_BOT:.2f}.",
+        f"FRENCH DRAIN: 4 in. perforated PVC, holes down, bedded in washed stone wrapped in filter fabric, on the footing heel beside the wall. "
+        f"Invert EL {m.EL_DRAIN_HI:.2f} (CO-1) falling to {DR_INV[3]:.2f} (CO-4). Where the invert is below the top of footing: see D.",
         "Free-draining backfill (washed gravel or clean crushed stone), 2 ft wide min., in 8 in. lifts. Hand-operated compactors only within 4 ft of the wall.",
         "Top 12 in.: compacted clay cap and topsoil, graded away from the wall to a surface swale that runs to the street (C-105).",
         f"Lot line {ftin(m.SB_SIDE + m.M)} from the wall face. The cut cannot be sloped back: shoring by C-104.",
@@ -852,14 +862,18 @@ def sheet_s102(pdf):
         f"Solid pipe CO-4 to the outlet: {DR_SEG[3]:.0f} ft, no holes, glued joints.",
         f"Fall {DR_FALL:.1f} ft in {DR_LEN:.0f} ft = {DR_SLOPE * 100:.2f} % (about 1/{round(1 / (DR_SLOPE * 12))} in. per ft).",
         "Lay it at one even slope. 0.5 % is the least acceptable.",
-        f"Pipe centre line {ftin(DRAIN_OFF)} outside the wall face.",
-        "Outlet: rodent screen and stone splash pad at the street",
-        "edge; it is in the right-of-way, so the City Engineer approves.",
-        "The trench drain at the opening joins the same outlet pipe",
-        "downstream of CO-4 (C-105).",
+        f"Pipe centre line 9 in. outside the wall face, on the footing heel.",
+        f"From {ftin(DR_X_REAR)} east of the NW corner to CO-4 the invert is below the",
+        f"top of footing (EL {m.EL_FTG_TOP:.2f}) by up to {(m.EL_FTG_TOP - DR_INV[3]) * 12:.0f} in.: there the pipe runs",
+        "just outside the heel, or the engineer lowers the heel.",
+        "Outlet: rodent screen and splash pad at the street edge, in the",
+        "right-of-way: City Engineer approves. The trench drain at the",
+        "opening joins the outlet pipe downstream of CO-4 (C-105).",
     ]
     for i, s in enumerate(info):
         bg.text(px, yb - 0.17 - i * 0.135, s, fontsize=5.4, va="center")
+    if yb - 0.17 - len(info) * 0.135 < 0.45:
+        print("WARNING: S-102 drain notes run off the sheet")
     save(fig, "S-102", pdf)
 
 
@@ -981,7 +995,7 @@ def sheet_s103(pdf):
         ("Before pouring",
          "Building drain, floor drain and sleeves in and tested. Subgrade compacted and passed."),
     )
-    fig, bg = new_sheet("S-103", two_line(TITLE["S-103"]), "3/16\" = 1'-0\" U.N.O.", notes)
+    fig, bg = new_sheet("S-103", TITLE["S-103"], "3/16\" = 1'-0\" U.N.O.", notes)
     L = MARGIN + 0.3
     # ---- A: garage slab plan
     ax = frame(fig, ((4.5, 50.0), (3.2, 34.6)), L, 0.55, lot=False)
@@ -1011,9 +1025,9 @@ def sheet_s103(pdf):
     txt(ax, 14.0, 11.85, f"THICKENED EDGE 12 in. x {ftin(THICK_W)}: detail C", size=4.6, z=9)
     lead(ax, (m.STALL_LINES[0], 23.6), (15.0, 24.4), "CJ on the stall line", size=4.6, color=RED, ha="right")
     lead(ax, (16.0, ym), (15.0, 18.2), "CJ at mid-depth", size=4.6, color=RED, ha="center", va="top")
-    lead(ax, (cx + 0.7, m.B1_Y + 0.3), (30.0, 14.6), "IJ: diamond block-out at the post,\nfilled after the base is grouted", size=4.6, color=RED)
+    lead(ax, (cx + 0.7, m.B1_Y + 0.3), (30.0, 14.6), "IJ: diamond joint round the post\ncollar (S-104 detail 3)", size=4.6, color=RED)
     lead(ax, (m.xw_gi(22.0) + 0.05, 22.0), (11.2, 20.9), "IJ at all walls\nand the pier", size=4.6, color=RED)
-    lead(ax, (m.UTIL[0] + 1.0, m.UTIL[2] + 1.0), (33.4, 23.3), "15-mil VAPOUR BARRIER\nunder the utility room slab\nonly; floor drain by P-101", size=4.6, ha="right")
+    lead(ax, (m.UTIL[0] + 1.0, m.UTIL[2] + 1.0), (33.4, 23.3), "15-mil VAPOUR BARRIER\nunder the utility room slab\nonly; floor drain by P-101;\nno water-heater pads", size=4.6, ha="right")
     # sewer exit
     line(ax, [(m.SEWER_OUT_X, m.YF + 2.6), (m.SEWER_OUT_X, 3.8)], lw=1.0, color="#2e7d32", ls=(0, (4, 1.5)), z=7)
     lead(ax, (m.SEWER_OUT_X, 5.0), (37.9, 5.3), "4 in. BUILDING DRAIN leaves under the\nthickened edge here (P-101): sleeve it", size=4.6, color="#2e7d32")
@@ -1203,34 +1217,39 @@ def detail_cap(fig, left, bottom):
 
 
 def detail_base(fig, left, bottom):
-    ax = plan_axes(fig, left, bottom, (-2.45, 2.45), (-2.55, 0.75), 1.0)
-    ft_top = -(SLAB_G + STONE_G)
-    rect(ax, -2.45, -2.55, 2.45, ft_top, fc=SOIL, ec="none", z=1)
-    rect(ax, -2.45, ft_top, 2.45, -SLAB_G, fc=STONE, ec="none", z=2, hatch="ooo")
-    rect(ax, -2.45, -SLAB_G, -0.83, 0, fc=CONC, ec=INK, lw=0.7, z=4)
-    rect(ax, 0.83, -SLAB_G, 2.45, 0, fc=CONC, ec=INK, lw=0.7, z=4)
+    """Post base: the base plate sits on pad F2, which is at frost depth, so the base is buried and encased."""
+    ax = plan_axes(fig, left, bottom, (-2.8, 2.8), (-3.5, 0.8), 4 / 3.0)
+    ft_top = -(m.EL_GAR - m.EL_FTG_TOP)
+    sub = -(SLAB_G + STONE_G)
+    rect(ax, -2.8, -3.5, 2.8, sub, fc=SOIL, ec="none", z=1)
+    rect(ax, -2.8, sub, 2.8, -SLAB_G, fc=STONE, ec="none", z=2, hatch="ooo")
+    rect(ax, -2.8, -SLAB_G, -0.83, 0, fc=CONC, ec=INK, lw=0.7, z=4)
+    rect(ax, 0.83, -SLAB_G, 2.8, 0, fc=CONC, ec=INK, lw=0.7, z=4)
     rect(ax, -0.83, ft_top, 0.83, 0, fc="#d5d8dc", ec=RED, lw=0.7, z=3.5)
     rect(ax, -PAD / 2, ft_top - PAD_T, PAD / 2, ft_top, fc=CONC, ec=INK, lw=0.9, z=4)
     rect(ax, -7 * IN, ft_top, 7 * IN, ft_top + GROUT, fc="#7d848c", ec=INK, lw=0.4, z=5)
     rect(ax, -7 * IN, ft_top + GROUT, 7 * IN, ft_top + GROUT + PLATE, fc=STEEL, ec=INK, lw=0.5, z=6)
-    rect(ax, -0.25, ft_top + GROUT + PLATE, 0.25, 0.75, fc="#dbe6f3", ec=STEEL, lw=1.0, z=6)
+    rect(ax, -0.25, ft_top + GROUT + PLATE, 0.25, 0.8, fc="#dbe6f3", ec=STEEL, lw=1.0, z=6)
     for x in (-0.25 + 0.375 * IN, 0.25 - 0.375 * IN):
-        line(ax, [(x, ft_top + GROUT + PLATE), (x, 0.75)], lw=0.4, color=STEEL, z=7)
+        line(ax, [(x, ft_top + GROUT + PLATE), (x, 0.8)], lw=0.4, color=STEEL, z=7)
     for x in (-5 * IN, 5 * IN):
         line(ax, [(x, ft_top - 0.95), (x, ft_top + GROUT + PLATE + 0.1)], lw=1.1, z=7)
         line(ax, [(x, ft_top - 0.95), (x + (0.18 if x < 0 else -0.18), ft_top - 0.95)], lw=1.1, z=7)
-    line(ax, [(-1.75, ft_top - PAD_T + 0.29), (1.75, ft_top - PAD_T + 0.29)], lw=0.9, color=RED, z=8)
-    rebar_dots(ax, [(x, ft_top - PAD_T + 0.34) for x in np.arange(-1.5, 1.6, 1.0)], 0.03)
-    dim(ax, (-PAD / 2, ft_top - PAD_T), (PAD / 2, ft_top - PAD_T), -0.16, f"{ftin(PAD)} SQUARE PAD F2", ext=False, size=4.8, side=-1)
-    dim(ax, (2.2, ft_top - PAD_T), (2.2, ft_top), 0, "14\"", ext=False, size=4.6, side=-1)
-    eltag(ax, -2.4, 0.07, f"SLAB EL {EL_TD + (m.B1_Y - Y_TD) / 96:.2f} HERE", size=4.6, w=0.0)
-    eltag(ax, 1.05, ft_top - 0.12, f"TOP OF PAD EL {m.EL_FTG_TOP:.2f}", size=4.6, w=0.0)
-    lead(ax, (0.25, 0.45), (0.62, 0.52), "HSS 6x6x3/8 POST", size=4.6, weight="bold", color=STEEL)
-    lead(ax, (7 * IN, ft_top + GROUT + PLATE / 2), (1.0, -0.72), "3/4 in. BASE PLATE 14 x 14 in.\non 1 in. non-shrink grout", size=4.6)
-    lead(ax, (-5 * IN, ft_top - 0.6), (-2.4, -1.72), "4 ANCHOR RODS 3/4 in.,\n12 in. embed, at 10 in.", size=4.6, ha="left")
-    lead(ax, (-0.6, -0.3), (-2.4, 0.45), "BLOCK-OUT filled with concrete after grouting:\nthe base is encased. Isolation joint all round.", size=4.6, ha="left")
-    lead(ax, (1.2, ft_top - PAD_T + 0.29), (0.95, -1.62), "#5 at 12 in. each way,\nbottom (prelim.)", size=4.6, va="center")
-    lead(ax, (1.8, -0.75), (1.0, -0.2), "6 in. slab on\n6 in. stone", size=4.6, va="bottom")
+    yb = ft_top - PAD_T
+    line(ax, [(-PAD / 2 + 0.25, yb + 0.29), (PAD / 2 - 0.25, yb + 0.29)], lw=0.9, color=RED, z=8)
+    rebar_dots(ax, [(x, yb + 0.35) for x in np.arange(-2.0, 2.1, 1.0)], 0.035)
+    dim(ax, (-PAD / 2, yb), (PAD / 2, yb), -0.14, f"{ftin(PAD)} SQUARE PAD F2 (prelim.)", ext=False, size=4.8, side=-1)
+    dim(ax, (2.62, yb), (2.62, ft_top), 0, "14\"", ext=False, size=4.6, side=-1)
+    dim(ax, (-2.62, yb), (-2.62, 0), 0, f"{ftin(m.EL_GAR - EL_F1_BOT)} FROST", ext=False, size=4.6)
+    txt(ax, -2.75, 0.1, f"SLAB EL {EL_TD + (m.B1_Y - Y_TD) / 96:.2f} HERE", size=4.6, ha="left")
+    txt(ax, 1.75, ft_top - 0.2, f"TOP OF PAD EL {m.EL_FTG_TOP:.2f}", size=4.6, box=True, z=9)
+    txt(ax, -1.75, (ft_top + sub) / 2, "COMPACTED\nFILL", size=4.4, color=EARTH)
+    lead(ax, (0.25, 0.5), (0.6, 0.6), "HSS 6x6x3/8 POST", size=4.6, weight="bold", color=STEEL)
+    lead(ax, (7 * IN, ft_top + GROUT + PLATE / 2), (1.05, -1.42), "3/4 in. BASE PLATE 14 x 14 in.\non 1 in. non-shrink grout", size=4.6)
+    lead(ax, (-5 * IN, ft_top - 0.6), (-2.35, ft_top - 0.62), "4 ANCHOR RODS 3/4 in.,\n12 in. embed, at 10 in.", size=4.6, ha="left")
+    lead(ax, (-0.55, -0.3), (-2.75, 0.5), "CONCRETE COLLAR 20 in. square, cast\nafter grouting: encases the buried\nbase. Isolation joint to the slab.", size=4.6, ha="left")
+    lead(ax, (1.3, yb + 0.29), (1.0, yb + 0.72), "#5 at 12 in. each way,\nbottom (prelim.)", size=4.6, va="center")
+    lead(ax, (1.9, -0.75), (1.1, 0.3), "6 in. slab on 6 in. stone", size=4.6, va="bottom")
     return ax
 
 
@@ -1251,10 +1270,9 @@ def sheet_s104(pdf):
         ("Preliminary",
          "W14x34 and HSS 6x6x3/8 are assumptions for pricing. A WV structural engineer sizes the beam, post, plates, "
          "anchors and footings and seals them. Spans and levels are from the model."),
-        ("Nailer and bearing level",
-         f"The model sets top of steel at EL {m.EL_B1_TOP:.2f}, the underside of the trusses, with no room for the "
-         f"1 1/2 in. nailer. Fix before shop drawings: drop B1 to top of steel EL {EL_TOC:.2f} (clear height "
-         f"{ftin(m.OPEN_CLEAR_H - SILL)}), or omit the nailer."),
+        ("Levels",
+         f"Top of steel EL {m.EL_B1_TOP:.2f}, same as the top of the concrete walls. A 1 1/2 in. nailer brings the "
+         f"truss bearing to EL {EL_BRG:.2f}. Clear height under B1: {ftin(m.OPEN_CLEAR_H)}."),
         ("Fire and corrosion",
          "B1 and the post hold up the dwelling above an open garage: engineer and architect to specify intumescent "
          "paint or a gypsum wrap as the code requires.",
@@ -1264,7 +1282,7 @@ def sheet_s104(pdf):
          "Shop drawings required, reviewed by the engineer before fabrication. Field-verify the concrete seats and "
          "anchor rods first. Erect, plumb and grout before the floor trusses are loaded."),
     )
-    fig, bg = new_sheet("S-104", two_line(TITLE["S-104"]), "As noted", notes)
+    fig, bg = new_sheet("S-104", TITLE["S-104"], "As noted", notes)
     L = MARGIN + 0.3
     vx = (3.0, 50.0)
     # ---- A: plan
@@ -1294,8 +1312,8 @@ def sheet_s104(pdf):
     knote(ax, (m.COL_X[2], m.B1_Y + 0.3), (m.COL_X[2] - 1.2, 12.9), 1)
     vtitle(bg, L, 10.42, "A", "Plan of beam B1 over the garage opening", "3/16\" = 1'-0\" · steel blue · footings dashed · circled numbers = details below · preliminary")
     # ---- B: elevation looking north
-    yv = (910.9, 926.9)
-    ax2 = plan_axes(fig, L, 4.48, vx, yv, FPI)
+    yv = (911.0, 926.9)
+    ax2 = plan_axes(fig, L, 4.5, vx, yv, FPI)
     xs_ = np.linspace(vx[0], vx[1], 60)
     gl = [(x, elev(x, m.YF - 0.5)) for x in xs_]
     poly(ax2, [(vx[0], yv[0])] + gl + [(vx[1], yv[0])], fc="#f7f3ec", ec="none", z=0.5)
@@ -1305,7 +1323,8 @@ def sheet_s104(pdf):
     # footings
     rect(ax2, wx(m.YF, HEEL), EL_F1_BOT, m.OPEN[0] + 1.0, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
     rect(ax2, cx - PAD / 2, m.EL_FTG_TOP - PAD_T, cx + PAD / 2, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
-    rect(ax2, m.COL_X[2] - BRG_PAD / 2, m.EL_FTG_TOP - BRG_PAD_T, m.XE_GI - TOE, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
+    rect(ax2, m.GAR_X1 - 0.33, EL_F1_BOT, m.XE_GI - TOE, EL_F3_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
+    rect(ax2, m.COL_X[2] - BRG_PAD / 2, EL_F1_BOT, m.COL_X[2] + BRG_PAD / 2, EL_F2E_TOP, fc=CONC, ec=INK, lw=0.6, z=3.1)
     rect(ax2, m.XE_GI - TOE, EL_F1_BOT, m.XE + HEEL, m.EL_FTG_TOP, fc=CONC, ec=INK, lw=0.6, z=3)
     # slab and stone
     rect(ax2, m.OPEN[0], m.EL_GAR - SLAB_G, m.XE_GI, m.EL_GAR, fc="#d5d8dc", ec=INK, lw=0.5, z=2.5)
@@ -1313,8 +1332,8 @@ def sheet_s104(pdf):
     seat = EL_SOFFIT - PLATE - 0.75 * IN
     poly(ax2, [(m.xw_o(m.YF), m.EL_FTG_TOP), (m.OPEN[0], m.EL_FTG_TOP), (m.OPEN[0], seat), (BEAM_X0, seat), (BEAM_X0, EL_TOC), (m.xw_o(m.YF), EL_TOC)],
          fc=CONC, ec=INK, lw=0.9, z=4)
-    rect(ax2, m.GAR_X1, m.EL_FTG_TOP, m.SHAFT_X0, seat, fc=CONC, ec=INK, lw=0.9, z=4)
-    rect(ax2, m.SHAFT_X0, m.EL_FTG_TOP, m.XE_GI, EL_TOC, fc="#c3c7cc", ec=INK, lw=0.7, z=4)
+    rect(ax2, m.GAR_X1, EL_F2E_TOP, m.SHAFT_X0, seat, fc=CONC, ec=INK, lw=0.9, z=4)
+    rect(ax2, m.SHAFT_X0, EL_F3_TOP, m.XE_GI, EL_TOC, fc="#c3c7cc", ec=INK, lw=0.7, z=4)
     rect(ax2, m.XE_GI, m.EL_FTG_TOP, m.XE, EL_TOC, fc=CONC, ec=INK, lw=0.9, z=4)
     rect(ax2, m.ENTRY[0], m.EL_GAR, m.ENTRY[1], m.EL_GAR + 6.667, fc=PAPER, ec=INK, lw=0.5, z=5)
     txt(ax2, (m.ENTRY[0] + m.ENTRY[1]) / 2, m.EL_GAR + 1.7, "ENTRY\nDOOR", size=4.4, color=GREY, z=6)
@@ -1342,11 +1361,12 @@ def sheet_s104(pdf):
     eltag(ax2, xr, m.EL_B1_TOP - 0.1, f"TOP OF STEEL EL {m.EL_B1_TOP:.2f}", size=4.6, w=0.6, color=STEEL)
     eltag(ax2, xr, EL_SOFFIT - 0.2, f"UNDERSIDE EL {EL_SOFFIT:.2f}", size=4.6, w=0.6, color=STEEL)
     eltag(ax2, xr + 2.1, m.EL_GAR + 0.1, f"SLAB {m.EL_GAR:.2f}", size=4.4, w=0.3)
-    eltag(ax2, xr + 2.1, m.EL_FTG_TOP - 0.55, f"FTG {m.EL_FTG_TOP:.2f}", size=4.4, w=0.3)
+    eltag(ax2, xr + 2.1, m.EL_FTG_TOP, f"FTG {m.EL_FTG_TOP:.2f}", size=4.4, w=0.3)
+    eltag(ax2, xr + 2.1, EL_F1_BOT - 0.25, f"BOTTOM {EL_F1_BOT:.2f}", size=4.4, w=0.3)
     lead(ax2, (9.0, 918.5), (4.5, 916.6), f"CONCRETE\nRETURN PIER\n{ftin(m.OPEN[0] - m.xw_o(m.YF))} x 12 in.", size=4.4, ha="center", va="top", box=True)
     txt(ax2, 4.65, 920.4, "existing\nground at\nthe front\nwall (LiDAR)", size=4.2, color=EARTH)
     lead(ax2, (m.COL_X[2], 919.0), (34.6, 918.4), "8 in. LOBBY\nWALL CORNER", size=4.4, ha="right")
-    txt(ax2, cx, m.EL_FTG_TOP - PAD_T - 0.5, f"F2 PAD {ftin(PAD)} SQ.", size=4.4, z=8)
+    txt(ax2, cx - PAD / 2 - 0.3, m.EL_FTG_TOP - 0.55, f"F2 PAD {ftin(PAD)} SQ. (prelim.)", size=4.4, z=8, ha="right")
     for x, tag in ((BEAM_X0 + 0.2, "1"), (cx, "2")):
         ax2.add_patch(plt.Circle((x, EL_SOFFIT - 0.1), 0.95, fc="none", ec=RED, lw=0.8, zorder=9))
     txt(ax2, BEAM_X0 + 1.75, EL_SOFFIT - 0.75, "1", size=5.4, weight="bold", color=RED)
@@ -1370,11 +1390,11 @@ def sheet_s104(pdf):
         f"spans) to {r_post_c:.0f} k (one continuous beam), lobby wall {r_e:.0f} k.",
         f"Moment on the {ftin(L1)} span about {m_ss:.0f} kip-ft; a braced W14x34 allows",
         "about 136 kip-ft, so it works for gravity on paper.",
-        f"PAD F2: {ftin(PAD)} square carries {cap:.0f} k at 2,000 psf. A continuous beam",
-        f"needs about {ftin(need)} square. Expect the pad to grow (engineer).",
+        f"PAD F2: {ftin(PAD)} square (prelim.) carries {cap:.0f} k at 2,000 psf. The",
+        "engineer sizes it for the continuous-beam post load.",
     ]
     for i, s in enumerate(info):
-        bg.text(rx, yb - 0.15 - i * 0.132, s, fontsize=5.3, va="center", color=RED if s.startswith("PAD") or s.startswith("needs") else INK)
+        bg.text(rx, yb - 0.15 - i * 0.132, s, fontsize=5.3, va="center")
     ys = yb - 0.15 - len(info) * 0.132 - 0.2
     bg.text(rx, ys, "STEEL LIST (preliminary, for pricing)", fontsize=7.4, fontweight="bold", va="center")
     plate_lb = lambda a, b, t=0.75: a * b * t * 0.2836
@@ -1398,8 +1418,8 @@ def sheet_s104(pdf):
     detail_bearing(fig, L + 0.05, yd0)
     vtitle(bg, L + 4.2, 4.2, "2", "Post cap and nailer", "1\" = 1'-0\" · section across B1, looking west")
     detail_cap(fig, L + 4.2, yd0)
-    vtitle(bg, L + 7.95, 4.2, "3", "Post base on pad footing F2", "1\" = 1'-0\"")
-    detail_base(fig, L + 7.85, yd0)
+    vtitle(bg, L + 7.95, 4.2, "3", "Post base on pad footing F2", "3/4\" = 1'-0\" · base buried below the slab, encased in a concrete collar")
+    detail_base(fig, L + 8.3, yd0)
     save(fig, "S-104", pdf)
 
 
