@@ -3,69 +3,82 @@
 Research for buying 387 Baird St, removing the existing house, and building a **two-family dwelling
 (two stacked flats, six bedrooms and six baths in total) over an open three-car garage**.
 
-**Drawing set, Rev D:** [`drawings/387-Baird-St_Permit-Head-Start-Set.pdf`](drawings/387-Baird-St_Permit-Head-Start-Set.pdf)
-(27 sheets, 11 x 17 in). Individual sheets are in [`drawings/png/`](drawings/png/).
+**Drawing set, Rev E:** [`drawings/387-Baird-St_Permit-Head-Start-Set.pdf`](drawings/387-Baird-St_Permit-Head-Start-Set.pdf)
+(47 sheets, 11 x 17 in). Individual sheets are in [`drawings/png/`](drawings/png/).
 
 > Preliminary, not for construction. This is a coordinated first draft of every discipline so the
 > licensed architect and engineers start from a worked-out scheme. It is not engineered and cannot
 > be stamped as-is: each professional must review, recalculate and take responsibility for their
 > own sheets. No boundary survey, soil report or site visit is behind it.
 
-## Rev D at a glance
+## Rev E at a glance
 
-| Decision | How it is drawn |
+Rev E was redrawn from scratch around one dimensioned model (`src/model.py`). Every wall, door,
+fixture and piece of furniture is a real number there, and the build stops if a bed, desk, dresser,
+door swing, toilet clearance, car or setback does not fit.
+
+| Item | Rev E |
 |---|---|
-| Parking | Three numbered stalls in an open-front garage with no doors. One clear room, no walls or columns between cars. Stall 1 is 9'-8" wide and stalls 2 and 3 are 8'-6", set so each driver's door has about 2'-3" to 2'-5". |
-| No storage room | Removed. The rear wing is not excavated at garage level; its floor is a slab on fill at Unit A level, so there is no crawl space. |
-| Six bedrooms, six baths | Two stacked flats, each with 3 bedrooms (77 to 94 sq ft) and 3 baths with 5 ft tubs. Each bath opens only off its own bedroom. |
-| Everything separate | Two electric meters only, one per flat. Each flat has its own panel, heat pump, 80 gal water heater (in a closet by its entry), kitchen appliances, washer and dryer, and water meter. |
-| Common lighting | Garage, stair and exterior lights are automatic (motion sensor plus photocell) on one circuit from Unit A's panel, marked with keynotes on E-101. |
-| No sump pump | A French drain at the base of the three buried walls runs by gravity to one outlet at the street edge, with cleanout risers at the corners. A second shallow drain behind the building catches hillside runoff. |
-| No freezing | No water pipe runs through the open garage. Meters sit in pits at the street; the two lines run buried 42 in. deep along the west side yard and come up through the rear wing into heated space. |
-| Cleanouts | At the base of each stack, at each turn of the main drain under the slab, and a two-way cleanout on the lot before the lot line. |
-| Trash | A screened, lockable bay for four carts beside the entry landing, on the lot. |
-| All-electric | No gas. No cameras, door operators or heat cable. |
-| City property | Only the driveway apron and the buried drain outlet are in the right-of-way. |
+| Variance | One: rear setback 20 ft to 5 ft. Front 10 ft, sides 5 ft, coverage 48 %, height, parking, garage width (65 %) and driveway width (22 ft) all comply. |
+| Footprint | 942 sq ft, a four-sided wedge: the rear wall is parallel to the rear lot line and the west wall to the west lot line. All faces are held 2 in. inside the setback lines. |
+| Each flat | 784 sq ft net, 3 bedrooms, 3 baths with 60 in. tubs, living room and kitchen with an island, hall, laundry and air-handler closets. |
+| Bedrooms | 125, 117 and 112 sq ft (were 94, 79 and 77). Each takes a queen bed with 24 in. both sides, a 48 in. desk and a 36 in. dresser. Closets are separate framed rooms with doors (8, 8 and 12 sq ft). |
+| Living and kitchen | 17 ft 2 in x 10 ft 6 in, 180 sq ft (was about 245). The bedrooms took more than the building gained. |
+| Garage | Open front, no doors, 25 ft opening, three cars with 2 ft 4 in between them, 8 ft 1 in clear under the beam. |
+| Heating and cooling | Central air: one ducted heat pump per flat. The air handler is in a closet off the hall; ducts run in 7 ft dropped ceilings; outdoor units are on the west side yard. |
+| Water heaters | Both in a heated utility room at garage level. Water enters that room below frost depth, so no water pipe is in the open garage. |
+| Separate utilities | Two electric meters, two water meters. Common lights are automatic and run from Unit A's panel. All-electric, no gas, no cameras. |
+| Drainage | French drain, trench drain and roof leaders run by gravity to one outlet at the street edge. No sump pump. |
+| City property | Only the driveway apron, the buried drain outlet and the utility's meter pits are in the right-of-way. |
 
-### What cannot meet the code and needs approval
+### The one variance
 
-1. **Rear setback.** 5.3 ft at the tightest corner against 20 ft required. The R-2 setbacks leave
-   about 396 sq ft of buildable area on this lot, so no building fits without this variance.
-2. **Front setback.** 8 ft against 10 ft, unless the developed-block averaging rule (1363.02(C))
-   sets it by the neighbouring houses.
-3. **Garage width.** 78 % of the front against a 65 % limit (1337.07(B)(5)). Two cars would
-   comply, but then the duplex is one parking space short, so one or the other needs relief.
-4. **City Engineer:** driveway width at the street (26 ft against 22 ft), a sidewalk waiver, and
-   the gravity drain outlet at the street edge.
+The R-2 setbacks leave about 395 sq ft of buildable area on this lot (front 10 ft, sides 5 ft,
+rear 20 ft, on a lot 34 to 48 ft deep). With the rear setback at 5 ft the setback lines enclose
+about 962 sq ft; the design uses 942. Sheet G-003 sets out the request, the four findings and the
+questions the Board is likely to ask.
 
 ### Things to confirm before relying on this design
 
+- **Front building line.** The set is drawn at the standard 10 ft. The developed-block rule
+  (1363.02(C)) may set the line closer to the street. The building would then move forward rather
+  than grow, because the 50 % coverage limit caps it at about 975 sq ft.
 - **The drain outlet has about 6 in. of fall.** The survey must confirm the French drain can reach
-  the street by gravity. If it cannot, the choices are a pump or a higher garage floor.
-- **Required parking is for occupants.** The zoning code reserves the three required spaces for the
-  building's occupants; renting them to outsiders needs the Planning Division's answer.
-- **Common lighting on Unit A's meter** should be disclosed in that lease or credited in the rent.
-- **Renting by the bedroom** can be classed as a rooming house, a different use from a duplex.
+  the street by gravity. If it cannot, the garage floor is raised; no pump is added.
+- **Lot area.** The deed (2,052 sq ft), tax map (1,950) and county GIS (1,911) disagree. Coverage
+  and every setback depend on the boundary survey.
+- **How the 65 % garage limit is measured.** The set measures the 25 ft opening against the
+  38 ft 6 in front. The Planning Division should confirm.
+- **Unit A's rear rooms** sit up to 3 ft into the hill at the back-west corner. The stem wall rises
+  above grade there and the rear yard is cut into a swale; bedroom 2's escape window is on the west
+  wall where the ground is lower.
+- **Required parking is for occupants**; common lighting is on Unit A's meter; renting by the
+  bedroom can be classed as a rooming house.
 
 ### Structure in one paragraph
 
-Concrete walls 12 in. thick retain 8 to 10.5 ft of soil on three sides and are propped at the top
-by the Unit A floor. The garage front is open, so a steel beam on four steel columns carries the
-front of both floors and the roof and resists sideways load; that frame is the critical engineered
-element. Floors are 20 in. open-web wood trusses spanning front to back, which keeps the garage
-column-free. Every member size on the S sheets is a preliminary assumption.
+Concrete walls 12 in. thick retain 8 to 11.5 ft of soil on three sides of the garage and are
+propped at the top by the Unit A floor. A steel beam over the 25 ft opening, on one post, carries
+the front of both floors, the roof and the cantilevered porches. Unit A's floor is 20 in. trusses
+over the garage and a slab on grade behind it. Unit B's floor is 24 in. trusses spanning front to
+rear with no bearing walls below. Roof trusses step in span with the wedge, so the ridge is skewed
+and climbs to the west. Every member size on the S sheets is a preliminary assumption.
 
 ### Sheets
 
 | Sheets | Content |
 |---|---|
-| G-001, G-002 | Cover and summary; code analysis and general notes |
-| C-101 to C-103 | Existing site; site plan and zoning; vehicle access and towing |
-| A-101 to A-301 | Garage level, Unit A, Unit B, street elevation, building section |
-| S-001 to S-301 | Structural criteria, foundation and French drain, Unit A floor framing, Unit B floor framing, roof framing and shear walls, sections |
-| P-101 to P-201 | Plumbing for the garage level, Unit A and Unit B; riser diagram and schedules |
-| M-101 to M-103 | Mechanical for the garage level, Unit A and Unit B |
-| E-101 to E-201 | Power and lighting for the garage level, Unit A and Unit B; one-line diagram and load calculations |
+| G-001 to G-004 | Cover, code analysis, the variance request, trade packages |
+| C-101 to C-107 | Existing site and demolition, site plan and zoning, vehicle access, excavation and shoring, grading and drainage, site utilities, paving and site walls |
+| A-101 to A-105 | Garage, Unit A and Unit B plans (dimensioned), furniture and clearance plan, roof plan |
+| A-201 to A-601 | Elevations, sections, enlarged kitchen and baths, stair and porch details, assemblies, schedules |
+| S-001 to S-104 | Criteria, foundations, retaining walls and French drain, slabs, structural steel |
+| S-201 to S-301 | Unit A floor, Unit B floor and roof framing, walls and shear walls, sections and details |
+| P-101 to P-201 | Plumbing for each level, risers and schedules |
+| M-101 to M-201 | Outdoor units, ductwork for each flat, schedules and details |
+| E-101 to E-201 | Service and garage level, power for each flat, lighting, alarms and data, one-line diagram and loads |
+
+Sheet G-004 lists which sheets go to each of 23 trade packages.
 
 ## Who owns it and when it last sold
 
@@ -85,7 +98,8 @@ Deed Book 1246, Page 78 will confirm both points.
 
 The lot behind it, 386 Forest Ave (Parcel 87), is held by R & L Apartments LLC at the same mailing
 address, and both lots are parts of the same original Lot 2. The seller therefore also controls
-the rear boundary, which matters because the rear setback is the main constraint.
+the rear boundary, which matters because the rear setback is the one variance. 442 Baird St
+(Parcel 85) is the adjoining lot to the west and shares the full 48 ft side line.
 
 ## The parcel
 
@@ -104,19 +118,20 @@ the rear boundary, which matters because the rear setback is the main constraint
 
 Confirmed on the City of Morgantown zoning layer. No overlay district is mapped at the parcel.
 
-| Standard | R-2 requirement | Rev D design |
+| Standard | R-2 requirement | Rev E design |
 |---|---|---|
 | Use | Two-family dwelling permitted | Two stacked flats, 3 bedrooms and 3 baths each |
 | Minimum lot area | 5,000 sq ft | about 2,050 sq ft (legal nonconforming lot, buildable under 1373.04) |
 | Minimum frontage | 40 ft | 50 ft |
-| Front setback | 10 ft min, 20 ft max | 8 ft (needs relief or block averaging) |
-| Side setback | 5 ft | 5.0 ft east, 5.5 to 8.5 ft west |
-| Rear setback | 20 ft | 5.3 to 10.9 ft (variance) |
-| Lot coverage | 50 % max | 43 % |
-| Height | 2.5 storeys or 35 ft | 25.6 ft, two storeys over a basement garage |
+| Front setback | 10 ft min, 20 ft max | 10 ft 2 in (planner to confirm the building line) |
+| Side setback | 5 ft | 5 ft 2 in each side |
+| Rear setback | 20 ft | 5 ft 2 in (variance) |
+| Lot coverage | 50 % max | 48 % |
+| Height | 2.5 storeys or 35 ft | about 24 ft to mean roof height, two storeys over a basement garage |
 | Parking | 1.5 spaces per unit = 3 | 3, in the open garage |
-| Garage width | 65 % of the front max | 78 % (needs relief) |
-| Front porch | 50 % of the front min | 73 % |
+| Garage width | 65 % of the front max | 65 % (25 ft of 38 ft 6 in) |
+| Front porch | 50 % of the front min | 86 %, 4 ft into the setback (5 ft allowed) |
+| Driveway | 22 ft at the right-of-way line | 22 ft |
 
 ## Limits of this study
 
@@ -150,6 +165,7 @@ pip install matplotlib numpy pillow pyproj shapely
 python3 src/make_drawings.py
 ```
 
-The source data used is in [`data/`](data/). The design dimensions are constants in the "Proposed
-concept, Rev D" block of `src/common.py`; `src/levels.py` holds the base floor plans that every
-trade sheet is drawn over.
+The source data used is in [`data/`](data/). `src/model.py` holds every dimension and the fit
+checks (`python3 src/model.py` prints the key numbers); `src/plans.py` draws the base floor plans
+that every trade sheet is drawn over; `src/index.py` lists the sheets and trade packages; each
+`src/sheets_*.py` draws one discipline.

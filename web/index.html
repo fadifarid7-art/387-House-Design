@@ -77,100 +77,85 @@ nav.index a { font-family: var(--mono); font-size: 12px; color: var(--ink); text
 nav.index a:hover { border-color: var(--ink); }
 .sources a { color: var(--ink); }
 footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px; color: var(--muted); font-size: .88rem; }
+.trades { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; }
+.trades button { font: inherit; font-size: .88rem; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; padding: 6px 10px; cursor: pointer; text-align: left; }
+.trades button:hover { border-color: var(--ink); }
+.trades button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.trades button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.picked { color: var(--muted); font-size: .92rem; margin: 6px 0 0; min-height: 1.4em; }
+.group { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 40px 0 0; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 </style>
 
 <div class="wrap">
   <header class="cover">
-    <div class="eyebrow">Morgantown, WV 26505 · Tax District 13 · Map 29 · Parcel 84 · Zoned R-2 · Rev D</div>
+    <div class="eyebrow">Morgantown, WV 26505 · Tax District 13 · Map 29 · Parcel 84 · Zoned R-2 · Rev E</div>
     <h1>387 Baird Street</h1>
-    <p class="lede">A two-family dwelling with six bedrooms and six baths over an open three-car garage. Twenty-seven coordinated sheets across architecture, structure, plumbing, mechanical and electrical, with every floor drawn for every trade, prepared as a head start for the licensed architect and engineers.</p>
+    <p class="lede">Two stacked three-bedroom flats over an open three-car garage, redrawn from one dimensioned model. Forty-seven sheets, split so each company gets its own: excavation, retaining walls, steel, framing, roofing, plumbing, heating and cooling, electrical and the rest.</p>
     <div class="stamp">Preliminary · not for construction · not engineered</div>
   </header>
 
   <div class="col">
-    <p>This set gives every discipline a worked-out starting scheme on one shared base plan. It cannot be stamped as it stands: each professional has to review it, recalculate, and take responsibility for their own sheets. There is no boundary survey, soil report or site visit behind it.</p>
+    <p>This is a head start for the licensed architect and engineers, who must review it, recalculate and take responsibility for their own sheets. There is no boundary survey, soil report or site visit behind it, and every member size is a stated assumption.</p>
+    <p>Rev E answers the last round of comments: real measurements throughout, closets built as framed rooms with doors, central air with the ductwork drawn, queen beds and 60-inch tubs, and a single variance.</p>
   </div>
 
   <dl class="facts">
-    <div><dt>Parking</dt><dd>3 stalls, open front<small>No doors. Each driver's door has about 2 ft 3 in to 2 ft 5 in.</small></dd></div>
-    <div><dt>Bedrooms</dt><dd>6, each with a tub bath<small>Two stacked flats of 3 bedrooms and 3 baths, about 780 sq ft each</small></dd></div>
-    <div><dt>Utilities</dt><dd>2 meters, all-electric<small>Each flat has its own panel, heat pump, water heater, washer and dryer</small></dd></div>
-    <div><dt>Drainage</dt><dd>Gravity, no sump pump<small>French drain to one outlet at the street edge, with cleanouts</small></dd></div>
+    <div><dt>Variance</dt><dd>One: rear setback<small>20 ft reduced to 5 ft. Front, sides, coverage, height, parking and garage width all comply.</small></dd></div>
+    <div><dt>Each flat</dt><dd>784 sq ft, 3 bed, 3 bath<small>Bedrooms 112 to 125 sq ft, each with its own closet and tub bath</small></dd></div>
+    <div><dt>Parking</dt><dd>3 cars, open front<small>25 ft opening, exactly 65 % of the front. 2 ft 4 in between cars.</small></dd></div>
+    <div><dt>Utilities</dt><dd>2 meters, all-electric<small>Ducted heat pump, water heater, panel and laundry per flat. Gravity drains, no sump pump.</small></dd></div>
   </dl>
 
   <div class="col">
-    <h2>How each decision is drawn</h2>
+    <h2>Room sizes, before and after</h2>
+    <p>Every room is generated from the model, and the build stops if a bed, desk, dresser, door swing or fixture does not fit.</p>
   </div>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Decision</th><th>In the design</th></tr></thead>
+      <thead><tr><th>Room</th><th>Rev D</th><th>Rev E</th><th>Fits</th></tr></thead>
       <tbody>
-        <tr><td>Open garage, three cars</td><td>One clear room with no doors and no walls or columns between cars. Stall 1 is 9 ft 8 in wide and stalls 2 and 3 are 8 ft 6 in.</td></tr>
-        <tr><td>No storage room</td><td>Removed. The rear wing is not dug out at garage level; its floor is a slab on fill, so there is no crawl space.</td></tr>
-        <tr><td>Six bedrooms with tub baths</td><td>Three per flat, 77 to 94 sq ft. Each bath opens only off its own bedroom.</td></tr>
-        <tr><td>Everything separate</td><td>Two electric meters only. Each flat has its own panel, heat pump, 80 gallon water heater in a closet by its entry, appliances, washer and dryer, and water meter.</td></tr>
-        <tr><td>Automatic garage lights</td><td>Motion sensor plus photocell, on one circuit from Unit A's panel, marked with keynotes on sheet E-101.</td></tr>
-        <tr><td>No sump pump</td><td>A French drain at the base of the buried walls runs by gravity to one outlet at the street edge. A second shallow drain behind the building catches hillside runoff.</td></tr>
-        <tr><td>Nothing freezes</td><td>No water pipe runs through the open garage. Lines run buried along the west side yard and come up through the rear wing into heated space.</td></tr>
-        <tr><td>Cleanouts</td><td>At the base of each stack, at each turn of the main drain, on the lot before the lot line, and at the corners of the French drain.</td></tr>
-        <tr><td>Trash</td><td>A screened, lockable bay for four carts beside the entry landing, on the lot.</td></tr>
-        <tr><td>City property</td><td>Only the driveway apron and the buried drain outlet are in the right-of-way.</td></tr>
+        <tr><td>Bedroom 1</td><td class="num">9 ft 6 in x 10 ft 7 in, 94 sq ft</td><td class="num">11 ft 4 in x 10 ft 6 in, 125 sq ft</td><td>Queen, desk, dresser</td></tr>
+        <tr><td>Bedroom 2</td><td class="num">8 ft 1 in x 10 ft 7 in, 79 sq ft</td><td class="num">9 ft 6 in x 10 ft 3 in, 117 sq ft</td><td>Queen, desk, dresser</td></tr>
+        <tr><td>Bedroom 3</td><td class="num">10 ft 7 in x 7 ft 4 in, 77 sq ft</td><td class="num">10 ft 6 in x 8 ft 8 in, 112 sq ft</td><td>Queen, desk, dresser</td></tr>
+        <tr><td>Living and kitchen</td><td class="num">about 245 sq ft</td><td class="num">17 ft 2 in x 10 ft 6 in, 180 sq ft</td><td>Island with 3 stools, sofa</td></tr>
+        <tr><td>Closets</td><td>Inside the bedroom figures</td><td class="num">8, 8 and 12 sq ft, separate</td><td>Framed, with doors</td></tr>
       </tbody>
     </table>
   </div>
-
   <div class="col">
-    <h2>Zoning against the design</h2>
+    <p>The Rev E dimensions are the largest plain rectangle in each room; the areas include the angled corners. Bedrooms 2 and 3 are wider than their rectangle on one side because the rear and west walls follow the lot lines. The living room is smaller than before: the bedrooms took more than the building gained.</p>
+
+    <h2>What changed in the design</h2>
   </div>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Standard</th><th>R-2 requires</th><th>Design</th><th>Status</th></tr></thead>
+      <thead><tr><th>Comment</th><th>In Rev E</th></tr></thead>
       <tbody>
-        <tr><td>Use</td><td>Two-family permitted</td><td>Two flats, 3 bedrooms and 3 baths each</td><td class="ok">Meets</td></tr>
-        <tr><td>Lot area</td><td>5,000 sq ft minimum</td><td>about 2,050 sq ft</td><td class="warn">Legal nonconforming lot</td></tr>
-        <tr><td>Side setbacks</td><td>5 ft</td><td>5.0 ft east, 5.5 to 8.5 ft west</td><td class="ok">Meets</td></tr>
-        <tr><td>Lot coverage</td><td>50 % maximum</td><td>43 %</td><td class="ok">Meets</td></tr>
-        <tr><td>Height</td><td>2.5 storeys or 35 ft</td><td>25.6 ft, two storeys over a basement</td><td class="ok">Meets, subject to the basement ruling</td></tr>
-        <tr><td>Parking</td><td>1.5 per unit = 3</td><td>3 in the open garage</td><td class="ok">Meets</td></tr>
-        <tr><td>Front porch</td><td>50 % of the front minimum</td><td>73 %</td><td class="ok">Meets</td></tr>
-        <tr><td>Rear setback</td><td>20 ft</td><td>5.3 to 10.9 ft</td><td class="need">Variance needed</td></tr>
-        <tr><td>Front setback</td><td>10 ft min</td><td>8 ft</td><td class="warn">Variance, or block-average rule</td></tr>
-        <tr><td>Garage width</td><td>65 % of the front maximum</td><td>78 %</td><td class="need">Relief needed</td></tr>
-        <tr><td>Driveway at the street</td><td>22 ft wide maximum</td><td>26 ft</td><td class="warn">City Engineer approval</td></tr>
-        <tr><td>Drain outlet</td><td>On city property</td><td>Buried pipe to the street edge</td><td class="warn">City Engineer approval</td></tr>
+        <tr><td>Use real measurements</td><td>One model holds every wall, door, fixture and piece of furniture as a dimension. Sheets A-102 to A-104 and A-401 show them.</td></tr>
+        <tr><td>Closets looked dropped in</td><td>Each closet is a framed room with a bifold door: 3 ft 3 in wide for bedrooms 1 and 2, 3 ft wide and walk-in depth for bedroom 3.</td></tr>
+        <tr><td>Central air, not mini-splits</td><td>One air handler per flat in its own closet off the hall. Ducts run in 7 ft dropped ceilings over the hall, baths and closets, with registers high on the bedroom and living room walls. Sheets M-102 and M-103.</td></tr>
+        <tr><td>Door swinging at a car</td><td>The garage-to-lobby door is gone. The utility room door swings into the room.</td></tr>
+        <tr><td>Water heaters in an odd spot</td><td>Both are in a heated utility room at garage level, on a concrete floor with a drain. The water lines enter that room below frost depth.</td></tr>
+        <tr><td>Furniture blocking doors</td><td>Checked for every door. Sheet A-104 shades each swing.</td></tr>
+        <tr><td>No variance beyond the rear</td><td>Front wall at 10 ft, sides at 5 ft, coverage 48 %, garage opening 65 %, driveway 22 ft at the street line.</td></tr>
+        <tr><td>A sheet for every trade</td><td>Forty-seven sheets in twenty-three trade packages. Sheet G-004 lists them, and the picker below filters the set.</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="col">
     <div class="callout">
-      <h3>Three items cannot follow the code as written</h3>
-      <p>The rear setback is unavoidable: the R-2 setbacks leave about 396 sq ft of buildable area on this lot. The garage width and the parking count pull against each other: two cars would meet the 65 % limit, but a duplex needs three spaces. The front setback may be settled by the neighbours' building line.</p>
-      <p>Do not demolish before the Board of Zoning Appeals decides. Tearing the house down first forfeits its grandfathered setbacks (section 1373.06).</p>
+      <h3>Three things to know before relying on it</h3>
+      <p><strong>The front building line needs the planner's ruling.</strong> The set is drawn at the standard 10 ft. The block-averaging rule may set it closer. The building would then move forward, not grow, because lot coverage caps it at about 975 sq ft.</p>
+      <p><strong>The drain outlet has about 6 inches of fall.</strong> The survey must confirm the French drain reaches the street by gravity. If it cannot, the garage floor is raised; no pump is added.</p>
+      <p><strong>Do not demolish before the Board decides.</strong> Removing the house first gives up its grandfathered setbacks.</p>
     </div>
 
-    <h2>Structure in brief</h2>
-    <p>Concrete walls 12 in. thick hold back 8 to 10.5 ft of soil on three sides and are propped at the top by the Unit A floor. The garage front is open, so a steel beam on four steel columns carries the front of both floors and the roof and resists sideways load. That frame is the critical engineered element. Floors are 20 in. open-web wood trusses spanning front to back, which keeps the garage free of columns.</p>
-    <p>Every member size on the structural sheets is a stated assumption for the engineer to check against a soil report.</p>
-
-    <h2>Confirm before relying on it</h2>
-    <ul>
-      <li><strong>Drain fall.</strong> The French drain has only about 6 inches of fall to the street. The survey must confirm it works by gravity; otherwise the choices are a pump or a higher garage floor.</li>
-      <li><strong>Parking is for occupants.</strong> The zoning code reserves the three required spaces for the building's occupants. Renting them to outsiders needs the Planning Division's answer.</li>
-      <li><strong>Common lighting.</strong> It runs on Unit A's meter and should be disclosed in that lease.</li>
-      <li><strong>Renting by the bedroom</strong> can be classed as a rooming house, a different use from a duplex.</li>
-    </ul>
-
-    <h2>Ownership and parcel</h2>
-    <ul>
-      <li>Owner of record: R &amp; L Rentals LLC, 3025 Greystone Dr, Morgantown WV 26508. Deed Book 1246, Page 78.</li>
-      <li>Last recorded sale: 1 June 2001, $160,000, coded as a related-party transfer. The 1 October 2000 sale at the same price covered more than one parcel.</li>
-      <li>Lot: 50 ft frontage, 34 ft deep on the east side and 48 ft on the west, 0.0471 acre deeded.</li>
-      <li>The lot rises 8 to 12 ft from street to rear. Baird St is one lane, about 14 ft wide, on an 11 % grade.</li>
-    </ul>
-
-    <h2>Drawing set</h2>
-    <p>Twenty-seven sheets drawn for 11 x 17 in paper. Select a sheet to enlarge it. The print-ready PDF and the scripts that generate it are in the project repository.</p>
+    <h2>Drawing set by trade</h2>
+    <p>Pick a company to see only its sheets. Every package also gets the shared sheets: cover, code notes, trade list, site plan, the three floor plans and the sections.</p>
+    <div class="trades" id="trades" role="group" aria-label="Trade packages"></div>
+    <p class="picked" id="picked" aria-live="polite"></p>
     <nav class="index" aria-label="Sheets" id="sheet-index"></nav>
   </div>
 
@@ -179,19 +164,26 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
   <div class="col">
     <h2>What the licensed team needs first</h2>
     <ul>
-      <li><strong>Surveyor.</strong> Boundary and topographic survey, including the neighbours' building lines for the front-setback rule.</li>
-      <li><strong>Planning Division</strong>, 389 Spruce St, 304-284-7431. Pre-application meeting on the rear setback, front setback, garage width and the basement ruling.</li>
+      <li><strong>Surveyor.</strong> Boundary and topographic survey of 387 and 442 Baird together, including the neighbours' front building lines and the street edge.</li>
+      <li><strong>Planning Division</strong>, 389 Spruce St, 304-284-7431. Front building line ruling, how the 65 % garage width is measured, and the variance pre-application.</li>
       <li><strong>Geotechnical engineer.</strong> Borings, bearing capacity, lateral pressures, groundwater, rock depth and a mine-map check.</li>
-      <li><strong>Structural engineer.</strong> Retaining walls, the front steel frame, shoring beside 441 and 442 Baird and 386 Forest.</li>
-      <li><strong>Civil engineer and City Engineer.</strong> Driveway on an 11 % one-lane street, the gravity drain outlet at the street edge, sidewalk waiver.</li>
-      <li><strong>Utilities.</strong> Sewer and water main locations and depths from MUB; service type and meter location from Mon Power.</li>
+      <li><strong>Structural engineer.</strong> Retaining walls, the steel beam over the garage opening, lateral resistance at the open front, long floor trusses, and shoring beside 441 and 442 Baird.</li>
+      <li><strong>Utilities.</strong> Sewer and water main locations and depths from MUB; pole and service type from Mon Power.</li>
+    </ul>
+
+    <h2>Ownership and parcel</h2>
+    <ul>
+      <li>Owner of record: R &amp; L Rentals LLC, 3025 Greystone Dr, Morgantown WV 26508. Deed Book 1246, Page 78.</li>
+      <li>Last recorded sale: 1 June 2001, $160,000, coded as a related-party transfer. The 1 October 2000 sale at the same price covered more than one parcel.</li>
+      <li>Lot: 50 ft frontage, 34 ft deep on the east side and 48 ft on the west, 0.0471 acre deeded.</li>
+      <li>442 Baird, next door to the west, shares the full 48 ft side line. 386 Forest Ave, behind, is held by the seller's affiliate.</li>
     </ul>
 
     <h2>Limits</h2>
     <ul>
       <li>Not engineered. Sizes are assumptions so the engineers have a model to react to.</li>
-      <li>Street View was not used. Google's service refused lookups from the machine this was prepared on, so walls, poles and overhead lines in front of the lot were not observed.</li>
-      <li>Building code editions are from the state rule as last checked. Confirm editions and local amendments with Code Enforcement.</li>
+      <li>Lot dimensions are from the county tax map. The deed, tax map and county GIS disagree by about 140 sq ft, so every setback and the coverage figure depend on the survey.</li>
+      <li>Street View was not used, so walls, poles and overhead lines in front of the lot were not observed.</li>
       <li>Utility locations in Baird St are unknown. No cost estimate is included.</li>
     </ul>
 
@@ -204,47 +196,31 @@ footer { margin-top: 48px; border-top: 1px solid var(--rule); padding-top: 14px;
       <li><a href="https://firemarshal.wv.gov/media/39311/download?inline=">West Virginia State Building Code rule, 87 CSR 4</a></li>
       <li>WV statewide parcel service, 1 m LiDAR DEM and 2026 orthophoto, WV GIS Technical Center</li>
     </ul>
-    <footer>Rev D, 22 November 2026. Records retrieved 21 November 2026. Elevations are NAVD88 feet from state LiDAR.</footer>
+    <footer>Rev E, 22 November 2026. Records retrieved 21 November 2026. Elevations are NAVD88 feet from state LiDAR.</footer>
   </div>
 </div>
 
 <script>
-const SHEETS = [
-  ["G-001", "Cover and summary", "What the set is, how each request was handled, and what needs approval."],
-  ["G-002", "Code analysis and general notes", "Zoning check, building code, energy targets, permits, and who stamps what."],
-  ["C-101", "Existing site conditions", "Record lot dimensions on LiDAR contours, with the existing house and neighbours."],
-  ["C-102", "Site plan and zoning", "The red tint is all the R-2 setbacks leave. The heavy outline is the proposed footprint."],
-  ["C-103", "Vehicle access and towing", "A wheel-lift wrecker hooking up to stall 2 and leaving downhill."],
-  ["A-101", "Garage level plan", "Open three-stall garage, lobby and stair, trash bay."],
-  ["A-102", "Unit A plan", "Main-level flat: three bedrooms, each with its own tub bath."],
-  ["A-103", "Unit B plan", "Upper-level flat, same plan as Unit A."],
-  ["A-201", "Street elevation", "From Baird Street looking north. The dashed blue line is the pavement."],
-  ["A-301", "Building section", "Cut through the garage, storage room and rear wing. The dashed brown line is the existing ground."],
-  ["S-001", "Structural notes and criteria", "Assumed loads, materials, structural system and preliminary member schedule."],
-  ["S-101", "Foundation and drainage plan", "Footings, slab, column pads, and the French drain with its gravity outlet and cleanouts."],
-  ["S-102", "Unit A floor framing", "Floor trusses and the steel frame across the open garage front."],
-  ["S-103", "Unit B floor framing", "Floor trusses bearing on Unit A's walls, with headers over the front openings."],
-  ["S-104", "Roof framing and shear walls", "Roof trusses and the wall lines that resist sideways load."],
-  ["S-301", "Structural sections", "Retaining wall at its tallest point and the front steel frame, with a rough gravity check."],
-  ["P-101", "Plumbing: garage level", "Buried water route, both stacks, main drain with cleanouts, storm drains to one gravity outlet."],
-  ["P-102", "Plumbing: Unit A", "Supply, waste and vent piping for three tub baths, kitchen, laundry and water heater."],
-  ["P-103", "Plumbing: Unit B", "Same layout on the upper floor, with vents through the roof."],
-  ["P-201", "Plumbing riser and schedules", "Two-stack riser diagram, fixture schedule and pipe sizes."],
-  ["M-101", "Mechanical: garage level", "Naturally ventilated open garage with no equipment."],
-  ["M-102", "Mechanical: Unit A", "Four heat-pump heads, three bath fans, range hood and dryer vent."],
-  ["M-103", "Mechanical: Unit B", "Same layout on the upper floor."],
-  ["E-101", "Electrical: garage level", "Two meters, automatic lights on Unit A with keynotes, empty conduits for later."],
-  ["E-102", "Electrical: Unit A", "Receptacles, lighting, alarms and the unit panel."],
-  ["E-103", "Electrical: Unit B", "Same layout on the upper floor."],
-  ["E-201", "One-line diagram and loads", "Service one-line, load calculations and service size."]
-];
+const SHEETS = [["G-001", "Cover sheet and summary", "What the set is, the key numbers, and the sheet index."], ["G-002", "Code analysis and general notes", "Zoning and building-code check, and what must be confirmed."], ["G-003", "Variance request", "The single variance: rear setback 20 ft to 5 ft, with the reasons and likely questions."], ["G-004", "Trade packages", "Which sheets go to which company, and the order of work."], ["C-101", "Existing site and demolition", "Existing ground, the house to remove, and the neighbours."], ["C-102", "Site plan and zoning", "Footprint with every setback dimensioned, and the zoning table."], ["C-103", "Vehicle access and towing", "Driveway widths and slopes, and how a tow truck pulls a car out."], ["C-104", "Excavation and shoring", "Cut depths, volume, and where shoring is needed beside the lot lines."], ["C-105", "Grading, drainage and erosion control", "Finish grades, swales, drains with inverts, and erosion control. Gravity only."], ["C-106", "Site utilities", "Water, sewer, power and storm routes, and who builds each."], ["C-107", "Paving, site walls, fence and trash bay", "Apron, wing walls, landing, trash bay, pads and fence."], ["A-101", "Garage level plan", "Open three-car garage, stair and heated utility room, dimensioned."], ["A-102", "Unit A plan", "Main-level flat, dimensioned room by room."], ["A-103", "Unit B plan", "Upper-level flat, same plan as Unit A."], ["A-104", "Furniture and clearance plan", "Every piece of furniture at its real size with the clearances and door swings."], ["A-105", "Roof plan", "Roof planes, skewed ridge, overhangs, gutters and vents."], ["A-201", "Front and rear elevations", "Front from the street and rear from the uphill neighbour."], ["A-202", "Side elevations", "East and west sides with the ground lines and lot lines."], ["A-301", "Building sections", "Cuts through the garage and bedrooms, and through the stair."], ["A-401", "Kitchen and bath enlarged plans", "Kitchen and the three baths enlarged, with fixture clearances."], ["A-402", "Stair, guard and porch details", "Stair runs, guards and the cantilevered porches."], ["A-501", "Wall, floor and roof assemblies", "Each wall, floor and roof build-up, with fire ratings and insulation."], ["A-601", "Door, window and finish schedules", "Door, window, finish and fixture schedules with a tagged plan."], ["S-001", "Structural notes and design criteria", "Loads, materials, load path and the items the engineer must design."], ["S-101", "Foundation and footing plan", "Footings, retaining walls, stem walls and the post pad."], ["S-102", "Retaining walls, waterproofing and French drain", "Wall elevations against the ground, the typical section, waterproofing and French drain."], ["S-103", "Garage slab and Unit A slab on grade", "Garage slab and the Unit A slab on grade."], ["S-104", "Structural steel", "The steel beam over the garage opening, its post and bearings."], ["S-201", "Unit A floor framing", "Floor trusses over the garage with the porch cantilever."], ["S-202", "Unit B floor framing", "Long-span floor trusses between the flats."], ["S-203", "Roof framing", "Roof trusses of stepping spans and the skewed ridge."], ["S-204", "Wall framing, shear walls and porch", "Bearing walls, headers, shear walls and porch framing."], ["S-301", "Structural sections and details", "Full structural section and the key connection details."], ["P-101", "Plumbing: garage level and under-slab", "Building drain with inverts and cleanouts, utility room, storm drains."], ["P-102", "Plumbing: Unit A", "Drains, vents and water lines for the main-level flat."], ["P-103", "Plumbing: Unit B", "The same for the upper flat, with vents through the roof."], ["P-201", "Plumbing risers and schedules", "Riser diagrams, fixture schedule and pipe sizing."], ["M-101", "Mechanical: garage level and outdoor units", "Heat-pump pads and clearances, utility and stair heaters, wall terminations."], ["M-102", "Mechanical: Unit A ductwork", "Air handler, every duct run, registers and exhausts for Unit A."], ["M-103", "Mechanical: Unit B ductwork", "The same for Unit B, with nothing in the attic."], ["M-201", "Mechanical schedules and details", "Equipment schedule, air balance, soffit and closet details."], ["E-101", "Electrical: garage level and service", "Two meters, service, automatic garage and stair lights, water heater feeds."], ["E-102", "Electrical: Unit A power", "Receptacles, dedicated circuits and the panel for Unit A."], ["E-103", "Electrical: Unit B power", "The same for Unit B."], ["E-104", "Electrical: lighting, Units A and B", "Lights and switches for both flats."], ["E-105", "Alarms, data and doorbell", "Smoke alarms, doorbells and data. No cameras."], ["E-201", "One-line diagram, panel schedules and loads", "One-line diagram, panel schedules and the load calculation."]];
+const PACKAGES = [["Surveyor", ["C-101", "C-102"]], ["Demolition", ["C-101"]], ["Excavation and shoring", ["C-104", "C-105", "S-101", "S-102"]], ["Concrete: footings and retaining walls", ["S-001", "S-101", "S-102", "S-301", "C-104"]], ["Waterproofing and foundation drains", ["S-102", "C-105", "P-101"]], ["Concrete flatwork: slabs, apron, walks", ["S-103", "C-107", "C-105"]], ["Structural steel", ["S-001", "S-104", "S-301"]], ["Framing and trusses", ["S-001", "S-201", "S-202", "S-203", "S-204", "S-301", "A-402"]], ["Roofing and gutters", ["A-105", "A-501", "S-203"]], ["Windows and exterior doors", ["A-601", "A-201", "A-202"]], ["Siding and exterior trim", ["A-201", "A-202", "A-501"]], ["Plumbing", ["P-101", "P-102", "P-103", "P-201", "C-106", "A-401"]], ["Heating and cooling", ["M-101", "M-102", "M-103", "M-201"]], ["Electrical", ["E-101", "E-102", "E-103", "E-104", "E-105", "E-201", "C-106"]], ["Insulation and air sealing", ["A-501", "A-301"]], ["Drywall and fire-rated assemblies", ["A-501", "A-402"]], ["Cabinets and countertops", ["A-401", "A-601"]], ["Interior doors, trim and closets", ["A-601", "A-104"]], ["Flooring, tile and paint", ["A-601", "A-401"]], ["Stairs and railings", ["A-402", "S-204"]], ["Site utilities: water, sewer, power", ["C-106", "P-101", "E-101"]], ["Paving, site walls, fence, landscape", ["C-107", "C-105", "C-103"]], ["Zoning and permit reviewers", ["G-002", "G-003", "C-102", "C-103", "A-201", "A-202"]]];
+const EVERYONE = ["G-001", "G-002", "G-004", "C-102", "A-101", "A-102", "A-103", "A-301"];
+const GROUPS = { G: "General", C: "Site and civil", A: "Architectural", S: "Structural", P: "Plumbing", M: "Heating and cooling", E: "Electrical" };
 const host = document.getElementById("sheets");
 const nav = document.getElementById("sheet-index");
+const trades = document.getElementById("trades");
+const picked = document.getElementById("picked");
+const sections = new Map(), links = new Map(), heads = new Map();
+let last = "";
 for (const [no, title, note] of SHEETS) {
+  const g = no[0];
+  if (g !== last) {
+    const h = document.createElement("div"); h.className = "group"; h.textContent = GROUPS[g];
+    host.append(h); heads.set(g, h); last = g;
+  }
   const link = document.createElement("a");
   link.href = "#" + no.toLowerCase();
   link.textContent = no;
-  nav.append(link);
+  nav.append(link); links.set(no, link);
   const sec = document.createElement("section");
   sec.className = "sheet";
   sec.id = no.toLowerCase();
@@ -252,7 +228,7 @@ for (const [no, title, note] of SHEETS) {
   head.className = "sheet-head";
   const a = document.createElement("span"); a.className = "sheet-no"; a.textContent = no;
   const b = document.createElement("span"); b.className = "sheet-title"; b.textContent = title;
-  const btn = document.createElement("button"); btn.className = "zoomhint"; btn.type = "button"; btn.id = "zoom-" + no.toLowerCase(); btn.textContent = "Enlarge";
+  const btn = document.createElement("button"); btn.className = "zoomhint"; btn.type = "button"; btn.textContent = "Enlarge";
   const c = document.createElement("span"); c.className = "sheet-note"; c.textContent = note;
   head.append(a, b, btn, c);
   const paper = document.createElement("div");
@@ -270,6 +246,32 @@ for (const [no, title, note] of SHEETS) {
   btn.addEventListener("click", toggle);
   img.addEventListener("click", toggle);
   sec.append(head, paper);
-  host.append(sec);
+  host.append(sec); sections.set(no, sec);
 }
+function show(name) {
+  const pkg = PACKAGES.find(p => p[0] === name);
+  const own = pkg ? new Set(pkg[1]) : null;
+  const all = pkg ? new Set([...pkg[1], ...EVERYONE]) : null;
+  const seen = new Set();
+  for (const [no] of SHEETS) {
+    const on = !all || all.has(no);
+    sections.get(no).hidden = !on;
+    links.get(no).hidden = !on;
+    if (on) seen.add(no[0]);
+  }
+  for (const [g, h] of heads) h.hidden = !seen.has(g);
+  for (const b of trades.children) b.setAttribute("aria-pressed", String(b.dataset.name === (name || "")));
+  picked.textContent = pkg ? name + ": its own sheets are " + [...own].join(", ") + ". Shared sheets are shown as well." : "Showing all 47 sheets.";
+}
+const allBtn = document.createElement("button");
+allBtn.type = "button"; allBtn.dataset.name = ""; allBtn.textContent = "All sheets";
+allBtn.addEventListener("click", () => show(""));
+trades.append(allBtn);
+for (const [name] of PACKAGES) {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.name = name; b.textContent = name;
+  b.addEventListener("click", () => show(name));
+  trades.append(b);
+}
+show("");
 </script>
