@@ -44,7 +44,7 @@ WYE = (m.SEWER_OUT_X, S3B[1] - (S3B[0] - m.SEWER_OUT_X))   # stack 3 branch join
 BLDG = (m.SEWER_OUT_X, m.YF)                         # building line, under the garage opening
 CO2 = m.SEWER_CO                                     # two-way cleanout on the lot
 INV_START = m.EL_GAR - 1.0                           # 12 in. below the slab at the far end
-_runs = [("A", "Base of chase 1 (stack 1)", A1), ("B", "Base of chase 2 (stack 2)", A2),
+_runs = [("A", "Base of stack 1, in the chase", A1), ("B", "Base of stack 2, in the chase", A2),
          ("C", "Turn south, floor cleanout", TURN), ("D", "Wye: branch from stack 3", WYE),
          ("E", "Building line, under opening", BLDG), ("F", "Two-way cleanout on the lot", CO2)]
 INV = {}
@@ -55,6 +55,7 @@ for _k, _name, _p in _runs:
     _prev = _p
 BR3_LEN = math.dist(S3B, WYE)
 INV["S3"] = dict(name="Base of stack 3 (utility room)", p=S3B, sta=BR3_LEN, inv=INV["D"]["inv"] + BR3_LEN * SLOPE)
+S1_OFFSET = math.dist(m.STACK_1, A1)                 # stack 1 offset in Unit A's floor trusses
 INV_SLEEVE = 924.2                                   # Unit A bath 2 drain through the 6 in. upstand on the garage rear wall (approx.)
 FLOOR_DRAIN = (m.CHASE_3[0] + 0.2, (m.UTIL[2] + m.UTIL[3]) / 2)
 
@@ -405,8 +406,8 @@ def sheet_p101(pdf):
     pipe(ax, [s2, A2], SAN, 1.6)
     rect(ax, s2[0] - 0.3, m.Y_GR_I, s2[0] + 0.3, m.Y_GR_O, fc=PAPER, ec=SAN, lw=0.8, z=11)       # sleeve
     stack_dot(ax, s2, SAN, fill=False)
-    for c in (A1, A2):
-        rect(ax, c[0] - 0.75, m.Y_GR_I - 1.17, c[0] + 0.75, m.Y_GR_I, fc="#e4efe4", ec=SAN, lw=0.7, z=8)
+    cb = m.CHASE_BOX
+    rect(ax, cb[0], cb[1], cb[2], cb[3], fc="#e4efe4", ec=SAN, lw=0.7, z=8)
     pipe(ax, [A1, A2, TURN, WYE, BLDG, CO2], SAN, 2.4)
     pipe(ax, [S3B, WYE], SAN, 2.0)
     pipe(ax, [CO2, (CO2[0], -8.5)], SAN, 2.0, (0, (4, 2)))
@@ -422,14 +423,16 @@ def sheet_p101(pdf):
     cleanout(ax, TURN[0] + 1.2, YM)
     pipe(ax, [TURN, (TURN[0] + 0.8, YM)], SAN, 1.2)
     cleanout(ax, CO2[0], CO2[1], SAN, "2W", r=0.07)
-    for k, dx, dy, ha in (("A", -2.1, 0.0, "right"), ("B", 1.2, -1.35, "left"), ("C", 1.2, -1.2, "left"), ("D", 0.8, -0.75, "left"),
+    for k, dx, dy, ha in (("A", -2.1, 0.0, "right"), ("B", 0.8, -1.35, "left"), ("C", 1.2, -1.2, "left"), ("D", 0.8, -0.75, "left"),
                           ("E", -0.9, 0.9, "right"), ("F", -1.1, 0.0, "right")):
         d = INV[k]
         lab(ax, d["p"][0] + dx, d["p"][1] + dy, f"{k}  INV {d['inv']:.2f}", SAN, size=4.5, ha=ha)
     xw = m.xw_gi(YM)
     yd = YM - 4.1
-    for a_, b_ in ((xw, A1[0]), (A1[0], A2[0]), (A2[0], TURN[0]), (TURN[0], m.GAR_X1)):
+    for a_, b_ in ((xw, A1[0]), (A2[0], TURN[0]), (TURN[0], m.GAR_X1)):
         dim(ax, (a_, yd), (b_, yd), 0.0, fth(b_ - a_), size=4.8, color=SAN, ext=False)
+    dim(ax, (A1[0], yd), (A2[0], yd), 0.0, "", size=4.8, color=SAN, ext=False)
+    lab(ax, (A1[0] + A2[0]) / 2, yd - 0.75, fth(A2[0] - A1[0]), SAN, size=4.6, weight="normal")
     for a_, b_ in ((YM, WYE[1]), (WYE[1], m.YF), (m.YF, CO2[1])):
         dim(ax, (TURN[0] - 2.6, a_), (TURN[0] - 2.6, b_), 0.0, fth(a_ - b_), size=4.8, color=SAN, ext=False)
     for x in (xw, A1[0], A2[0], TURN[0], m.GAR_X1):
@@ -438,11 +441,11 @@ def sheet_p101(pdf):
     lab(ax, TURN[0], 16.4, "4 in.", SAN, size=4.5, rot=90)
     lab(ax, 35.2, 23.34, "4 in.", SAN, size=4.5, rot=45)
     # callouts
-    note(ax, 10.6, 19.4, "CHASES 1 AND 2 on the rear wall (the garage is open and\nunheated): 16 x 12 in. clear, 3 in. stack, R-13 around the pipe,\n2 layers 5/8 in. Type X (1-hour), cleanout tee 18 in. above the\nslab behind a rated 12 x 12 in. access door",
-         to=[(A1[0] + 0.3, m.Y_GR_I - 1.17), (A2[0] - 0.5, m.Y_GR_I - 1.17)], color=SAN, size=4.5, frm=(17.6, 20.4))
-    note(ax, 10.2, 26.3, "STACK 1 above (3 in.)\noffsets to chase 1 in\nUnit A's floor trusses", to=(m.STACK_1[0] - 0.15, m.STACK_1[1]), color=SAN, size=4.4,
-         frm=(14.0, 26.3))
-    note(ax, 26.6, 37.25, f"UNIT A BATH 2 is on the slab on grade: its drains run\nUNDER THAT SLAB (in and tested before the pour, P-102).\n3 in. from stack 2 passes through the 6 in. concrete\nupstand in a sleeve, sealed, INV about {INV_SLEEVE:.1f}, then\nbetween two trusses over the ledge and down chase 2",
+    note(ax, 10.6, 19.6, f"ONE CHASE for stacks 1 and 2 on the rear wall, between stalls 1\nand 2 (the garage is open and unheated): framed box {fth(cb[2] - cb[0])} x {fth(cb[3] - cb[1])},\ntwo 3 in. stacks, R-13 around the pipes, 2 layers 5/8 in. Type X\n(1-hour), cleanout tees 18 in. above the slab behind a rated\naccess door",
+         to=[((cb[0] + cb[2]) / 2, cb[1])], color=SAN, size=4.5, frm=(17.6, 20.8))
+    note(ax, 10.0, 26.4, f"STACK 1 above (3 in.)\noffsets {fth(S1_OFFSET)} to the\nchase in Unit A's\nfloor trusses", to=(m.STACK_1[0] - 0.15, m.STACK_1[1]), color=SAN, size=4.4,
+         frm=(13.6, 26.4))
+    note(ax, 26.6, 37.25, f"UNIT A BATH 2 is on the slab on grade: its drains run\nUNDER THAT SLAB (in and tested before the pour, P-102).\n3 in. from stack 2 passes through the 6 in. concrete\nupstand in a sleeve, sealed, INV about {INV_SLEEVE:.1f}, then\nbetween two trusses over the ledge and down the chase",
          to=[(s2[0] + 0.3, m.Y_GR_O - 0.3)], color=SAN, size=4.5, frm=(26.5, 36.2))
     note(ax, 37.2, 34.1, "STACK 3 above (3 in.) offsets 1'-6\" in\nUnit A's floor trusses, over the truss\nledge of the concrete wall, into the\nutility room. See the enlarged plan", to=(m.STACK_3[0], m.STACK_3[1] + 0.1), color=SAN, size=4.4, frm=(40.4, 33.0))
     note(ax, 22.6, 22.6, "FLOOR CLEANOUT at the turn,\nflush, traffic-rated cover", to=(TURN[0] + 1.0, YM - 0.35), color=SAN, size=4.4, frm=(29.3, 22.9))
@@ -475,7 +478,7 @@ def sheet_p101(pdf):
         ("line", SAN, 1.2, DASH_UP, "Sanitary above: offset in Unit A's floor trusses"),
         ("line", SAN, 0.9, "-", "Sanitary under Unit A's slab on grade"),
         ("sym", s_st, "Stack at the slab  /  stack position in the flats"),
-        ("sym", s_ch, "Insulated 1-hour chase on the garage rear wall"),
+        ("sym", s_ch, "Insulated 1-hour chase (stacks 1 and 2), rear wall"),
         ("sym", s_co, "Cleanout (2W = two-way)"),
         ("line", CW, 1.3, (0, (6, 2)), "Water service, buried 42 in. min."),
         ("sym", s_hb, f"HB: frost-proof hose bibb in Unit A's floor rim, EL {EL_HB:.1f}"),
@@ -628,9 +631,9 @@ def unit_plumbing(ax, unit):
     # ---------------- kitchen island + washer -> stack 2 ----------------
     sd = ((m.ISL_SINK[0] + m.ISL_SINK[2]) / 2, (m.ISL_SINK[1] + m.ISL_SINK[3]) / 2)
     wbx, wby = m.X_C0 + 0.7, m.Y1 + m.PART / 2
-    yend = A2[1] if A else s2[1]
-    pipe(ax, [sd, (s2[0], sd[1]), (s2[0], yend)], SAN, W2)
-    pipe(ax, [(wbx - 0.3, wby), (s2[0], wby)], SAN, W2)
+    xt, yend = (A2[0], A2[1]) if A else s2
+    pipe(ax, [sd, (xt, sd[1]), (xt, yend)], SAN, W2)
+    pipe(ax, [(wbx - 0.3, wby), (xt, wby)], SAN, W2)
     yvw = m.Y1 - 0.3
     vent([(wbx + 0.55, wby), (wbx + 0.55, yvw), (xv2, yvw), (xv2, yw2)])
     vdot((wbx + 0.55, wby))
@@ -641,7 +644,9 @@ def unit_plumbing(ax, unit):
     sz(s2[0] + 0.42, 23.9, '2"')
     sz(22.0, wby - 0.36, '2"')
     if A:
-        pipe(ax, [s2, A2], SAN, W3)
+        pipe(ax, [s2, (s2[0], m.Y_GR_O), A2], SAN, W3)
+        pipe(ax, [s1, A1], SAN, 1.3, DASH_UP)
+        ax.add_patch(Rectangle((A1[0] - 0.3, A1[1] - 0.3), 0.6, 0.6, fc=SAN, ec=SAN, zorder=12))
         rect(ax, s2[0] - 0.32, m.Y_GR_I, s2[0] + 0.32, m.Y_GR_O, fc=PAPER, ec=SAN, lw=0.8, z=11)
         ax.add_patch(Rectangle((A2[0] - 0.3, A2[1] - 0.3), 0.6, 0.6, fc=SAN, ec=SAN, zorder=12))
         sz(s2[0] - 0.45, 32.6, '3"')
@@ -731,7 +736,8 @@ def unit_sheet(pdf, number, unit):
     A = unit == "A"
     title = f"Plumbing: Unit {unit}"
     el = m.EL_A if A else m.EL_B
-    trunk = plen([(26.5, 17.33), (m.STACK_2[0], 17.33), (m.STACK_2[0], A2[1] if A else m.STACK_2[1])])
+    xt_ = A2[0] if A else m.STACK_2[0]
+    trunk = plen([(26.5, 17.33), (xt_, 17.33), (xt_, A2[1] if A else m.STACK_2[1])])
     drains = ("Unit " + unit + " drains", [
         "Bath 1 to stack 1. Bath 2, kitchen and",
         "washer to stack 2. Bath 3 to stack 3.",
@@ -808,8 +814,8 @@ def unit_sheet(pdf, number, unit):
     note(ax, 41.6, 32.9, f"STACK 3, 3 in.{vtr}\nin the pipe space behind bath 3", to=(s3[0] + 0.05, s3[1] + 0.15), color=SAN, size=4.6, weight="bold", frm=(42.2, 32.4))
     note(ax, 29.2, 15.6, "ISLAND SINK + DISHWASHER\n2 in. drain down through the floor.\nAAV (air admittance valve) in the\ncabinet, 4 in. min. above the trap arm.\nDishwasher: high loop to the sink\ntailpiece; hot from the sink supply",
          to=(g["sd"][0] + 0.25, g["sd"][1] + 0.7), color=SAN, size=4.4, frm=(29.1, 17.0))
-    note(ax, 21.3, 19.6, f"2 in. kitchen + washer drain in the\nfloor trusses to {'chase 2' if A else 'stack 2'}: {trunk:.0f} ft,\nfalls {trunk / 4:.1f} in. at 1/4 in. per ft",
-         to=(s2[0], 19.9), color=SAN, size=4.4, frm=(21.2, 19.9))
+    note(ax, 21.3, 19.6, f"2 in. kitchen + washer drain in the\nfloor trusses to {'the chase' if A else 'stack 2'}: {trunk:.0f} ft,\nfalls {trunk / 4:.1f} in. at 1/4 in. per ft",
+         to=(xt_, 19.9), color=SAN, size=4.4, frm=(21.2, 19.9))
     note(ax, 28.0, 20.3, "WB: recessed washer box, hot + cold\n1/4-turn valves, 2 in. standpipe and\ntrap in the wall, 1 1/2 in. vent",
          to=(g["wb"][0] + 0.25, g["wb"][1] - 0.2), color=SAN, size=4.4, frm=(27.9, 20.6))
     note(ax, 12.9, 18.9, "IM: recessed ice-maker box behind\nthe refrigerator, 1/2 in. cold\nwith a stop", to=(g["im"][0] - 0.3, g["im"][1]), color=CW, size=4.4, frm=(18.1, 18.3))
@@ -832,8 +838,8 @@ def unit_sheet(pdf, number, unit):
         note(ax, 28.3, 38.3, "SLAB ON GRADE (shaded), EL 925.5. Bath 2's toilet, tub and lavatory drains and the\n3 in. from stack 2 are under it: IN, TESTED AND INSPECTED BEFORE THE SLAB IS POURED.",
              to=(24.6, 34.6), color=EARTH, size=4.6, weight="bold", frm=(28.2, 37.7))
         txt(ax, 33.4, m.Y_GR_O + 0.3, "EDGE OF THE SLAB ON GRADE  (garage rear wall below)", size=3.9, color=EARTH, z=7)
-        note(ax, 12.6, 31.6, "3 in. from stack 2 under the slab,\nthrough the 6 in. concrete upstand in\na sleeve, between two trusses,\nthen DOWN IN CHASE 2",
-             to=[(s2[0] - 0.32, m.Y_GR_O - 0.5), (A2[0] - 0.3, A2[1])], color=SAN, size=4.4, frm=(18.9, 31.0))
+        note(ax, 12.6, 31.6, "3 in. from stack 2 under the slab,\nthrough the 6 in. concrete upstand in\na sleeve, between two trusses,\nthen DOWN IN THE CHASE with stack 1",
+             to=[(s2[0] - 0.32, m.Y_GR_O - 0.5), (A1[0] - 0.3, A1[1])], color=SAN, size=4.4, frm=(18.9, 31.0))
         note(ax, 38.0, 21.6, f"HB: frost-proof hose bibb, 12 in. stem,\nvacuum breaker, in the floor rim at\nEL {EL_HB:.1f}. 1/2 in. cold from board A\nin the utility room below",
              to=(HB[0] + 0.05, HB[1] - 0.3), color=CW, size=4.4, frm=(43.4, 22.4))
     else:
@@ -920,7 +926,8 @@ def unit_sheet(pdf, number, unit):
     if A:
         unit_k = [
             "*UNIT A ONLY",
-            "Stack 1 offsets 1'-8\" in the floor trusses to chase 1.",
+            f"Stack 1 offsets {fth(S1_OFFSET)} in the floor trusses (dashed) to the",
+            "garage chase it shares with stack 2: truss maker to allow it.",
             "Stack 3 and Unit B's riser pass between two trusses over",
             "the wall's truss ledge; their pipe space stands over the",
             "6 in. upstand: framer and engineer to detail the opening.",
@@ -992,17 +999,17 @@ def dwv_riser(fig):
             if F == FA:
                 line(ax, [(xr, yv), (xr, FB + 7.4)], color=VENT, lw=0.9, ls=DASH_V, z=4)
         txt(ax, X + 1.6, FB - 4.6, '2" vent\nriser', size=3.8, color=VENT, ha="left")
-        txt(ax, X - 0.7, FB - 6.5, '3"', size=4.6, color=SAN, weight="bold", ha="right")
+        txt(ax, X - 0.7, FB - 4.6, '3"', size=4.6, color=SAN, weight="bold", ha="right")
         cleanout(ax, c, SL + 2.2)
     txt(ax, 26.0, FB - 3.2, "2\" in the floor trusses", size=3.8, color=SAN)
-    txt(ax, 27.5, FA - 3.2, "2\" in the trusses to chase 2", size=3.8, color=SAN)
+    txt(ax, 27.5, FA - 3.2, "2\" in the trusses to the chase", size=3.8, color=SAN)
     txt(ax, 50.0, FA - 3.2, "bath 2 drains under the slab on grade", size=3.8, color=SAN)
-    txt(ax, X1 + 3.2, FA - 5.2, "offset in the\ntrusses", size=3.8, color=SAN, ha="left", va="top")
-    txt(ax, C1 + 0.8, 14.5, "CHASE 1\ninsulated,\n1-hour", size=3.8, color=SAN, ha="left")
-    txt(ax, X2 + 0.8, FA - 5.2, f"under the slab, through the 6 in.\nupstand in a sleeve (INV about {INV_SLEEVE:.1f})", size=3.8, color=SAN, ha="left", va="top")
-    txt(ax, C2 - 0.8, 14.5, "CHASE 2\ninsulated,\n1-hour", size=3.8, color=SAN, ha="right")
-    txt(ax, X3 + 0.8, FA - 5.2, "offset in the trusses,\npast the wall ledge", size=3.8, color=SAN, ha="left", va="top")
-    txt(ax, C3 + 0.9, 14.5, "in the heated\nutility room\n(no chase)", size=3.8, color=SAN, ha="left")
+    txt(ax, C1 + 0.8, FA - 5.0, f"offset {fth(S1_OFFSET)} in the trusses", size=3.8, color=SAN, ha="left")
+    txt(ax, C1 + 0.8, 14.0, "IN THE CHASE\n(one box for stacks 1 and 2,\ninsulated, 1-hour)", size=3.8, color=SAN, ha="left")
+    txt(ax, X2 + 0.8, FA - 5.0, f"under the slab, through the 6 in. upstand in a sleeve (INV about {INV_SLEEVE:.1f})", size=3.8, color=SAN, ha="left")
+    txt(ax, C2 + 0.8, 14.0, "IN THE CHASE", size=3.8, color=SAN, ha="left")
+    txt(ax, X3 + 0.8, FA - 5.0, "offset in the trusses, past the wall ledge", size=3.8, color=SAN, ha="left")
+    txt(ax, C3 + 0.9, 14.0, "in the heated\nutility room\n(no chase)", size=3.8, color=SAN, ha="left")
     # building drain
     xa, xb, xc, xd, xe, xf = C1, C2, 46.0, 51.0, 63.0, 69.0
     line(ax, [(xa, 4.5), (77, 4.5)], color=SAN, lw=3.2, z=5)
@@ -1025,7 +1032,7 @@ def dwv_riser(fig):
     txt(ax, 29.5, 0.8, "A, B, C ... are the points on P-101. The floor drain (FD, trap primer) also takes the two water heater pan drains through an air gap.",
         size=4.0, color=GREY)
     for X, n in ((X1, DFU_S1), (X2, DFU_S2), (X3, DFU_S3)):
-        txt(ax, X - 0.7, 12.5 if X != X2 else FA - 9.0, f"{n}\nDFU", size=4.0, color=SAN, weight="bold", ha="right")
+        txt(ax, (C1 if X == X1 else C2 if X == X2 else C3) - 0.7, 14.0, f"{n}\nDFU", size=4.0, color=SAN, weight="bold", ha="right")
     return ax
 
 
@@ -1087,12 +1094,12 @@ def water_schematic(fig):
         line(ax, [(x0 + 10.7, 36.3), (x0 + 10.7, 36.5)], color=CW, lw=0.9, z=5)
         line(ax, [(tx1 - 1.5, 34.6), (tx1 - 1.5, 41.4)], color=HW, lw=1.4, ls=DASH_H, z=5)
         txt(ax, x0 + 9.4, 35.2, "3/4\"", size=3.8, color=CW, weight="bold")
-        txt(ax, tx1 - 0.4, 37.4, "3/4\"", size=3.8, color=HW, weight="bold", ha="left")
-        line(ax, [(x0 + 1, 38.5), (x0 + 23.6, 38.5)], color=CW, lw=2.6, z=6)
-        line(ax, [(x0 + 1, 41.4), (x0 + 23.6, 41.4)], color=HW, lw=2.6, z=6)
-        txt(ax, x0 + 24.3, 38.5, "C", size=4.4, color=CW, weight="bold")
-        txt(ax, x0 + 24.3, 41.4, "H", size=4.4, color=HW, weight="bold")
-        txt(ax, x0 + 12.3, 42.6, "PEX MANIFOLDS, a valve on every line", size=3.8, color=GREY)
+        txt(ax, tx1 - 1.9, 37.6, "3/4\"", size=3.8, color=HW, weight="bold", ha="right")
+        line(ax, [(x0 + 1, 38.5), (x0 + 22.9, 38.5)], color=CW, lw=2.6, z=6)
+        line(ax, [(x0 + 1, 41.4), (x0 + 22.9, 41.4)], color=HW, lw=2.6, z=6)
+        txt(ax, x0 + 23.7, 38.5, "C", size=4.4, color=CW, weight="bold")
+        txt(ax, x0 + 23.7, 41.4, "H", size=4.4, color=HW, weight="bold")
+        txt(ax, x0 + 24.0, 36.6, "PEX\nMANIFOLDS:\na valve on\nevery line", size=3.6, color=GREY, ha="right")
         # fixture groups
         grp = [("BATH 1", "WC LAV\nTUB", '3/4"', '1/2"'), ("BATH 2", "WC LAV\nTUB", '3/4"', '1/2"'), ("BATH 3", "WC LAV\nTUB", '3/4"', '1/2"'),
                ("KITCHEN", "SINK DW\nICE", '1/2"', '1/2"'), ("WASHER", "BOX", '1/2"', '1/2"')]
