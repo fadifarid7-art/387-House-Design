@@ -506,8 +506,9 @@ def sheet_s101(pdf):
     # ---- dimensions: west side
     dim(ax, SW, NWG, 7.4, f"{ftin(LW)}  GARAGE WEST WALL", size=5.2)
     dim(ax, NWG, NWU, 7.4, f"{ftin(L_STEM_W)}  STEM WALL", size=5.2)
-    f = (SW[0] - (m.SB_SIDE + m.M) * _cw, SW[1] + (m.SB_SIDE + m.M) * _sw)
-    dim(ax, f, SW, 0, ftin(m.SB_SIDE + m.M), ext=False, size=4.8, color=RED, side=-1)
+    pw = (m.xw_o(m.YF + 2.6), m.YF + 2.6)
+    f = (pw[0] - (m.SB_SIDE + m.M) * _cw, pw[1] + (m.SB_SIDE + m.M) * _sw)
+    dim(ax, f, pw, 0, ftin(m.SB_SIDE + m.M), ext=False, size=4.8, color=RED)
     f = (NWU[0] - (m.SB_SIDE + m.M) * _cw, NWU[1] + (m.SB_SIDE + m.M) * _sw)
     dim(ax, f, NWU, 0, ftin(m.SB_SIDE + m.M), ext=False, size=4.8, color=RED)
     # rear
@@ -517,8 +518,8 @@ def sheet_s101(pdf):
         dim(ax, c, f, 0, ftin(m.SB_REAR + m.M), ext=False, size=4.8, color=RED, side=-1 if c is NE else 1)
     # east
     xe1, xe2 = 51.9 - m.XE, 54.3 - m.XE
-    for a, b in ((m.YF, m.SHAFT_U[3]), (m.SHAFT_U[3], m.UTIL[2]), (m.UTIL[2], m.Y_GR_I), (m.Y_GR_I, m.Y_GR_O)):
-        dim(ax, (m.XE, b), (m.XE, a), xe1, size=4.8)
+    for a, b, lab in ((m.YF, m.SHAFT_U[3], None), (m.SHAFT_U[3], m.UTIL[2], "8\""), (m.UTIL[2], m.Y_GR_I, None), (m.Y_GR_I, m.Y_GR_O, "12\"")):
+        dim(ax, (m.XE, b), (m.XE, a), xe1, lab, size=4.8)
     dim(ax, NE, SE, xe2, f"{ftin(LE)}  GARAGE EAST WALL", size=5.2)
     dim(ax, (m.XE, m.Y_GR_O), (50.0, m.Y_GR_O), 0, ftin(m.SB_SIDE + m.M), ext=False, size=4.8, color=RED)
     dim(ax, (m.XE, m.YF - 0.75), (50.0, m.YF - 0.75), 0, ftin(m.SB_SIDE + m.M), ext=False, size=4.8, color=RED, side=-1)
@@ -562,7 +563,7 @@ def sheet_s101(pdf):
     lead(ax, (20.0, m.Y_GR_I - 0.6), (18.5, 22.3), f"F1  {ftin(m.FTG_W)} x 14 in. UNDER 12 in. WALLS\ntoe {ftin(TOE)} · wall 12 in. · heel {ftin(HEEL)}\nTOP OF FOOTING EL {m.EL_FTG_TOP:.2f}", size=4.8, ha="center", va="top", dot=True)
     lead(ax, (m.GAR_X1 + 0.33, 17.5), (30.6, 19.4), "F3  16 x 8 in. UNDER 8 in. WALLS\n(concrete or grouted block)", size=4.6, ha="right")
     lead(ax, (16.0, m.yr_o(16.0) - 0.8), (13.6, 34.6), "F4  20 x 10 in.\nUNDER 8 in.\nSTEM WALLS", size=4.6, ha="center", va="top")
-    txt(ax, 27.5, 31.9, f"UNIT A SLAB ON GRADE EL {m.EL_A:.2f}  (S-103)", size=4.6, color=GREY, z=9)
+    txt(ax, 24.5, 33.6, f"UNIT A SLAB ON GRADE EL {m.EL_A:.2f}  (S-103)", size=4.6, color=GREY, z=9)
     txt(ax, 24.0, 17.2, f"GARAGE SLAB EL {m.EL_GAR:.2f}  (S-103)", size=4.6, color=GREY, z=9)
     lead(ax, (xs + 3.0, m.yr_o(xs + 3.0) - 0.4), (33.0, 37.0), "STEP THE STEM FOOTING DOWN to F1, or span the\nbackfill as a grade beam (engineer): red marks", size=4.6, color=RED, va="bottom")
     lead(ax, (10.0, m.Y_GR_O + BACKFILL), (-6.6, 37.6), f"BROWN DOTS: {ftin(BACKFILL)} BACKFILL ZONE\nbehind the garage walls (assumed;\nsee C-104). No footing on backfill.", size=4.6, color=EARTH, dot=False)
@@ -587,7 +588,7 @@ def sheet_s101(pdf):
 # ----------------------------------------------------------------------------
 def wall_elevations(fig, left, bottom):
     tot = LW + LN + LE
-    ax = plan_axes(fig, left, bottom, (-8.0, tot + 8.0), (910.2, 929.6), 8.0)
+    ax = plan_axes(fig, left, bottom, (-8.0, tot + 8.0), (909.9, 928.6), 8.0)
     X0, X1, X2, X3 = 0.0, LW, LW + LN, tot
     S = np.concatenate([np.linspace(0, LW, 21), LW + np.linspace(0, LN, 37), LW + LN + np.linspace(0, LE, 21)])
     Gd = np.array([ground_w(s) for s in np.linspace(0, LW, 21)] + [ground_n(s) for s in np.linspace(0, LN, 37)]
@@ -606,8 +607,8 @@ def wall_elevations(fig, left, bottom):
     line(ax, [(X0 - 1.5, EL_TOC), (X3 + 1.5, EL_TOC)], lw=0.4, color=GREY, ls=(0, (1, 2)), z=5)
     # fold lines, cross walls
     for x, lab in ((X1, "NW CORNER"), (X2, "NE CORNER")):
-        line(ax, [(x, EL_F1_BOT - 0.8), (x, 928.2)], lw=0.6, ls=(0, (8, 2, 2, 2)), z=7)
-        txt(ax, x, 928.7, lab, size=4.8, weight="bold")
+        line(ax, [(x, EL_F1_BOT - 1.4), (x, 927.6)], lw=0.6, ls=(0, (8, 2, 2, 2)), z=7)
+        txt(ax, x, 928.05, lab, size=4.8, weight="bold")
     for a, b in ((X0, X0 + m.CONC), (X1 + m.GAR_X1 - NWG[0], X1 + m.SHAFT_X0 - NWG[0]),
                  (X2 + m.Y_GR_O - m.UTIL[2], X2 + m.Y_GR_O - m.SHAFT_U[3]), (X3 - m.CMU, X3)):
         rect(ax, a, m.EL_FTG_TOP, b, EL_TOC, fc="#c3c7cc", ec=GREY, lw=0.4, z=4)
@@ -620,7 +621,7 @@ def wall_elevations(fig, left, bottom):
         xo = x + (0.6 if i == 0 else -0.6 if i == 3 else 0.6)
         line(ax, [(xo, DR_INV[i]), (xo, gx + 0.3)], color=BLUE, lw=0.7, z=8)
         rect(ax, xo - 0.25, gx + 0.3, xo + 0.25, gx + 0.55, fc=BLUE, ec=BLUE, z=8)
-        txt(ax, xo + (1.0 if i != 3 else -1.0), DR_INV[i] - 1.75, f"{DR_NAMES[i]}\nINV {DR_INV[i]:.2f}", size=4.6, color=BLUE, weight="bold",
+        txt(ax, x + (0.4 if i != 3 else -0.4), 911.72, f"{DR_NAMES[i]}  INV {DR_INV[i]:.2f}", size=4.6, color=BLUE, weight="bold",
             ha="left" if i != 3 else "right")
     # sleeves
     sx = X2 + m.Y_GR_O - m.WATER_ENTRY[1]
@@ -629,39 +630,41 @@ def wall_elevations(fig, left, bottom):
     lead(ax, (sx, m.EL_WATER_ENTRY - 0.3), (sx + 2.6, 916.0), f"2 SLEEVES, 1 in. WATER\nSERVICES, EL {m.EL_WATER_ENTRY:.1f} (P-101)", size=4.4, dot=False)
     bx = X1 + m.CHASE_2[0] - NWG[0]
     rect(ax, bx - 0.4, EL_TOC + 0.25, bx + 0.4, EL_UPSTAND - 0.25, fc=PAPER, ec=INK, lw=0.6, z=8)
-    lead(ax, (bx, EL_UPSTAND - 0.25), (bx + 1.6, 927.4), f"SLEEVE THROUGH THE UPSTAND FOR BATH 2 DRAINS AT CHASE 2,\n{ftin(m.CHASE_2[0] - NWG[0])} from the NW corner; size and level by P-101", size=4.4, dot=False)
+    lead(ax, (bx, EL_UPSTAND - 0.25), (bx + 1.6, 927.0), f"SLEEVE THROUGH THE UPSTAND FOR BATH 2 DRAINS AT CHASE 2,\n{ftin(m.CHASE_2[0] - NWG[0])} from the NW corner; size and level by P-101", size=4.4, dot=False)
     # names and lengths
     for a, b, lab, L in ((X0, X1, "WEST WALL", LW), (X1, X2, "NORTH (REAR) WALL", LN), (X2, X3, "EAST WALL", LE)):
-        dim(ax, (a, EL_F1_BOT), (b, EL_F1_BOT), -1.0, f"{lab}  {ftin(L)}", size=5.4, side=-1)
+        dim(ax, (a, EL_F1_BOT), (b, EL_F1_BOT), -(EL_F1_BOT - 911.1), f"{lab}  {ftin(L)}", size=5.4, side=-1)
     # retained heights
     for x, g, sd in ((X0, Gd[0], 1), (X1, Gd[20], 1), (X2, Gd[57], 1), (X3, Gd[78], -1)):
         xo = x + (2.6 if x == X0 else -2.6 if x == X3 else 2.2)
         dim(ax, (xo, m.EL_GAR), (xo, g), 0, f"{ftin(g - m.EL_GAR)} RETAINED", ext=False, size=4.6, side=sd)
-        txt(ax, xo + (0.3 if x != X3 else -0.3), g + 0.55, f"GROUND EL {g:.1f}", size=4.4, color=EARTH, ha="left" if x != X3 else "right", weight="bold")
+    txt(ax, X0 - 0.4, Gd[0], f"GROUND EL {Gd[0]:.1f}", size=4.4, color=EARTH, ha="right", weight="bold", box=True)
+    txt(ax, X1 + 2.6, Gd[20] + 0.75, f"GROUND EL {Gd[20]:.1f}", size=4.4, color=EARTH, ha="left", weight="bold", box=True)
+    txt(ax, X2 + 2.6, Gd[57] + 1.0, f"GROUND EL {Gd[57]:.1f}", size=4.4, color=EARTH, ha="left", weight="bold", box=True)
+    eltag(ax, X3 + 1.5, Gd[78], f"GROUND EL {Gd[78]:.1f}", size=4.4, w=0.8, color=EARTH)
     # levels
     eltag(ax, X3 + 1.5, EL_TOC, f"TOP OF CONCRETE EL {EL_TOC:.2f}", size=4.6, w=0.8)
     eltag(ax, X3 + 1.5, m.EL_GAR, f"SLAB EL {m.EL_GAR:.2f}", size=4.6, w=0.8)
     eltag(ax, X3 + 1.5, m.EL_FTG_TOP - 0.25, f"FTG TOP EL {m.EL_FTG_TOP:.2f}", size=4.6, w=0.8)
     eltag(ax, X3 + 1.5, EL_F1_BOT - 0.75, f"FTG BOTTOM {EL_F1_BOT:.2f}", size=4.6, w=0.8)
-    dim(ax, (X0 - 1.6, m.EL_FTG_TOP), (X0 - 1.6, EL_TOC), 0, ftin(EL_TOC - m.EL_FTG_TOP), ext=False, size=4.8)
-    txt(ax, X0 - 2.6, 926.3, "WALL\nHEIGHT", size=4.4, ha="right")
+    dim(ax, (X0 - 1.6, m.EL_FTG_TOP), (X0 - 1.6, EL_TOC), 0, f"{ftin(EL_TOC - m.EL_FTG_TOP)} WALL", ext=False, size=4.8)
     # labels
     xm = (X1 + X2) / 2
     txt(ax, xm + 8, (EL_TOC + EL_UPSTAND) / 2, f"6 in. UPSTAND TO EL {EL_UPSTAND:.2f}, UNDER THE UNIT A SLAB ON GRADE", size=4.4, box=True, z=9)
-    txt(ax, xm - 1, EL_TOC - 0.75, f"TRUSS BEARING LEDGE: TOP OF CONCRETE EL {EL_TOC:.2f}, SILL PLATE, TRUSSES BEAR AT EL {EL_BRG:.2f}", size=4.4, z=9)
+    txt(ax, xm - 2, EL_TOC - 0.75, f"TRUSS BEARING LEDGE: TOP OF CONCRETE EL {EL_TOC:.2f}; TRUSSES BEAR AT EL {EL_BRG:.2f} ON A SILL PLATE", size=4.4, z=9)
     txt(ax, xm, 920.0, "RETAINED TO THE UNDERSIDE OF THE UNIT A SLAB (backfill)", size=4.4, color=EARTH, z=9)
-    lead(ax, (X0 + 13.5, max(EL_TOC, ground_w(13.5) + 8 * IN) - 0.3), (X0 + 3.0, 927.9), "UPSTAND AT THE OUTSIDE FACE, STEPPED TO STAY\n8 in. ABOVE FINISH GRADE (C-105)", size=4.4, dot=False)
+    lead(ax, (X0 + 13.5, max(EL_TOC, ground_w(13.5) + 8 * IN) - 0.3), (X0 + 2.0, 927.2), "UPSTAND AT THE OUTSIDE FACE, STEPPED TO STAY\n8 in. ABOVE FINISH GRADE (C-105)", size=4.4, dot=False)
     txt(ax, X0 + LW / 2, 918.6, "EXISTING GROUND\nAT THE OUTSIDE FACE\n(LiDAR, dashed)", size=4.4, color=EARTH, z=9)
-    txt(ax, X2 + LE / 2 + 1.5, 925.6, "wall is exposed above\nthe ground line", size=4.4, color=GREY, z=9)
+    txt(ax, X2 + LE / 2 + 4.6, 922.6, "wall is exposed above\nthe ground line", size=4.4, color=GREY, z=9)
     txt(ax, xm, m.EL_GAR - 0.5, "FRENCH DRAIN INVERT (blue), beside the footing heel", size=4.4, color=BLUE, z=9, box=True)
-    txt(ax, X0 - 0.2, 911.0, "SW (front)", size=4.4, ha="right", color=GREY)
-    txt(ax, X3 + 0.2, 911.0, "SE (front)", size=4.4, ha="left", color=GREY)
+    txt(ax, X0 - 0.4, 910.5, "SW (street end)", size=4.4, ha="right", color=GREY)
+    txt(ax, X3 + 0.4, 910.5, "SE (street end)", size=4.4, ha="left", color=GREY)
     return ax
 
 
 def wall_section(fig, left, bottom):
     g0 = 922.0
-    ylo, yhi = 911.3, 927.2
+    ylo, yhi = 911.3, 926.6
     ax = plan_axes(fig, left, bottom, (-5.6, 8.6), (ylo, yhi), 8 / 3.0)
     lot = m.CONC + m.SB_SIDE + m.M
     grade = [(1.0, g0), (2.0, g0 - 0.2), (4.0, g0 - 0.55), (lot, g0 - 0.1), (8.6, g0 + 0.25)]
@@ -696,9 +699,9 @@ def wall_section(fig, left, bottom):
     line(ax, [(0.72, EL_TOC - 0.6), (0.72, EL_BRG + 0.12)], lw=0.8, color=INK, z=6)
     rect(ax, -5.6, EL_BRG, m.CONC - 3.5 * IN, m.EL_A - 0.75 * IN, fc="#faf7ef", ec=GREY, lw=0.4, z=3)
     rect(ax, m.CONC - 3.5 * IN, EL_BRG, m.CONC, m.EL_A - 0.75 * IN, fc=WOODC, ec=INK, lw=0.6, z=5)
-    for xa in (-1.7, -3.7):
+    for xa in (-1.7,):
         rect(ax, xa, EL_BRG, xa + 3.5 * IN, m.EL_A - 0.75 * IN, fc=WOODC, ec=INK, lw=0.5, z=5)
-    for xa, xb in ((-1.7 + 3.5 * IN, m.CONC - 3.5 * IN), (-3.7 + 3.5 * IN, -1.7)):
+    for xa, xb in ((-1.7 + 3.5 * IN, m.CONC - 3.5 * IN),):
         line(ax, [(xa, EL_BRG + 0.1), (xb, m.EL_A - 0.2), (xb, EL_BRG + 0.1), (xa, m.EL_A - 0.2)], lw=0.4, color=GREY, z=4)
     rect(ax, -5.6, m.EL_A - 0.75 * IN, m.CONC, m.EL_A, fc=WOODC, ec=INK, lw=0.5, z=5)
     line(ax, [(-5.6, EL_BRG - 0.052), (0, EL_BRG - 0.052)], lw=1.0, color=GREY, z=5)
@@ -708,7 +711,8 @@ def wall_section(fig, left, bottom):
     txt(ax, lot + 0.25, g0 + 2.9, "LOT LINE", size=4.8, color=ACCENT, ha="left")
     dim(ax, (m.CONC, g0 + 2.3), (lot, g0 + 2.3), 0, ftin(m.SB_SIDE + m.M), ext=False, size=5.0, color=ACCENT)
     txt(ax, 3.9, g0 - 0.1, "SWALE", size=4.6, color=EARTH, va="bottom")
-    txt(ax, 7.5, g0 - 3.0, "NATIVE SOIL\n(shored cut,\nC-104)", size=4.6, color=EARTH)
+    txt(ax, 5.38, g0 - 2.0, "NATIVE\nSOIL\n(shored\ncut,\nC-104)", size=4.4, color=EARTH)
+    txt(ax, 7.2, g0 - 4.6, "NEIGHBOUR'S\nLOT", size=4.4, color=GREY)
     # dimensions and levels
     yb = EL_F1_BOT - 0.42
     dim(ax, (-TOE, yb), (0, yb), 0, ftin(TOE), ext=False, size=4.6, side=-1)
@@ -716,20 +720,20 @@ def wall_section(fig, left, bottom):
     dim(ax, (m.CONC, yb), (m.CONC + HEEL, yb), 0, ftin(HEEL), ext=False, size=4.6, side=-1)
     dim(ax, (-1.7, EL_F1_BOT), (-1.7, m.EL_FTG_TOP), 0, "14\"", ext=False, size=4.6)
     dim(ax, (-3.9, m.EL_GAR), (-3.9, EL_TOC), 0, ftin(EL_TOC - m.EL_GAR), ext=False, size=5.0)
-    dim(ax, (8.0, m.EL_GAR), (8.0, g0 + 0.15), 0, "RETAINED HEIGHT VARIES: SEE ELEVATIONS", ext=False, size=4.6, side=-1)
+    dim(ax, (8.2, m.EL_GAR), (8.2, g0 + 0.15), 0, "RETAINED HEIGHT VARIES: SEE ELEVATIONS", ext=False, size=4.6, side=-1)
     line(ax, [(1.0, m.EL_GAR), (8.3, m.EL_GAR)], lw=0.3, color=GREY, ls=(0, (2, 2)), z=3)
     eltag(ax, -5.5, m.EL_A + 0.22, f"UNIT A FLOOR EL {m.EL_A:.2f}", size=5.0, w=0.0)
     eltag(ax, -5.5, EL_TOC - 0.5, f"TOP OF CONCRETE EL {EL_TOC:.2f}\nTRUSS BEARING EL {EL_BRG:.2f}", size=4.8, w=0.0)
     eltag(ax, -5.5, m.EL_GAR + 0.25, f"GARAGE SLAB EL {m.EL_GAR:.2f}", size=5.0, w=0.0)
     eltag(ax, -5.5, m.EL_FTG_TOP - 0.55, f"TOP OF FOOTING EL {m.EL_FTG_TOP:.2f}", size=4.8, w=0.0)
     txt(ax, -2.9, 919.0, "OPEN GARAGE", size=5.4, color=GREY, weight="bold")
-    txt(ax, -3.4, 924.65, "UNIT A FLOOR TRUSSES RUN\nPARALLEL TO THIS WALL", size=4.4, color=GREY)
+    txt(ax, -3.7, 924.65, "UNIT A FLOOR TRUSSES RUN\nPARALLEL TO THIS WALL", size=4.4, color=GREY)
     # keynote bubbles
     ks = [((0.5, 918.2), (-1.3, 917.3), 1), ((-0.6, EL_F1_BOT + 0.75), (-2.9, 912.25), 2), ((-2.6, m.EL_GAR - 0.2), (-2.6, 915.6), 3),
-          ((0.72, EL_TOC + 0.06), (-1.1, 922.7), 4), ((-0.5, 924.7), (-1.6, 926.4), 5), ((1.03, 920.3), (2.3, 921.25), 6),
+          ((0.72, EL_TOC + 0.06), (-1.1, 922.7), 4), ((-0.5, 924.7), (-1.9, 926.15), 5), ((1.03, 920.3), (2.3, 921.25), 6),
           ((1.13, 917.4), (3.9, 918.6), 7), ((px, inv + 0.17), (6.3, 913.3), 8), ((2.2, 918.0), (4.6, 916.4), 9),
-          ((1.6, g0 - 0.6), (3.0, g0 + 1.2), 10), ((lot, 914.2), (7.5, 915.2), 11), ((0.75, 926.5), (2.6, 926.5), 12),
-          ((-4.6, EL_BRG - 0.052), (-4.6, 922.6), 13)]
+          ((1.6, g0 - 0.6), (3.0, g0 + 1.2), 10), ((lot, 914.2), (7.3, 915.2), 11), ((0.75, 926.1), (2.6, 926.1), 12),
+          ((-2.5, EL_BRG - 0.052), (-2.5, 922.5), 13)]
     for p, q, n in ks:
         knote(ax, p, q, n)
     return ax
@@ -737,9 +741,9 @@ def wall_section(fig, left, bottom):
 
 def key_plan(fig, left, bottom):
     fpi = 16.0
-    ax = plan_axes(fig, left, bottom, (-3.0, 56.0), (-9.5, 43.0), fpi)
+    ax = plan_axes(fig, left, bottom, (-6.0, 56.0), (-9.5, 42.0), fpi)
     line(ax, [LOT_NW, LOT_SW, LOT_SE, LOT_NE, LOT_NW], color=ACCENT, lw=0.7, ls=(0, (9, 2.5, 1.5, 2.5)), z=3)
-    line(ax, [(-3, PAVE_N), (56, PAVE_N)], lw=0.5, color=GREY, z=2)
+    line(ax, [(-6, PAVE_N), (56, PAVE_N)], lw=0.5, color=GREY, z=2)
     txt(ax, 14, PAVE_N - 1.2, "BAIRD STREET (edge of pavement)", size=4.4, color=GREY)
     poly(ax, m.APRON, fc="#f1f3f5", ec=BG_EDGE, lw=0.4, z=2)
     poly(ax, m.OUT_U, fc="none", ec=BG_EDGE, lw=0.5, z=3)
@@ -749,8 +753,8 @@ def key_plan(fig, left, bottom):
     line(ax, [(m.OPEN[0], Y_TD), (m.OPEN[1], Y_TD), (41.0, 2.0), DR[4]], lw=0.7, color="#0e8f9c", z=6)
     drain_plan(ax, lw=1.3)
     for i, (x, y) in enumerate(DR[:4]):
-        dx, ha = ((-1.2, "right") if i in (0, 1) else (1.2, "left"))
-        txt(ax, x + dx, y + (1.6 if i in (1, 2) else -1.4), f"{DR_NAMES[i]}\n{DR_INV[i]:.2f}", size=4.4, color=BLUE, weight="bold", ha=ha)
+        tx, ha = ((west_x(y) - 0.9, "right") if i in (0, 1) else (50.9, "left"))
+        txt(ax, tx, y + (1.9 if i in (1, 2) else -1.4), f"{DR_NAMES[i]}\n{DR_INV[i]:.2f}", size=4.4, color=BLUE, weight="bold", ha=ha, box=True)
     txt(ax, DR[4][0] + 1.6, DR[4][1] - 0.6, f"OUTLET\n{m.EL_DRAIN_OUT:.2f}", size=4.4, color=BLUE, weight="bold", ha="left")
     for (a, b) in zip(DR[:3], DR[1:4]):
         mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
@@ -759,12 +763,12 @@ def key_plan(fig, left, bottom):
         arrow(ax, (mx - ux * 2, my - uy * 2), (mx + ux * 2, my + uy * 2), color=BLUE, lw=1.0)
     txt(ax, 24.0, 20.5, "OPEN GARAGE\nSLAB EL 914.50", size=4.6, color=GREY)
     txt(ax, 22.0, 34.2, "UNIT A SLAB ON GRADE", size=4.2, color=GREY)
-    txt(ax, 3.8, 19.0, "WEST WALL", size=4.6, rot=90 - math.degrees(WEST_LEAN), weight="bold")
+    txt(ax, 10.6, 19.0, "WEST WALL", size=4.6, rot=90 - math.degrees(WEST_LEAN), weight="bold")
     txt(ax, 27.0, 28.2, "NORTH (REAR) WALL", size=4.6, weight="bold")
     txt(ax, 42.6, 20.0, "EAST WALL", size=4.6, rot=90, weight="bold")
     txt(ax, 24.0, 6.6, "trench drain", size=4.2, color="#0e8f9c")
     cut_mark(ax, (m.XE - 5.5, 16.0), (m.XE + 4.4, 16.0), "C")
-    north_arrow(ax, 4.5, 38.5, 2.6, 6)
+    north_arrow(ax, 1.5, -3.2, 2.2, 6)
     return ax
 
 
@@ -790,8 +794,8 @@ def sheet_s102(pdf):
     fig, bg = new_sheet("S-102", two_line(TITLE["S-102"]), "As noted", notes)
     L = MARGIN + 0.3
     # B: unfolded elevations
-    wall_elevations(fig, L + 0.75, 8.05)
-    vtitle(bg, L, 10.42, "B", "Garage retaining walls unfolded, seen from inside the garage", "1/8\" = 1'-0\" · lengths along the outside face · ground from LiDAR at the outside face · preliminary")
+    wall_elevations(fig, L + 0.75, 7.9)
+    vtitle(bg, L, 10.48, "B", "Garage retaining walls unfolded, seen from inside the garage", "1/8\" = 1'-0\" · lengths along the outside face · ground from LiDAR at the outside face · preliminary")
     # banner
     bx0, bx1 = L, SHEET_W - MARGIN - TB_W - 0.3
     bg.add_patch(Rectangle((bx0, 7.3), bx1 - bx0, 0.52, fc="#fbeeee", ec=ACCENT, lw=1.0))
@@ -805,7 +809,7 @@ def sheet_s102(pdf):
             fontsize=6.0, color=INK, va="center")
     # C: typical section
     wall_section(fig, L + 0.05, 0.92)
-    vtitle(bg, L, 7.02, "C", "Typical wall section: west and east walls", "3/8\" = 1'-0\" · east wall shown looking north, west wall opposite hand · rear wall top: S-103 detail D")
+    vtitle(bg, L, 7.02, "C", "Typical wall section: west and east walls", "3/8\" = 1'-0\" · east wall shown looking north; west wall opposite hand · rear wall top: S-103 detail D")
     keys = [
         "12 in. concrete wall, 4,000 psi. PRELIM. bars: #5 at 12 in. vertical each face, #4 at 12 in. horizontal each face. Engineer to design.",
         f"Footing F1 {ftin(m.FTG_W)} x 14 in.: toe {ftin(TOE)}, heel {ftin(HEEL)} toward the soil. PRELIM. #5 at 12 in. across the bottom, 3 #5 lengthwise. "
@@ -834,8 +838,8 @@ def sheet_s102(pdf):
     if ky < 0.5:
         print("WARNING: S-102 keynotes run off the sheet", ky)
     # A: key plan and D: drain data
-    px = L + 9.35
-    key_plan(fig, px - 0.05, 3.62)
+    px = L + 9.1
+    key_plan(fig, px - 0.05, 3.6)
     vtitle(bg, px, 7.02, "A", "Key plan and French drain", "1/16\" = 1'-0\" · inverts at cleanouts")
     bg.text(px, 3.42, "D   FRENCH DRAIN DATA", fontsize=8.0, fontweight="bold", va="center")
     rows = [("Point", "Station", "Invert EL")]

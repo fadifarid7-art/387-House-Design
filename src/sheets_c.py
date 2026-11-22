@@ -195,7 +195,8 @@ def stem_ftg_bottom(x, y):
 FD_OFF = FTG_TOE + 0.5                      # French drain centre line: beside the footing toe, 2'-0" from the wall face
 _fdw = lambda y: m.xw_o(y) - FD_OFF / _CW   # noqa: E731
 FD = [(_fdw(m.YF), m.YF), (_fdw(m.Y_GR_O + FD_OFF), m.Y_GR_O + FD_OFF), (m.XE + FD_OFF, m.Y_GR_O + FD_OFF), (m.XE + FD_OFF, m.YF)]
-J1 = (m.XE + FD_OFF, m.YF - 1.2)            # junction cleanout: trench drain and storm line join the solid outlet pipe
+TD_Y = m.YF - 0.6                           # trench drain line (brief)
+J1 = (m.XE + FD_OFF, TD_Y)                   # junction cleanout: trench drain and storm line join the solid outlet pipe
 PIT_R = 0.75                                # 18 in. meter pit
 TAIL = [FD[3], J1, (m.XE + FD_OFF, 2.2), (m.WATER_METERS[0][0] - PIT_R - 0.5, 0.3),
         (m.WATER_METERS[0][0] - PIT_R - 0.5, m.WATER_METERS[0][1] - 1.9), m.DRAIN_OUT]     # solid pipe, jogs round the meter pit
@@ -218,22 +219,21 @@ def fd_inv(i):
     return m.EL_DRAIN_HI - FD_SLOPE * FD_STA[i]
 
 
-TD_Y = m.YF - 0.6                           # trench drain line (brief)
 EL_TD_OUT = m.EL_GAR - 1.0                  # trench drain outlet invert: 12 in. below the grate (assumed channel depth)
-X_S1 = 49.1                                 # storm line S1 down the east side yard (solid)
+X_S1 = 46.35                                # storm line S1 down the east side yard (solid)
 UD_OFF = 1.0                                # upper drain behind the rear stem wall
 UD_DEPTH = 3.0                              # its invert below finish grade (at the stem footing)
-S1 = [rear_pt(m.REAR_WALL_LEN + 1.0, UD_OFF), (X_S1, rear_pt(m.REAR_WALL_LEN + 1.0, UD_OFF)[1] - 1.5), (X_S1, J1[1] + 1.6), J1]
+S1 = [rear_pt(m.REAR_WALL_LEN + 1.0, UD_OFF), (X_S1, rear_pt(m.REAR_WALL_LEN + 1.0, UD_OFF)[1] - 1.0), (X_S1, J1[1] + 1.6), J1]
 # downspouts: assumed at the four roof corners until A-105 fixes them
 DS = {"NW": (m.OUT_U[3][0] + 0.6, m.OUT_U[3][1] - 0.2), "NE": (m.XE, m.yr_o(m.XE) - 0.1), "SW": (m.xw_o(m.YF), m.YF), "SE": (m.XE, m.YF)}
 RL_OFF = 3.4                                # west roof leader: from the west wall face
 RL_W = [(m.xw_o(40.0) - RL_OFF / _CW, 40.0), (m.xw_o(m.YF) - RL_OFF / _CW, m.YF), (4.2, 1.0), (7.5, PAVE_N + 0.6)]
 
 # ---- water service route (two 1 in. lines, 8 in. apart) ----
-X_WA, X_WB = 47.6, 48.3
-WATER_A = [m.WATER_METERS[0], (m.WATER_METERS[0][0], m.WATER_METERS[0][1] + PIT_R), (X_WA, 1.0), (X_WA, m.WATER_ENTRY[1]), m.WATER_ENTRY]
-WATER_B = [m.WATER_METERS[1], (m.WATER_METERS[1][0], m.WATER_METERS[1][1] + PIT_R), (X_WB, 1.0), (X_WB, m.WATER_ENTRY[1] + 0.67), (m.XE, m.WATER_ENTRY[1] + 0.67)]
-X_ET = 45.75                                # electric and telecom conduits
+X_WA, X_WB = 47.4, m.WATER_METERS[1][0]
+WATER_A = [m.WATER_METERS[0], (m.WATER_METERS[0][0], m.WATER_METERS[0][1] + PIT_R), (X_WA, 0.6), (X_WA, m.WATER_ENTRY[1]), m.WATER_ENTRY]
+WATER_B = [m.WATER_METERS[1], (m.WATER_METERS[1][0], m.WATER_METERS[1][1] + PIT_R), (X_WB, 0.6), (X_WB, m.WATER_ENTRY[1] + 0.67), (m.XE, m.WATER_ENTRY[1] + 0.67)]
+X_ET, X_TEL = 45.9, 45.55                                  # electric and telecom conduits
 
 # ---- trash bay: what four carts need (catalogue 96 gal cart, 26 x 34 in.) ----
 CART_W, CART_D = 26 / 12.0, 34 / 12.0
@@ -652,7 +652,7 @@ def sheet_c102(pdf):
     site_base(ax, cont="faint", street_label=(31, -13.2))
     txt(ax, -3.6, 37, "442 BAIRD ST", size=5.2, color=GREY, weight="bold", rot=83.5)
     txt(ax, 55.2, 18, "441 BAIRD ST", size=5.2, color=GREY, weight="bold", rot=90)
-    txt(ax, 34, 49.6, "386 FOREST AVE  (house ±18 ft from the rear line)", size=5.2, color=GREY, weight="bold")
+    txt(ax, 36, 50.6, "386 FOREST AVE  (house ±18 ft from the rear line)", size=5.2, color=GREY, weight="bold", box=True)
     # setback lines
     sb = dict(color=ACCENT, lw=0.55, ls=(0, (4, 3)), z=6)
     line(ax, [(west_x(SB_FRONT), SB_FRONT), (50, SB_FRONT)], **sb)
@@ -675,14 +675,13 @@ def sheet_c102(pdf):
     txt(ax, 26.2, 26.9, f"Garage EL {m.EL_GAR:.1f} · Unit A EL {m.EL_A:.1f} · Unit B EL {m.EL_B:.1f}", size=5.2, z=12)
     txt(ax, 26.2, 25.4, "3 parking stalls in the garage (C-103)", size=5.2, z=12)
     txt(ax, 19.5, 30.75, "garage rear wall below", size=4.3, color=GREY, z=12, ha="center", box=True)
-    txt(ax, 22.0, 15.2, f"BY-RIGHT BUILDABLE AREA  {env_area:,.0f} SF", size=5.6, color=ACCENT, weight="bold", z=12, box=True)
-    txt(ax, 22.0, 13.6, "front 10 ft, sides 5 ft, rear 20 ft", size=4.8, color=ACCENT, z=12, box=True)
+    txt(ax, 22.0, 17.4, f"BY-RIGHT BUILDABLE AREA  {env_area:,.0f} SF", size=5.6, color=ACCENT, weight="bold", z=12, box=True)
+    txt(ax, 22.0, 15.8, "front 10 ft, sides 5 ft, rear 20 ft", size=4.8, color=ACCENT, z=12, box=True)
     t20 = (31.5, rear_setback_y(31.5) + 0.9)
     txt(ax, *t20, "20 FT REAR SETBACK LINE (CODE)", size=4.8, color=ACCENT, weight="bold", rot=m.REAR_ANGLE, z=12, box=True)
     t5 = (19.0, rear_setback_y(19.0, m.SB_REAR) + 1.0)
     txt(ax, *t5, "5 FT REAR LINE REQUESTED (VARIANCE)", size=4.6, color=BLUE, weight="bold", rot=m.REAR_ANGLE, z=12, box=True)
     txt(ax, 52.2, 11.4, "10 FT FRONT\nSETBACK", size=4.4, color=ACCENT, ha="left", box=True)
-    txt(ax, 45.0, -1.1, "5 FT SIDE", size=4.2, color=ACCENT, box=True)
     # setbacks, dimensioned square to each lot line
     dimb(ax, (9.3, 0), (9.3, m.YF), 0, ftin(m.YF), color=BLUE, ext=False)
     dimb(ax, (m.XE, 23.5), (50, 23.5), 0, ftin(YARD), color=BLUE, ext=False)
@@ -708,14 +707,14 @@ def sheet_c102(pdf):
     key(ax, 24.0, 2.6, 2)
     key(ax, 40.4, 7.0, 3)
     key(ax, 41.5, -3.4, 4, tip=(41.5, 1.6))
-    key(ax, -1.5, 24.0, 5, tip=(m.HP[0][0] - 0.3, m.HP[0][1] + 2.0))
-    key(ax, 7.8, 4.6, 6, tip=(12.6, 4.6))
+    key(ax, -4.6, 16.5, 5, tip=(m.HP[0][0] - 0.2, m.HP[0][1] - 0.6))
+    key(ax, 9.3, -3.6, 6, tip=(13.0, 1.6))
     key(ax, 53.6, 5.6, 7, tip=(45.3, 5.6))
     key(ax, 53.0, -3.4, 8, tip=(47.5, -1.7))
     key(ax, 28.0, 46.2, 9, tip=(27.6, rear_y(27.6)))
     for (wx, wy) in m.WATER_METERS:
         ax.add_patch(Circle((wx, wy), PIT_R, fc=PAPER, ec=WATER, lw=0.6, zorder=6))
-    north_arrow(ax, 52.5, 46.5, 2.9, 7)
+    north_arrow(ax, 52.5, -16.0, 2.9, 7)
     scale_bar(ax, -6, -22, 20, 5, 0.65)
     title(ax, "Site plan and zoning", "Brown x = existing ground (LiDAR) at the building corners · contours 1 ft, existing",
           dx=0.5, dy=1.4, clear=(33, 4.6))
@@ -836,13 +835,13 @@ def sheet_c103(pdf):
             "The banks beside the apron are graded 2:1.",
         ]),
     ])
-    view = (-8, -27, 59, 44)
+    view = (-8, -27, 59, 41)
     ax = frame(fig, view, 8.0, left=0.6)
     site_base(ax, cont="faint", clabels=False, street_label=None)
     txt(ax, -3.4, 30, "442 BAIRD ST", size=5.0, color=GREY, weight="bold", rot=83.5)
     txt(ax, 55.4, 22, "441 BAIRD ST", size=5.0, color=GREY, weight="bold", rot=90)
     poly(ax, m.OUT_U, fc="#f4f5f6", ec=GREY, lw=0.6, ls=(0, (4, 2)), z=2.5)
-    txt(ax, 21, 34.2, "Unit A floor over: slab on grade, not excavated", size=4.4, color=GREY, rot=m.REAR_ANGLE, z=6)
+    txt(ax, 22.5, 36.0, "Unit A floor over: slab on grade, not excavated", size=4.2, color=GREY, rot=m.REAR_ANGLE, z=6)
     site_work(ax)
     lower_plan(ax, "arch", cars=True, labels=False)
     for i, c in enumerate(car_c):
@@ -852,12 +851,11 @@ def sheet_c103(pdf):
     # trucks
     truck(ax, xa1, ya, 270, label="A  TRUCK FOR STALL 1")
     truck(ax, xa3, ya, 270, label="A  TRUCK FOR STALL 3")
-    truck(ax, 38.5, -14.0, 0, color=GREEN, fc="#e3f1e7", cab="#bfdcc8", label="B  TRUCK IN THE STREET")
+    truck(ax, 36.6, -14.0, 0, color=GREEN, fc="#e3f1e7", cab="#bfdcc8", label="B  TRUCK IN THE STREET")
     arrow(ax, (52.0, -20.3), (58.0, -20.3), color=GREEN, lw=1.0)
     txt(ax, 51.4, -20.3, "leave downhill (east)", size=4.8, color=GREEN, ha="right", box=True)
     for xt, cc in ((xa1, car_c[0]), (xa3, car_c[2])):
         line(ax, [(xt, ya), (cc, m.CAR_Y0)], color=AMBER, lw=0.9, ls=(0, (5, 2, 1, 2)), z=13)
-    line(ax, [(38.5, -14.0), (car_c[1], -1.0), (car_c[1], m.CAR_Y0)], color=GREEN, lw=0.9, ls=(0, (5, 2, 1, 2)), z=13)
     lead(ax, ((xa1 + car_c[0]) / 2, (ya + m.CAR_Y0) / 2), (1.5, 15.5), f"winch line\n{ang1:.0f}° off the\nstall axis", size=4.6, color=AMBER, ha="center")
     # dimensions
     dimb(ax, (m.OPEN[0], m.YF + 21.6), (m.OPEN[1], m.YF + 21.6), 0, f"{ftin(m.OPEN_W)} OPENING, NO DOORS", ext=False, color=BLUE, size=5.0)
@@ -867,27 +865,27 @@ def sheet_c103(pdf):
         line(ax, [(xx, 30.6), (xx, 34.4)], color=GREY, lw=0.3, z=8)
     dimb(ax, (neck_w - (m.WING_W[1][0] - (m.OPEN[0] + 1.5)), 0), (neck_e, 0), -24.6, f"{ftin(m.APRON_W_ROW)} AT THE R.O.W. LINE", color=BLUE, side=-1, size=5.0)
     dimb(ax, (m.OPEN[0] - 0.5, PAVE_N), (m.OPEN[1] + 0.5, PAVE_N), -16.2, f"{ftin(m.OPEN_W + 1.0)} AT THE PAVEMENT", color=BLUE, side=-1, size=5.0)
-    xd = 44.6
+    xd = -4.2
     dimb(ax, (xd, 0), (xd, m.YF), 0, ftin(m.YF), ext=False, size=4.6, side=-1)
     dimb(ax, (xd, PAVE_N), (xd, 0), 0, ftin(-PAVE_N), ext=False, size=4.6, side=-1)
     dimb(ax, (xd, PAVE_S), (xd, PAVE_N), 0, f"±{ftin(PAVE_N - PAVE_S)} LANE", ext=False, size=4.6, side=-1)
     for yy in (m.YF, 0, PAVE_N, PAVE_S):
-        line(ax, [(xd - 6.5, yy), (xd + 1.0, yy)], color=GREY, lw=0.3, z=8)
+        line(ax, [(xd - 0.8, yy), (xd + 2.6, yy)], color=GREY, lw=0.3, z=8)
     # apron levels and slopes
     for (name, xo, xp, zs, sl) in APRON_SLOPE:
         spot(ax, xp, PAVE_N, 0.5 if name != "East edge" else -0.5, -1.2, color=BLUE, val=zs, size=4.6, z=14)
-    spot(ax, 24.3, m.YF - 0.05, 0.6, 1.0, color=BLUE, val=m.EL_GAR, size=4.6, pre="EL ", z=14)
+    spot(ax, 19.4, m.YF - 0.05, 0.5, 1.0, color=BLUE, val=m.EL_GAR, size=4.6, pre="EL ", z=14)
     key(ax, 5.0, 6.3, 1, tip=(m.WING_W[1][0] - 0.3, 2.5))
     key(ax, 5.0, 11.2, 2, tip=(m.OPEN[0] - 0.4, m.YF + 0.5))
     key(ax, m.COL_X[1], 6.4, 3, tip=(m.COL_X[1], m.YF + 0.1))
     key(ax, 49.5, 12.5, 4, tip=(41.0, m.YF + 0.3))
     key(ax, 49.5, 2.0, 5, tip=(41.4, 1.9))
-    key(ax, 3.2, -3.6, 6, tip=(9.6, -3.6))
-    key(ax, 24.3, m.YF - 0.6 + 1.9, 7, tip=(22.6, m.YF - 0.6))
-    txt(ax, 14, -23.4, "B A I R D   S T R E E T", size=7.6, weight="bold", color=GREY, z=6, box=True)
-    txt(ax, 14, -25.3, "one lane · falls 11.4 % to the east", size=5.0, color=GREY, z=6, box=True)
-    north_arrow(ax, 53.5, 38.5, 2.9, 7)
-    scale_bar(ax, 36, -25.2, 20, 5, 0.65)
+    key(ax, 5.2, -3.6, 6, tip=(10.4, -3.6))
+    key(ax, 24.3, 7.7, 7, tip=(24.3, m.YF - 0.6))
+    txt(ax, 4.6, -12.4, "BAIRD STREET", size=7.0, weight="bold", color=GREY, z=6)
+    txt(ax, 4.6, -14.3, "one lane · falls 11.4 %\nto the east", size=4.8, color=GREY, z=6, va="top")
+    north_arrow(ax, 54.4, 35.4, 2.6, 6.5)
+    scale_bar(ax, 37, -25.2, 20, 5, 0.65)
     title(ax, "Garage level: vehicle access and towing plan", "Amber = truck on the apron (position A) · green = truck in the street (position B)",
           dx=0.5, dy=1.4, clear=(42, 4.4))
 

@@ -128,32 +128,44 @@ def ddim(ax, p0, p1, off, label, size=5.0, **kw):
     dim(ax, p0, p1, off, label, size=size, **kw)
 
 
-def callouts(ax, xt, ytop, items, fs=5.4, gap=0.45, ha="left", land=0.9, color=INK):
-    """Stack of leader notes. items: [((x, y) anchor or None, text)]. Returns the y below the last note."""
+def callouts(ax, xt, ytop, items, fs=5.4, gap=0.45, ha="left", land=0.9, color=INK, align=False, ybot=None):
+    """Stack of leader notes. items: [((x, y) anchor or None, text)]. With align=True each note sits level with
+    its anchor where there is room; ybot keeps the stack above that line. Returns the y below the last note."""
     k = ax.fpi / UPI
     lh = fs * 1.2 / 72 * ax.fpi
-    y = ytop
+    hs = [(t.count("\n") + 1) * lh for _, t in items]
+    ys, y = [], ytop
+    for (pt, t), h in zip(items, hs):
+        if align and pt is not None:
+            y = min(y, pt[1] + 0.55 * lh)
+        ys.append(y)
+        y -= h + gap * k
+    if ybot is not None:
+        lim = ybot
+        for i in reversed(range(len(items))):
+            if ys[i] - hs[i] < lim:
+                ys[i] = lim + hs[i]
+            lim = ys[i] + gap * k
     s = -1 if ha == "left" else 1
-    for pt, t in items:
+    for (pt, t), y in zip(items, ys):
         txt(ax, xt, y, t, size=fs, ha=ha, va="top", color=color)
         if pt is not None:
             ym = y - 0.52 * fs / 72 * ax.fpi
             x1 = xt + s * 0.3 * k
             line(ax, [pt, (x1 + s * land * k, ym), (x1, ym)], lw=0.35, color=color, z=8)
             ax.add_patch(Circle(pt, 0.16 * k, fc=color, ec="none", zorder=8))
-        y -= (t.count("\n") + 1) * lh + gap * k
-    return y
+    return ys[-1] - hs[-1] - gap * k
 
 
 def dtitle(ax, x, y, tag, title, sub=None, color=INK):
     """Detail title: coloured tag box + name + grey sub-line. (x, y) = top-left, in axes units."""
     k = ax.fpi / UPI
     w = (0.6 + 0.62 * len(tag)) * k
-    ax.add_patch(Rectangle((x, y - 1.35 * k), w, 1.35 * k, fc=color, ec="none", zorder=9))
-    txt(ax, x + w / 2, y - 0.7 * k, tag, size=6.8, color=PAPER, weight="bold", z=10)
+    ax.add_patch(Rectangle((x, y - 1.5 * k), w, 1.5 * k, fc=color, ec="none", zorder=9))
+    txt(ax, x + w / 2, y - 0.78 * k, tag, size=6.8, color=PAPER, weight="bold", z=10)
     txt(ax, x + w + 0.5 * k, y - 0.04 * k, title.upper(), size=6.6, weight="bold", ha="left", va="top")
     if sub:
-        txt(ax, x + w + 0.5 * k, y - 0.82 * k, sub, size=4.8, color=GREY, ha="left", va="top")
+        txt(ax, x + w + 0.5 * k, y - 1.0 * k, sub, size=4.8, color=GREY, ha="left", va="top")
 
 
 def wall_slice(ax, x0, y0, L, layers, studs=(2.0, 18.0), fill="batt"):
@@ -239,8 +251,14 @@ def wall_type(i):
     return "W2"
 
 
+def wtag(ax, x, y, t):
+    ax.text(x, y, t, fontsize=4.6, fontweight="bold", color=WCOL[t], ha="center", va="center", zorder=12,
+            bbox=dict(fc=PAPER, ec=WCOL[t], lw=0.4, pad=0.7))
+
+
 # where each partition's tag sits on the key plan: partition index -> (x, y) ft
-TAG_AT = {}
+TAG_AT = {0: (15.0, 20.2), 1: (31.0, 20.2), 2: (14.0, 28.1), 3: (18.0, 13.6), 4: (18.0, 36.0), 5: (13.9, 22.6),
+          11: (28.1, 24.6), 12: (29.2, 29.3), 14: (35.5, 15.5), 15: (41.0, 22.9), 17: (22.6, 38.7)}
 
 
 def key_plan_walls(fig, left, bottom):
@@ -273,8 +291,12 @@ def key_plan_walls(fig, left, bottom):
         if i not in TAG_AT:
             continue
         x, y = TAG_AT[i]
-        txt(ax, x, y, t, size=4.6, weight="bold", color=WCOL[t], z=12,
-            bbox=dict(fc=PAPER, ec=WCOL[t], lw=0.4, pad=0.7))
+        wtag(ax, x, y, t)
+        if t == "W2F":
+            line(ax, [(x, y - 0.6), ((x0 + x1) / 2, y1)], lw=0.35, color=WCOL[t], z=11)
+    wtag(ax, 26.5, 37.9, "W1")
+    wtag(ax, 20.0, 9.3, "W1")
+    wtag(ax, 42.4, 12.0, "W1X")
     return ax, types
 
 
@@ -329,7 +351,7 @@ def sheet_a501(pdf):
     ax, types = key_plan_walls(fig, PX, PY)
     txt(ax, 13.0, 41.75, "KEY PLAN: WALL TYPES", size=8.0, weight="bold", ha="left", va="bottom")
     txt(ax, 13.0, 41.6, "Units A and B (same plan) · 1/8\" = 1'-0\"", size=5.0, color=GREY, ha="left", va="top")
-    north_arrow(ax, 8.0, 8.3, 1.2, 5.0)
+    north_arrow(ax, 7.5, 7.5, 1.0, 4.8)
     leg = [("W1", "Exterior wall, 2x6, R-20"),
            ("W1X", "W1 with 5/8 Type X inside (stair)"),
            ("W2", "2x4 partition, empty cavity"),
@@ -425,11 +447,11 @@ def sheet_a501(pdf):
 
     # F2
     tot = 0.25 + 0.75 + m.TRUSS_B * 12 + 0.5 + 1.25
-    h_in = (2.3 + 1.3 + tot + 1.4) / UPI
+    h_in = (2.5 + 1.3 + tot + 1.9) / UPI
     fx = dax(fig, CX, 10.45 - h_in, CW, h_in)
     top = h_in * UPI
     dtitle(fx, 0, top, "F2", "1-hour floor between the flats", "Cut along a truss · 1 1/2\" = 1'-0\"", WCOL["F2"])
-    y0 = 1.4
+    y0 = 1.9
     b = [(y0, y0 + 0.625), (y0 + 0.625, y0 + 1.25), (y0 + 1.25, y0 + 1.75)]
     yt0 = y0 + 1.75
     mat(fx, B(SX, b[0][0], SX + SL, b[0][1]), "gypx")
@@ -443,9 +465,8 @@ def sheet_a501(pdf):
     mat(fx, B(SX, ytt + 0.75, SX + SL, ytt + 1.0), "floor")
     ddim(fx, (SX, yt0), (SX, ytt), 0.9, inch(m.TRUSS_B * 12))
     ddim(fx, (SX, y0), (SX, ytt + 1.0), 2.0, inch(tot))
-    ddim(fx, (SX + 1.5, yt0 - 0.5), (SX + 17.5, yt0 - 0.5), 2.3 - 5.6, "16\"", size=4.8)
+    ddim(fx, (SX + 1.5, y0), (SX + 17.5, y0), -1.2, "16\" o.c.", size=4.8)
     txt(fx, SX + SL / 2, ytt + 1.75, "UNIT B", size=5.4, weight="bold", color=GREY)
-    txt(fx, SX + SL / 2, 0.55, f"UNIT A · ceiling {ftin(m.CLG_A)} less 1/2\" for the channels", size=4.6, color=GREY)
     xa = SX + SL - 1.2
     callouts(fx, ST, ytt + 1.2, [
         ((xa, ytt + 0.88), "LVP on acoustic underlay\n(A-601)"),
@@ -455,18 +476,19 @@ def sheet_a501(pdf):
         ((SX + 17.9, yt0 - 0.25), "Resilient channels across\nthe trusses @ 16 in. o.c.\nmax.; screws must miss\nthe trusses"),
         ((xa, mid(b[0]) + 0.3), "Two layers 5/8 in. Type X\ngypsum, joints staggered,\nface layer taped"),
         (None, "1-hour, generic designs:\nUL L521 / L528 family.\nArchitect confirms the\nlisting; build exactly to it"),
-    ], fs=5.3, gap=0.5)
+        (None, f"Unit A ceiling below:\n{ftin(m.CLG_A)} less 1/2 in. for\nthe channels"),
+    ], fs=5.3, gap=0.7, align=True, ybot=0.2)
 
     # F3
     yF2 = 10.45 - h_in
-    depth = 0.25 + 5.0 + RIGID_R10 + 4.0 + 2.5
-    h_in = (2.3 + 3.6 + depth + 3.3) / UPI
-    sx = dax(fig, CX, yF2 - 0.12 - h_in, CW, h_in)
+    depth = 0.25 + 5.0 + RIGID_R10 + 4.0 + 2.0
+    h_in = (2.5 + 3.3 + depth + 3.0) / UPI
+    sx = dax(fig, CX, yF2 - 0.08 - h_in, CW, h_in)
     top = h_in * UPI
     dtitle(sx, 0, top, "F3", "Unit A slab on grade (rear)", "Section at the stem wall · 1 1/2\" = 1'-0\"", WCOL["F3"])
-    yS = top - 2.3 - 3.6                    # top of slab
+    yS = top - 2.5 - 3.3                    # top of slab
     xw1, xf1, xr = SX + m.CMU * 12, SX + m.CMU * 12 + RIGID_R10, SX + SL
-    ybot = yS - (5.0 + RIGID_R10 + 4.0 + 2.5)
+    ybot = yS - (5.0 + RIGID_R10 + 4.0 + 2.0)
     mat(sx, B(SX, ybot, xw1, yS), "conc")                                    # stem wall
     mat(sx, B(xw1, yS - 5.0 - RIGID_R10, xf1, yS), "rigid")                  # edge strip
     mat(sx, B(xf1, yS - 5.0, xr, yS), "conc")                                # slab
@@ -477,31 +499,31 @@ def sheet_a501(pdf):
     mat(sx, B(SX + m.EXT * 12, yS, xr, yS + 0.25), "floor")
     # W1 above (sill plate, sheathing, gypsum)
     cut_wood(sx, SX + osb_t, yS, SX + osb_t + 5.5, yS + 1.5)
-    mat(sx, B(SX, yS, SX + osb_t, yS + 3.4), "osb")
-    cavity(sx, SX + osb_t, yS + 1.5, SX + osb_t + 5.5, yS + 3.4, "batt")
-    mat(sx, B(SX + 6.0, yS + 0.25, SX + 6.5, yS + 3.4), "gyp")
-    txt(sx, SX + 3.2, yS + 4.1, "W1", size=5.0, weight="bold", color=WCOL["W1"])
-    txt(sx, SX + 14.0, yS + 1.6, "UNIT A", size=5.4, weight="bold", color=GREY)
+    mat(sx, B(SX, yS, SX + osb_t, yS + 3.0), "osb")
+    mat(sx, B(SX + osb_t, yS + 1.5, SX + osb_t + 5.5, yS + 3.0), "batt")
+    mat(sx, B(SX + 6.0, yS + 0.25, SX + 6.5, yS + 3.0), "gyp")
+    txt(sx, SX + 7.3, yS + 2.2, "W1 above", size=5.0, weight="bold", color=WCOL["W1"], ha="left")
+    txt(sx, SX + 15.5, yS + 1.1, "UNIT A", size=5.4, weight="bold", color=GREY)
     ddim(sx, (SX, ybot), (xw1, ybot), -1.0, inch(m.CMU * 12), size=4.8)
     ddim(sx, (SX, yS - 5.0), (SX, yS), 1.0, "5\"", size=4.8)
     xa = xr - 1.2
-    callouts(sx, ST, yS + 2.9, [
+    callouts(sx, ST, yS + 2.6, [
         ((xa, yS + 0.12), "LVP floor finish"),
         ((xa - 1.0, yS - 2.2), "5 in. concrete slab\n(S-103)"),
         ((xa - 2.2, yS - 5.0), "15-mil vapour barrier,\nseams taped"),
         ((xa - 3.4, yS - 6.0), "2 in. rigid foam, R-10,\nunder the whole slab"),
         ((xa - 1.0, yS - 9.0), "4 in. washed stone on\ncompacted subgrade"),
-    ], fs=5.3, gap=0.4)
+    ], fs=5.3, gap=0.4, align=True, ybot=ybot - 0.2)
     callouts(sx, SX + 11.5, ybot - 0.55, [
         (((xw1 + xf1) / 2, yS - 6.0), "R-10 edge strip, full slab depth. Stem wall (S-101):\nwhere it rises above the floor (rear-west corner),\nline it inside like W5, R-15"),
     ], fs=5.0, ha="left", land=0.0)
 
     # W5
-    yF3 = yF2 - 0.12 - h_in
-    layers = [(0.5, "gyp"), (0.75, "furr"), (RIGID_R15, "rigid"), (m.CONC * 12, "conc"), (0.18, "membrane"), (0.5, "board"), (3.0, "stone")]
+    yF3 = yF2 - 0.08 - h_in
+    layers = [(0.5, "gyp"), (0.75, "furr"), (RIGID_R15, "rigid"), (m.CONC * 12, "conc"), (0.18, "membrane"), (0.5, "board"), (2.0, "stone")]
     tot = sum(t for t, _ in layers)
-    h_in = (2.3 + 0.4 + tot + 1.5) / UPI
-    cx = dax(fig, CX, yF3 - 0.12 - h_in, CW, h_in)
+    h_in = (2.5 + 0.4 + tot + 1.5) / UPI
+    cx = dax(fig, CX, yF3 - 0.08 - h_in, CW, h_in)
     top = h_in * UPI
     dtitle(cx, 0, top, "W5", "Concrete retaining wall", "Plan cut · soil at the top · 1 1/2\" = 1'-0\"", WCOL["W5"])
     yb = 1.5
@@ -517,14 +539,14 @@ def sheet_a501(pdf):
         ((xa, mid(b[3])), "12 in. concrete wall,\nwest, north and east\n(S-102)"),
         ((xa - 1.0, mid(b[2])), "UTILITY ROOM ONLY:\n2 1/2 in. rigid foam,\nR-15 min., joints taped"),
         ((SX + 17.5, mid(b[1])), "1x3 furring @ 16 in. and\n1/2 in. moisture-resistant\ngypsum. Open garage\nside: bare concrete"),
-    ], fs=5.3, gap=0.38)
+    ], fs=5.3, gap=0.38, align=True, ybot=0.1)
 
     # ---------------- right column: R1, F1, energy table, air sealing ----------------
     RX = 9.7
     roof_eave(fig, RX, 7.25, CW, 3.2, eave_face)
 
     tot = 0.25 + 0.75 + m.TRUSS_A * 12 + 0.625
-    h_in = (2.3 + 1.3 + tot + 1.4) / UPI
+    h_in = (2.5 + 1.3 + tot + 1.4) / UPI
     gx = dax(fig, RX, 7.1 - h_in, CW, h_in)
     top = h_in * UPI
     dtitle(gx, 0, top, "F1", "Garage ceiling / Unit A floor", "Cut along a truss · 1 1/2\" = 1'-0\"", WCOL["F1"])
@@ -552,7 +574,7 @@ def sheet_a501(pdf):
         ((SX + 15.36, yt0 + 15.6), "Water, drain and other\nlines stay ABOVE the\ninsulation, on the warm\nside. Nothing below it"),
         ((xa - 1.5, yt0 + 6.5), "R-30 batts laid on the\nceiling board; R-20 on\nthe rim, full depth"),
         ((xa, y0 + 0.31), "5/8 in. Type X gypsum,\nscrews 6 in. o.c., taped\nand painted (IRC R302.6)"),
-    ], fs=5.3, gap=0.42)
+    ], fs=5.3, gap=0.42, align=True, ybot=0.2)
 
     # energy table + air-sealing notes
     yF1 = 7.1 - h_in
@@ -638,7 +660,7 @@ def roof_eave(fig, left, bottom, w_in, h_in, eave_face):
     ddim(ax, (0, 0), (0, heel), -9.2, f"{inch(heel)} heel", size=4.8)
     ddim(ax, (-EAVE_REAR, ys - 0.95), (0, ys - 0.95), -1.5, inch(EAVE_REAR), size=4.8)
     # pitch mark
-    xa, ya = 12.0, yt(12.0) + 2.0
+    xa, ya = 13.0, yt(19.0) + 1.6
     line(ax, [(xa, ya), (xa + 6, ya), (xa + 6, ya + 2), (xa, ya)], lw=0.5, z=7)
     txt(ax, xa + 3, ya - 0.7, "12", size=4.6)
     txt(ax, xa + 6.8, ya + 1.0, f"{p * 12:.0f}", size=4.6)
@@ -646,9 +668,9 @@ def roof_eave(fig, left, bottom, w_in, h_in, eave_face):
     txt(ax, 14.6, 9.4, f"R-49 BLOWN INSULATION\nabout {R49_T:.0f} in. deep", size=5.0, weight="bold", box=True, z=9)
     txt(ax, 15.2, -6.2, "UNIT B", size=5.4, weight="bold", color=GREY)
     callouts(ax, -5.4, top - 3.1, [
-        ((-2.0, yt(-2.0) + 0.75), "Asphalt shingles, synthetic underlay,\nice barrier at the eave (A-105)"),
-        ((1.5, yt(1.5) + 0.25), "7/16 in. OSB with H-clips (S-203)"),
-        ((5.0, yt(5.0) - dv / 2), "Roof trusses @ 24 in. o.c. (S-203)"),
+        ((7.0, yt(7.0) + 0.75), "Asphalt shingles, synthetic underlay,\nice barrier at the eave (A-105)"),
+        ((3.0, yt(3.0) + 0.25), "7/16 in. OSB with H-clips (S-203)"),
+        ((-5.0, yt(-5.0) - dv / 2), "Roof trusses @ 24 in. o.c. (S-203)"),
         ((xo - 2.5, ye - 0.6), "Drip edge, fascia, gutter (A-105)"),
     ], fs=5.1, gap=0.5, ha="right", land=0.8)
     callouts(ax, -20.8, ys - 4.2, [
@@ -666,6 +688,22 @@ def roof_eave(fig, left, bottom, w_in, h_in, eave_face):
 # ----------------------------------------------------------------------------
 # A-601
 # ----------------------------------------------------------------------------
+def opening_tags(ax):
+    """Door tags (circles) and window tags (diamonds), placed as plans.draw_door / draw_window place them."""
+    for d in m.DOORS:
+        x0, y0, x1, y1 = m.door_cut(d)
+        (hx, hy), (ax_, ay_), (sx, sy) = m.door_hinge(d)
+        cx, cy = (x0 + x1) / 2 - sx * 0.95, (y0 + y1) / 2 - sy * 0.95
+        ax.add_patch(Circle((cx, cy), 0.62, fc=PAPER, ec=INK, lw=0.5, zorder=10))
+        txt(ax, cx, cy, d["tag"], size=4.4, weight="bold", z=11)
+    for (tag, w_, s0, s1, note) in m.WINDOWS:
+        q = m.win_quad(w_, s0, s1)
+        ox, oy = {"S": (0, -1.25), "N": (0.38, 1.25), "E": (1.5, 0), "W": (-1.5, 0)}[w_]
+        cx, cy = (q[0][0] + q[1][0]) / 2 + ox, (q[0][1] + q[1][1]) / 2 + oy
+        poly(ax, [(cx - 0.95, cy), (cx, cy + 0.62), (cx + 0.95, cy), (cx, cy - 0.62)], fc=PAPER, ec=INK, lw=0.5, z=10)
+        txt(ax, cx, cy, tag, size=4.4, weight="bold", z=11)
+
+
 def door_rows():
     rows = [["TAG", "LOCATION", "W x H", "TYPE", "DOOR", "HARDWARE"]]
     h = ftin(DOOR_H)
@@ -674,7 +712,7 @@ def door_rows():
         w = ftin(round(d["w"] * 12) / 12)
         low = d["note"].lower()
         if "20-min" in low:
-            door_, hw = "Solid core, 20-min. rated", "Closer, keyed lever, deadbolt"
+            door_, hw = "Solid core, 20-min. rated", "Closer, keyed, deadbolt"
         elif "glass" in low:
             door_, hw = "Full-glass insulated, tempered", "Keyed lever, deadbolt"
         elif d["kind"] == "bifold":
@@ -761,38 +799,46 @@ def sheet_a601(pdf):
         ]),
     ]
     fig, bg = new_sheet("A-601", TITLE["A-601"], "3/16\" = 1'-0\"", notes)
+    for t in bg.texts:                       # the title is longer than the title block at the standard size
+        if t.get_text() == TITLE["A-601"].upper():
+            t.set_fontsize(8.8)
 
     # ---------------- key plan ----------------
     vx, vy = (5.0, 46.0), (5.8, 42.3)
     ax = plan_axes(fig, 0.5, 3.62, vx, vy, FPI)
-    unit_plan(ax, "arch", "A", furniture=False, labels=False, tags=True)
+    unit_plan(ax, "arch", "A", furniture=False, labels=False, tags=False)
+    opening_tags(ax)
     for k, (x, y) in ROOM_LABELS.items():
         rot = 90 if k.startswith("BATH") or k == "HALL" else 0
-        name = k.replace("LIVING / KITCHEN", "LIVING / KITCHEN").replace("CLOSET ", "CL ")
+        name = k.replace("CLOSET ", "CL ")
+        if k == "CLOSET 1":                  # keep clear of door tags D8 and D9
+            x, y = (m.CL_X0 + m.CL_X1) / 2, m.CL_Y - 0.42
+        if k == "CLOSET 2":
+            x, y = (m.CL_X0 + m.CL_X1) / 2, m.CL_Y + m.PART + 0.42
         txt(ax, x, y, name, size=4.8, color=GREY, rot=rot, z=8)
     txt(ax, (m.SHAFT_U[0] + m.SHAFT_U[1]) / 2, 12.2, "COMMON\nSTAIR", size=4.6, color=GREY)
     txt(ax, 28.0, 8.0, "PORCH", size=4.8, color=GREY)
     txt(ax, 31.0, 41.9, "KEY PLAN: DOOR AND WINDOW TAGS", size=8.5, weight="bold", ha="left", va="bottom")
     txt(ax, 31.0, 41.75, "Unit A shown; Unit B is the same · 3/16\" = 1'-0\"", size=5.4, color=GREY, ha="left", va="top")
-    ax.add_patch(Circle((31.6, 39.9), 0.46, fc=PAPER, ec=INK, lw=0.4, zorder=10))
-    txt(ax, 31.6, 39.9, "1", size=3.8, z=11)
-    txt(ax, 32.5, 39.9, "Door tag: D1 to D14, see the door schedule", size=5.2, ha="left")
-    poly(ax, [(31.6 - 0.62, 38.7), (31.6, 39.2), (31.6 + 0.62, 38.7), (31.6, 38.2)], fc=PAPER, ec=INK, lw=0.4, z=10)
-    txt(ax, 31.6, 38.7, "1", size=3.8, z=11)
-    txt(ax, 32.5, 38.7, "Window tag: W1 to W5, see the window schedule", size=5.2, ha="left")
-    txt(ax, 32.5, 37.5, "G1, G2: garage-level doors, see A-101", size=5.2, ha="left")
-    north_arrow(ax, 7.6, 8.3, 1.3, 5.5)
-    scale_bar(ax, 7.2, 40.6, 8, 4, 0.36, size=4.8)
+    ax.add_patch(Circle((31.9, 39.9), 0.62, fc=PAPER, ec=INK, lw=0.5, zorder=10))
+    txt(ax, 31.9, 39.9, "D1", size=4.4, weight="bold", z=11)
+    txt(ax, 33.2, 39.9, "Door tag, see the door schedule", size=5.4, ha="left")
+    poly(ax, [(31.9 - 0.95, 38.4), (31.9, 39.02), (31.9 + 0.95, 38.4), (31.9, 37.78)], fc=PAPER, ec=INK, lw=0.5, z=10)
+    txt(ax, 31.9, 38.4, "W1", size=4.4, weight="bold", z=11)
+    txt(ax, 33.2, 38.4, "Window tag, see the window schedule", size=5.4, ha="left")
+    txt(ax, 33.2, 37.2, "G1, G2: garage-level doors, see A-101", size=5.4, ha="left")
+    north_arrow(ax, 43.9, 35.0, 1.2, 5.5)
+    scale_bar(ax, 32.0, 35.6, 8, 4, 0.36, size=4.8)
 
     # ---------------- schedules, right column ----------------
     TX = 8.4
-    yb = tbl(fig, bg, TX, 10.22, [0.34, 1.26, 0.78, 0.44, 1.38, 1.0], door_rows(), fs=5.8, rh=0.172,
+    yb = tbl(fig, bg, TX, 10.22, [0.34, 1.2, 0.78, 0.44, 1.38, 1.06], door_rows(), fs=6.0, rh=0.176,
              title="DOOR SCHEDULE", sub=f"all doors {ftin(DOOR_H)} high")
     yb = note_lines(bg, TX, yb - 0.06, [
         f"D1 to D{len(m.DOORS)} occur in each flat ({2 * len(m.DOORS)} doors in all). G1 and G2 occur once, at the garage level (A-101).",
         "Transfer grilles over the bedroom doors and the return grille at D12 are on M-102 and M-103.",
     ], fs=5.4)
-    yb = tbl(fig, bg, TX, yb - 0.3, [0.34, 0.54, 0.4, 0.8, 0.74, 0.62, 1.76], window_rows(), fs=5.8, rh=0.172,
+    yb = tbl(fig, bg, TX, yb - 0.3, [0.34, 0.54, 0.4, 0.8, 0.74, 0.62, 1.76], window_rows(), fs=6.0, rh=0.176,
              title="WINDOW SCHEDULE", sub="frame sizes; rough openings by the window maker")
     yb = note_lines(bg, TX, yb - 0.06, [
         "1. Escape windows (IRC R310): 5.7 sf clear opening, 20 in. min. clear width, 24 in. min. clear height,",
@@ -800,14 +846,14 @@ def sheet_a601(pdf):
         "    clear-opening table before ordering.",
         "2. W3 is in the common stair, one at each flat level. Its sill height is set on the elevations.",
     ], fs=5.4)
-    yb = tbl(fig, bg, TX, yb - 0.3, [0.98, 0.52, 0.4, 3.3], fixture_rows(), fs=5.6, rh=0.172,
+    yb = tbl(fig, bg, TX, yb - 0.3, [0.98, 0.52, 0.4, 3.3], fixture_rows(), fs=5.8, rh=0.176,
              title="FIXTURE AND APPLIANCE SCHEDULE", sub="all electric, no gas")
     note_lines(bg, TX, yb - 0.06, [
         "Each flat has its own of everything in this table. Circuits: E-201. Piping: P-201. Equipment: M-201.",
     ], fs=5.4)
 
     # ---------------- room finish schedule, under the plan ----------------
-    yb = tbl(fig, bg, 0.5, 3.3, [1.32, 1.72, 0.74, 1.5, 1.32, 1.1], finish_rows(), fs=5.8, rh=0.185,
+    yb = tbl(fig, bg, 0.5, 3.3, [1.32, 1.72, 0.74, 1.5, 1.32, 1.1], finish_rows(), fs=6.0, rh=0.185,
              title="ROOM FINISH SCHEDULE", sub="both flats unless noted")
     note_lines(bg, 0.5, yb - 0.06, [
         "LVP = luxury vinyl plank, 12-mil wear layer min. MR = moisture-resistant gypsum board. Baths: caulk the floor edge to the tub and the base.",
