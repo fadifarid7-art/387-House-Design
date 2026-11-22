@@ -88,7 +88,7 @@ def chain(ax, pts, off, labels=None, size=4.8, color=INK, side=1, box=False, stu
         if d < 1e-4:
             continue
         lab = labels[i] if labels and labels[i] is not None else fi(d)
-        need = (len(lab) * size * 0.50 / 72) * fpi if min_len is None else min_len
+        need = max((len(lab) * size * 0.50 / 72) * fpi, 1.0) if min_len is None else min_len
         show = lab if (d >= need or (labels and labels[i] is not None)) else ""
         D(ax, p, q, off, show, size=size, color=color, ext=False, side=side, box=box and bool(show))
     s = 1 if off > 0 else -1
@@ -1052,7 +1052,7 @@ def bath_view(fig, bg, i, left, bottom, xlim, ylim):
                   f"1/2\" = 1'-0\" · {fi(bx1 - bx0)} x {fi(by1 - by0)} clear · {m.area(name):.0f} sf")
     poly(ax, list(m.door_sector(door).exterior.coords)[:-1], fc=SWING, ec="none", z=4.4, alpha=0.9)
     yf = cy - m.WC_D
-    S = dict(size=5.0)
+    S = dict(size=5.0, min_len=0.12)
     # toilet centre line and its clearance box
     line(ax, [(cx, cy + 0.25), (cx, yf - 2.0)], color=BLUE, lw=0.5, ls=(0, (8, 2, 2, 2)), z=7.5)
     rect(ax, cx - m.WC_W / 2, yf - 1.75, cx + m.WC_W / 2, cy, fc="none", ec=BLUE, lw=0.6, ls=(0, (3, 2)), z=7.4)
@@ -1072,9 +1072,11 @@ def bath_view(fig, bg, i, left, bottom, xlim, ylim):
         chain(ax, [(bx0, yn), (lx, yn), (cx, yn), (tub[0], yn), (bx1, yn)][:n], 0.38, labels=labs[:n - 1], **S)
     # toilet: clear in front, 15 in. each side
     front_to = lav[3] if i == 1 else by0
-    xf = cx + 0.62 if i != 1 else lav[2] - 0.3
-    D(ax, (xf, front_to), (xf, yf), 0, f"{fi(yf - front_to)} CLEAR", ext=False, size=4.6, color=BLUE, side=-1 if i != 1 else 1)
-    txt(ax, cx - 0.4, yf - 1.75 + 0.14, "30 x 21 in. MIN. CLEAR", size=4.2, color=BLUE, z=9.5, box=True)
+    xf = cx + 0.62
+    D(ax, (xf, front_to), (xf, yf), 0, f"{fi(yf - front_to)} CLEAR", ext=False, size=4.6, color=BLUE, side=-1)
+    if i == 1:
+        line(ax, [(lav[2], front_to), (xf + 0.15, front_to)], color=BLUE, lw=0.3, z=8)
+    txt(ax, cx - 0.4, yf - 1.75 + (0.14 if i != 1 else 0.42), "30 x 21 in. MIN. CLEAR", size=4.2, color=BLUE, z=9.5, box=True)
     txt(ax, cx + 0.07, cy + 0.2, "CL", size=4.2, color=BLUE, ha="left", z=9.5)
     # tub alcove
     xc = (tub[0] + tub[2]) / 2
@@ -1158,7 +1160,7 @@ def sheet_a401(pdf):
     for d in m.DOORS:
         if d["tag"] in ("D2", "D14"):
             poly(ax, list(m.door_sector(d).exterior.coords)[:-1], fc=SWING, ec="none", z=4.4, alpha=0.9)
-    S = dict(size=5.0)
+    S = dict(size=5.0, min_len=0.12)
     kx = m.KIT_BASE[2]
     # west wall run
     xr_ = m.FRIDGE[2] + 0.35
@@ -1184,7 +1186,7 @@ def sheet_a401(pdf):
     yi = m.ISLAND[1]
     chain(ax, [(m.ISLAND[0], yi), (m.ISLAND[2], yi), (m.ISLAND_TOP[2], yi)], -0.42, side=-1,
           labels=[fi(m.ISLAND[2] - m.ISLAND[0]) + " CABINET", inch(m.ISLAND_TOP[2] - m.ISLAND[2]) + " OVERHANG"], **S)
-    D(ax, (m.ISLAND_TOP[2], m.ISLAND[1]), (m.ISLAND_TOP[2], m.ISLAND[3]), -2.5, fi(m.ISLAND[3] - m.ISLAND[1]) + " ISLAND TOP", side=-1, **S)
+    D(ax, (m.ISLAND_TOP[2], m.ISLAND[1]), (m.ISLAND_TOP[2], m.ISLAND[3]), -2.5, fi(m.ISLAND[3] - m.ISLAND[1]) + " ISLAND TOP", side=-1, size=5.0)
     xs_ = m.STOOLS[0][0] + 0.85
     chain(ax, [(xs_, sy) for (sx, sy) in m.STOOLS], 0.0, ends=False, side=-1, size=4.4,
           labels=[inch(m.STOOLS[1][1] - m.STOOLS[0][1])] * 2)
