@@ -352,6 +352,9 @@ GEN = ["Scope: full gut; all heating, cooling, ductwork, exhaust and venting are
        "ducted in 6 in. metal in the upper flat; recirculating in the lower (inside wall) and middle (window within 3 ft) flats; 300 CFM or less.",
        "Venting: each furnace and water heater has 2 in. or 3 in. PVC exhaust and intake (sizes per the instructions) up the old chimney chase to a roof "
        "termination (lower level: the 2x6 pipe wall between bath 1 and the laundry); condensate to an indirect drain with a neutraliser, or a pump (plumbing).",
+       "Insulation the loads depend on (build at least this): outside walls R-15, attic slopes R-38 closed-cell foam (fur the rafters if they are under 6 in.), "
+       "knee walls R-30, ceilings under the eaves R-49, all air-sealed. Upper flat: one thermostat for two floors; the attic branch dampers have a summer "
+       "setting (M-003) that keeps the attic within about 1 F of the main floor (M-002); set at the spring and fall service.",
        "Refrigerant line sets: insulated copper, sizes on M-003, down the chase. " + TBD,
        "Thermostats: one per flat, programmable, 5 ft up on an inside wall as drawn, 2 ft or more from any grille, away from sun, the kitchen and door swings. "
        "Start-up: set each register to its CFM on M-003 (balancing report), check the refrigerant charge, gas pressure and temperature rise."]
@@ -425,8 +428,8 @@ def loads_sheet(pdf):
             ["Infiltration (after air sealing)", f"{mq.ACH_H} ACH winter, {mq.ACH_C} ACH summer"], ["People", "1 per bedroom + 1; 230 Btu/h sensible, 200 latent"]]
     table(bg, .5, y, [1.6, 2.4], cond, fs=5.0, rh=.15)
     env = [["Assumed after the gut", "U", "CLTD"], ["2x4 walls, R-15 insulation", f"{mq.U['wall']}", f"{mq.CLTD['wall']}"], ["Lower flat stone walls + 2x4 R-15", f"{mq.U['stone']}", f"{mq.CLTD['stone']}"],
-           [f"Windows kept, double pane (SHGC {mq.SHGC})", f"{mq.U['window']}", "dT + sun"], ["Attic sloped ceilings, R-30 foam", f"{mq.U['roof']}", f"{mq.CLTD['roof']}"],
-           ["Attic knee walls, R-20", f"{mq.U['knee']}", f"{mq.CLTD['knee']}"], ["Ceilings under eaves, R-49", f"{mq.U['ceil']}", f"{mq.CLTD['ceil']}"], ["Lower flat floor on earth, per ft", f"F {mq.F_SLAB}", "-"]]
+           [f"Windows kept, double pane (SHGC {mq.SHGC})", f"{mq.U['window']}", "dT + sun"], ["Attic sloped ceilings, R-38 foam", f"{mq.U['roof']}", f"{mq.CLTD['roof']}"],
+           ["Attic knee walls, R-30", f"{mq.U['knee']}", f"{mq.CLTD['knee']}"], ["Ceilings under eaves, R-49", f"{mq.U['ceil']}", f"{mq.CLTD['ceil']}"], ["Lower flat floor on earth, per ft", f"F {mq.F_SLAB}", "-"]]
     table(bg, 4.7, y, [1.9, .45, .55], env, fs=5.0, rh=.15)
     sol = [["Sun", "N", "NE", "E", "SE", "S", "SW", "W", "NW"], ["Btu/h sf"] + [f"{mq.SOLAR[k_]}" for k_ in ("N", "NE", "E", "SE", "S", "SW", "W", "NW")]]
     table(bg, 7.85, y, [.55] + [.32] * 8, sol, fs=5.0, rh=.15)
@@ -480,6 +483,17 @@ def loads_sheet(pdf):
               "(9 F / 87 F, exceeded a few days a year); sizing to the record would make units that short-cycle and leave the air damp.",
               f"So: variable-speed condensers, checked to give at least 90 % at {E['t_out_c']} F at full speed ({mq.CAP_105:.0%} of rating assumed)."]:
         bg.text(x0, yy, t, fontsize=4.9, color=INK, va="center"); yy -= .125
+    yy -= .15; sC = SYS["C"]; ss = sC["summer"]; sh0 = sum(x["cfm"] for x in sC["served"] if x["fl"] == 6) / sC["cfm"]
+    bg.text(x0, yy, "UPPER FLAT: ATTIC vs MAIN FLOOR IN SUMMER (one thermostat, main floor at 75 F)", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .13
+    rows = [["Outdoor", f"Dampers as balanced ({sh0:.0%} to the attic)", f"Summer setting ({ss:.0%} to the attic)"]]
+    for dout, nm in ((-7, "80 F, sunny"), (0, "87 F (design)"), (18, "105 F")):
+        rows.append([nm, f"attic {mq.top_floor('C', None, dout):.1f} F", f"attic {mq.top_floor('C', ss, dout):.1f} F"])
+    yy = table(bg, x0, yy, [.9, 1.6, 1.6], rows, fs=4.8, rh=.14) - .1
+    for t in ["Attic slopes R-38 foam and knee walls R-30 (up from R-30 / R-20) take about 1 F off the attic.",
+              "The summer damper setting does the rest: the two attic branch dampers open further, the main-floor",
+              "ones close slightly (CFM on M-003). Set at the spring and fall service. The return at the top of the",
+              "attic stair takes the warm air that rises up the open stair."]:
+        bg.text(x0, yy, t, fontsize=4.9, color=INK, va="center"); yy -= .125
     bad = b.clarity(fig, None, None, bg); print("M-002 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
     b.save(fig, "M-002", pdf)
 
@@ -492,26 +506,28 @@ def dist_sheet(pdf):
                                 "Line sets and final layout pending the", "area's size: NOT FINALIZED."])]
     fig, bg, _ = b.bsheet("M-003", "Air distribution, outdoor units and venting", 0, notes, sub="Rear building · all flats")
     bg.text(.5, 10.25, "AIR DISTRIBUTION SCHEDULE, OUTDOOR UNITS AND VENTING", fontsize=9.5, fontweight="bold", color=INK, va="center")
-    y = 9.98; wid = [.42, 1.3, .38, .58, .5, .95, .55]
+    y = 9.98; wid = [.42, 1.25, .36, .45, .78, .48, .92, .4]
     xx = .5
     for k, s in SYS.items():
         D = mr.layout(mr.SPACE[{"A": 3, "B": 4, "C": 5}[k]])
-        rows = [["Tag", "Room", "CFM", "Register", "Duct", "Fed by", "Throw"]]
+        rows = [["Tag", "Room", "CFM", "Summer", "Register", "Duct", "Fed by", "Throw"]]
         for rg in sorted(D["regs"], key=lambda rg: int(rg["tag"].split(k)[1])):
             r = mr.room_of(rg["fl"], rg["room"]); nm = f"{r['no']} {r['name'].split(' (')[0]}"[:20] + (f" (from {rg['host']})" if rg.get("host") else "")
-            rows.append([rg["tag"], nm, f"{rg['cfm']:.0f}", f"{rg['g']} high wall", f"{rg['d']} in. Ø", ("stack " if rg["fl"] == 6 else "boot ") + rg["stack"].replace(" ", ""), f"{rg['throw']:.0f} ft"])
+            rows.append([rg["tag"], nm, f"{rg['cfm']:.0f}", f"{rg['cfm_summer']:.0f}" if rg["cfm_summer"] != rg["cfm"] else "same", f"{rg['g']} high wall", f"{rg['d']} in. Ø",
+                         ("stack " if rg["fl"] == 6 else "boot ") + rg["stack"].replace(" ", ""), f"{rg['throw']:.0f} ft"])
         for x in s["rooms"]:
             if "via" in x and x["r"]["kind"] == "bath":
-                rows.append(["-", f"{x['r']['no']} {x['r']['name'].split(' (')[0]}", "-", "none: door undercut", "", "air from bedroom", ""])
+                rows.append(["-", f"{x['r']['no']} {x['r']['name'].split(' (')[0]}", "-", "", "none: door undercut", "", "air from bedroom", ""])
         for rt in D["rets"]:
-            rows.append([rt["name"], f"{rt['room']} return, wall", f"{rt['cfm']:.0f}", f"{rt['size']} filter", "14 x 8", "box in wall / closet", ""])
+            rows.append([rt["name"], f"{rt['room']} return, wall", f"{rt['cfm']:.0f}", "", f"{rt['size']} filter", "14 x 8", "box in wall / closet", ""])
         for j in D["jumps"]:
-            rows.append(["TG" if j["kind"] == "wall" else "J", f"{j['room']} to hall", f"{j['cfm']:.0f}", f"{j.get('size', '14x6')} x 2" if j["kind"] == "wall" else "14x6 x 2",
+            rows.append(["TG" if j["kind"] == "wall" else "J", f"{j['room']} to hall", f"{j['cfm']:.0f}", "", f"{j.get('size', '14x6')} x 2" if j["kind"] == "wall" else "14x6 x 2",
                          f"{j['d']} in. Ø" if j["kind"] == "jump" else "", "over door" if j.get("over_door") else ("lined stud bay" if j["kind"] == "wall" else "ceiling duct"), ""])
         vel = s["cfm"] / (14 * 8 / 144)
         bg.text(xx, y, f"SYSTEM {k} · {s['cfm']} CFM · trunk {mr.TRUNK_SIZE} in. ({vel:.0f} fpm)", fontsize=6.0, fontweight="bold", color=INK, va="center")
         y = table(bg, xx, y - .1, wid, rows, fs=4.6, rh=.128) - .2
-    bg.text(xx, y, "Registers: high on an inside wall, top 6 in. below the ceiling, face blades set to throw across the room. Tags as on the plans.", fontsize=4.9, color=GREY, va="center"); y -= .22
+    bg.text(xx, y, "Registers: high on an inside wall, top 6 in. below the ceiling, face blades set to throw across the room. Tags as on the plans.", fontsize=4.9, color=GREY, va="center"); y -= .14
+    bg.text(xx, y, "Summer: upper flat dampers set to the Summer column at the spring service, back to CFM at the fall service (keeps the attic level).", fontsize=4.9, color=GREY, va="center"); y -= .22
     # ventilation
     bg.text(.5, y, "WHOLE-HOUSE VENTILATION (IRC M1505.4.3: 0.03 x floor area + 7.5 x (bedrooms + 1))", fontsize=6.0, fontweight="bold", color=INK, va="center"); y -= .12
     rows = [["Flat", "Floor sf", "Bedrooms", "Required CFM", "Provided by"]] + [[k, f"{q.AREA[k]:,}", f"{q.FLATS[k]['beds']}", f"{0.03 * q.AREA[k]:.0f} + {7.5 * (q.FLATS[k]['beds'] + 1):.1f} = {SYS[k]['vent']:.0f}",

@@ -32,8 +32,8 @@ U = dict(wall=0.070,       # 2x4 wall, R-15 high-density batts or dense-pack cel
          stone=0.065,      # lower flat stone foundation wall with a new 2x4 wall inside it, R-15
          window=0.50,      # existing double-pane vinyl windows (kept); SHGC below
          door=0.35, ceil=0.026,   # attic flat ceiling and the eave floors over the upper flat's main floor: R-49 blown
-         roof=0.033,       # attic sloped ceilings: R-30 closed-cell foam under the roof deck
-         knee=0.050)       # attic knee walls to the eave spaces: R-20
+         roof=0.026,       # attic sloped ceilings: R-38 closed-cell foam under the roof deck (fur the rafters if under 6 in. deep)
+         knee=0.033)       # attic knee walls to the eave spaces: R-30 (2x6 knee walls, or 2x4 + 1-1/2 in. foam board)
 SHGC = 0.55
 F_SLAB = 0.55             # lower flat floor on earth: heat loss per ft of exterior wall per F
 ACH_H, ACH_C = 0.35, 0.20 # natural air changes after air sealing during the gut (about 5 ACH50)
@@ -228,8 +228,55 @@ def system(k):
     tot = sum(x["cfm_raw"] for x in served)
     for x in served:
         x["cfm"] = max(30, int(round(cfm * x["cfm_raw"] / tot / 5) * 5))
-    return dict(k=k, rooms=rl, served=served, vol=vol, inf_h=inf_h, inf_c=inf_c, vent=vent, lat=lat, H=H, Cs=Cs, Ct=Ct, tons=tons, tons_calc=tons_calc, tons_min=tons_min,
-                furn=furn, cfm=cfm, shr=Cs / Ct, npeople=npeople, ext=X)
+    out = dict(k=k, rooms=rl, served=served, vol=vol, inf_h=inf_h, inf_c=inf_c, vent=vent, lat=lat, H=H, Cs=Cs, Ct=Ct, tons=tons, tons_calc=tons_calc, tons_min=tons_min,
+               furn=furn, cfm=cfm, shr=Cs / Ct, npeople=npeople, ext=X, summer=None)
+    for x in served: x["cfm_summer"] = x["cfm"]
+    if any(x["fl"] == 6 for x in served):                        # two floors on one thermostat: summer damper setting for the top floor
+        _system_cache[k] = out
+        ss = summer_share(k); att = [x for x in served if x["fl"] == 6]; low = [x for x in served if x["fl"] != 6]
+        fa = ss * cfm / sum(x["cfm"] for x in att); fl_ = (1 - ss) * cfm / sum(x["cfm"] for x in low)
+        for x in att: x["cfm_summer"] = int(round(x["cfm"] * fa / 5) * 5)
+        for x in low: x["cfm_summer"] = max(25, int(round(x["cfm"] * fl_ / 5) * 5))
+        out["summer"] = ss
+    return out
+
+
+_system_cache = {}
+
+
+# ---------------------------------------------------------------------------------------------- top floor vs the floor with the thermostat
+def _gain_at(x, T, dout):
+    """Sensible gain of a room held at T (F) with the outdoor temperature dout above design: conduction falls as the room warms."""
+    ua = c = 0.0; fixed = x["int"]
+    for name, area, u, h, cl in x["rows"]:
+        if name.startswith("Floor"): continue
+        a = float(area.split()[0]); ua += a * u
+        if name.startswith("Window"):
+            c += a * u * (DTC + dout); fixed += a * SHGC * SOLAR[name.split()[1]]
+        else:
+            kind = "roof" if name.startswith("Ceiling / roof") else "knee" if name.startswith("Knee") else "ceil" if name.startswith("Ceiling under") else "door" if name.startswith("Door") else "wall"
+            c += a * u * (CLTD[kind] + dout)
+    air = (x["inf_c"] + x["vent_c"]) / (1.08 * DTC)
+    return c - ua * (T - 75) + fixed + 1.08 * air * (DTC + dout - (T - 75))
+
+
+def top_floor(k="C", share=None, dout=0.0, Ts=55.0):
+    """Temperature the attic settles at when the thermostat holds the main floor at 75 F, the attic getting 'share' of the airflow."""
+    S = _system_cache.get(k) or system(k); att = [x for x in S["rooms"] if x["fl"] == 6]; main = [x for x in S["rooms"] if x["fl"] == 5]
+    if share is None: share = sum(x["cfm"] for x in S["served"] if x["fl"] == 6) / S["cfm"]
+    Dm = sum(_gain_at(x, 75, dout) for x in main); lo, hi = 55.0, 100.0
+    for _ in range(60):
+        T = (lo + hi) / 2
+        if sum(_gain_at(x, T, dout) for x in att) > Dm * share / (1 - share) * (T - Ts) / (75 - Ts): lo = T
+        else: hi = T
+    return T
+
+
+def summer_share(k="C"):
+    """Attic share of the airflow that keeps it level with the main floor in summer (rounded up to the next 1 %)."""
+    S = _system_cache.get(k) or system(k); att = [x for x in S["rooms"] if x["fl"] == 6]; main = [x for x in S["rooms"] if x["fl"] == 5]
+    r = sum(_gain_at(x, 75, 0) for x in att) / sum(_gain_at(x, 75, 0) for x in main)
+    return math.ceil(r / (1 + r) * 100) / 100
 
 
 # ---------------------------------------------------------------------------------------------- sizing helpers

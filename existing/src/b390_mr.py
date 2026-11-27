@@ -494,7 +494,8 @@ def layout(space):
     plan = sorted([x for x in S["served"] if SPACE[x["fl"]] == space], key=lambda x: -x["cfm"])
     tags = {}
     for x in plan:
-        fl = x["fl"]; r = x["r"]; n = mq.n_registers(r, x["cfm"]); c_ = x["cfm"] / n; sz, stack = mq.sidewall(c_); w = int(sz.split("x")[0]) / 12
+        fl = x["fl"]; r = x["r"]; n = mq.n_registers(r, x["cfm"]); c_ = x["cfm"] / n; cmax = max(x["cfm"], x.get("cfm_summer", x["cfm"])) / n
+        sz, stack = mq.sidewall(cmax); w = int(sz.split("x")[0]) / 12
         R = room_shape(r); got = []
         rets_here = [rt_["p"] for rt_ in out["rets"] if rt_["fl"] == fl and rt_["room"] == r["no"]]
         host = room_of(fl, HOST[(fl, r["no"])]) if (fl, r["no"]) in HOST else None
@@ -528,7 +529,7 @@ def layout(space):
             in_host = host is not None and not R.buffer(.3).contains(Point(c["p"][0] + c["n"][0] * .3, c["p"][1] + c["n"][1] * .3))
             items.append((shp, fl)); items.append((c["front"], fl))
             tags[FLAT[fl]] = tags.get(FLAT[fl], 0) + 1
-            out["regs"].append(dict(p=c["p"], n=c["n"], u=c["u"], w=w, th=c["th"], cfm=c_, d=mq.round_duct(c_), g=sz, stack=stack, room=r["no"], flat=k, fl=fl,
+            out["regs"].append(dict(p=c["p"], n=c["n"], u=c["u"], w=w, th=c["th"], cfm=c_, cfm_summer=x.get("cfm_summer", x["cfm"]) / n, d=mq.round_duct(cmax), g=sz, stack=stack, room=r["no"], flat=k, fl=fl,
                                     floor=False, kind="wall", shape=shp, throw=throw, faces_out=ext, back=c["back"], tag=f"S-{FLAT[fl]}{tags[FLAT[fl]]}",
                                     feed="stack up from the floor framing" if fl == 6 else "boot down through the top plate", host=host["no"] if in_host else None))
     # ---- return ducts (after the exhaust, which has the tighter length limits)
