@@ -14,7 +14,7 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   `src/make_build390.py` from the plan model in `src/build390.py` and the trade modules `src/b390_*.py`. It supersedes the
   earlier before/after and proposed sets.
 - `drawings/390-Forest_A-101_Lower-flat_Rev6.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev7.pdf`,
-  `drawings/390-Forest_A-103_Upper-flat_Rev5.pdf`, `drawings/390-Forest_A-104_Attic_Rev4.pdf`: the four floor plans as they stand in the
+  `drawings/390-Forest_A-103_Upper-flat_Rev5.pdf`, `drawings/390-Forest_A-104_Attic_Rev5.pdf`: the four floor plans as they stand in the
   floor-by-floor review (newer than the A-101 to A-104 inside the builder set; the trade sheets are redrawn once the four floor plans are
   agreed). Every floor-plan sheet is checked when it is built (`clarity()` in `src/build390.py`): no label may sit on
   another label, a fixture, furniture, a door swing, a wall, the dashed outline of a removed wall or a dimension line, and nothing may run
@@ -35,8 +35,10 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   front of a wall; rev 3 had drawn one such surface as an angled wall and had read furniture as a foot of extra wall thickness. Neither
   exists: every corner is square and the wall between the bedrooms is an ordinary 7 in. wall. The roof is a gable of about 11 in 12; the
   ceiling is flat at 7'-9" and slopes over the last 2 ft on the east side and 1'-6" on the west. The two private baths are mirror images,
-  back to back on the wall between the bedrooms, each with its vanity on a new knee wall where the ceiling is 6'-9"; the old chimney shaft
-  between the two vanity alcoves stays as the chase. A cross-section through the bath is on the sheet. No dormer is added.
+  back to back on the wall between the bedrooms, each with a new knee wall where the ceiling is 6'-9"; the old chimney shaft
+  between the two alcoves stays as the chase. Rev 5 (owner's review): vanity and mirror on the wall facing the door, under the full-height
+  ceiling; toilet in the alcove under the slope, out of the sight line. A cross-section through the bath (the view as you walk in) is on
+  the sheet. No dormer is added.
   The chimney shaft is at the same coordinates on the middle flat, the upper flat and the attic (frames agree to about 1 in.): `CHIMNEY`
   and `STACK` in `src/build390.py` hold that position, and the upper flat's chase (rev 5) was moved onto it.
   Lesson for `scan_survey.py`: take wall faces from slices at 5 ft and higher; lower slices pick up furniture and mesh fill.

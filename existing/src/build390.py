@@ -47,11 +47,11 @@ def wshape(r):
     return Polygon(r) if isinstance(r[0], (tuple, list)) else box(*r)
 
 
-def room(no, name, kind, rects, size, ceil, lab=None, new=False, disp=None, compact=False, plansize=True, oneline=False):
+def room(no, name, kind, rects, size, ceil, lab=None, new=False, disp=None, compact=False, plansize=True, oneline=False, labrot=0):
     """disp: shorter name to print on the plan; compact: two-line label for a tight room; plansize=False: leave the size off the plan label
     (dimension strings or a keynote give it instead)."""
     r0 = rects[0]
-    return dict(no=no, name=name, kind=kind, rects=rects, size=size, ceil=ceil, lab=lab or ((r0[0] + r0[2]) / 2, (r0[1] + r0[3]) / 2), new=new, disp=disp, compact=compact, plansize=plansize, oneline=oneline)
+    return dict(no=no, name=name, kind=kind, rects=rects, size=size, ceil=ceil, lab=lab or ((r0[0] + r0[2]) / 2, (r0[1] + r0[3]) / 2), new=new, disp=disp, compact=compact, plansize=plansize, oneline=oneline, labrot=labrot)
 
 
 LV = {
@@ -312,23 +312,23 @@ LV = {
             bifolds=[],
             rooms=[room("401", "Bedroom 1", "bed", [(0.25, 7.85, 10.95, 20.95), (10.95, 14.33, 16.45, 20.95), (5.38, 2.35, 11.12, 7.85)], "10'-8\" x 13'-1\" + 5'-6\" x 6'-7\" + bay", "7'-9\"", (5.6, 9.8), True),
                    room("402", "Bedroom 2", "bed", [(20.85, 14.33, 31.15, 20.85), (22.55, 7.33, 31.15, 14.33), (19.9, 1.9, 25.7, 6.57)], "10'-4\" x 6'-6\" + 8'-7\" x 7'-0\" + bay", "7'-9\"", (27.0, 11.6), True),
-                   room("403", "Bath A (bedroom 1)", "bath", [(11.45, 8.7, 16.45, 14.0), (11.45, 6.9, 15.4, 8.7)], "5'-0\" x 5'-4\" + vanity alcove", "7'-9\"", (15.05, 9.1), True, disp="BATH A", oneline=True),
-                   room("404", "Bath B (bedroom 2)", "bath", [(17.05, 8.75, 22.05, 14.0), (18.05, 6.9, 22.05, 8.75)], "5'-0\" x 5'-3\" + vanity alcove", "7'-9\"", (18.45, 9.1), True, disp="BATH B", oneline=True),
+                   room("403", "Bath A (bedroom 1)", "bath", [(11.45, 8.7, 16.45, 14.0), (11.45, 6.9, 15.4, 8.7)], "5'-0\" x 5'-4\" + vanity alcove", "7'-9\"", (14.2, 10.25), True, disp="BATH A", oneline=True, labrot=90),
+                   room("404", "Bath B (bedroom 2)", "bath", [(17.05, 8.75, 22.05, 14.0), (18.05, 6.9, 22.05, 8.75)], "5'-0\" x 5'-3\" + vanity alcove", "7'-9\"", (19.3, 10.25), True, disp="BATH B", oneline=True, labrot=90),
                    room("405", "Stair hall", "stair", [(17.05, 14.5, 20.4, 18.8)], "", "7'-6\"", (18.7, 17.3)),
                    room("406", "Closet (BR 1)", "closet", [(0.25, 5.3, 5.05, 7.52)], "", "", (1.9, 6.4)),
                    room("407", "Closet (BR 2)", "closet", [(27.0, 4.9, 31.15, 7.0)], "", "", (28.4, 5.95)),
                    room("408", "CHASE", "closet", [(15.7, 5.96, 17.75, 8.4)], "", "", (16.55, 6.45))],
-            fx=[("tub", 11.45, 11.5, 16.45, 14.0, True), ("wc", 16.45, 10.2, "x-", True), ("van", 12.2, 6.9, 14.7, 8.65, True),
-                ("tub", 17.05, 11.5, 22.05, 14.0, True), ("wc", 17.05, 10.2, "x+", True), ("van", 18.8, 6.9, 21.3, 8.65, True)],
+            fx=[("tub", 11.45, 11.5, 16.45, 14.0, True), ("wc", 13.4, 6.9, "y+", True), ("van", 14.7, 8.85, 16.45, 11.35, True),      # vanity faces the door; toilet under the slope
+                ("tub", 17.05, 11.5, 22.05, 14.0, True), ("wc", 20.05, 6.9, "y+", True), ("van", 17.05, 8.85, 18.8, 11.35, True)],
             furn=[("bed", 0.25, 13.85, "x+"), ("night", 0.25, 16.5, 1.75, 18.0), ("desk", 6.3, 2.4, 10.3, 4.4), ("dresser", 10.9, 14.33, 13.4, 15.83),
                   ("bed", 28.1, 20.85, "y-"), ("night", 24.0, 19.35, 25.5, 20.85), ("desk", 21.0, 1.95, 25.0, 3.95), ("dresser", 29.6, 9.1, 31.1, 12.1)],
             tagpos={}, lead={11: (17.6, 22.6)},
             mask=[[(11.45, 5.4), (15.4, 5.4), (15.4, 6.57), (11.45, 6.57)], [(18.05, 5.3), (19.57, 5.3), (19.57, 6.57), (18.05, 6.57)], [(31.48, 4.4), (32.3, 4.4), (32.3, 21.4), (31.48, 21.4)],
                   [(-0.6, 4.6), (-0.08, 4.6), (-0.08, 21.5), (-0.6, 21.5)]],
             notes=[(1, (16.35, 7.4), "Old chimney shaft, kept: the brick comes out through the roof (frame and sheath the hole, re-shingle) and the shaft is the chase for stack S, the furnace and water heater vents and the attic ducts. If the plaster is on the brick, frame 2x4 walls on the same lines."),
-                   (2, (13.0, 12.3), "Baths A and B are mirror images, back to back on the wall between the bedrooms: 60 in. tub at the west end, toilet on that wall, 30 in. vanity in an alcove beside the chase. Each is 5'-0\" x 5'-4\" plus the alcove. Hold 60 in. between studs for each tub."),
+                   (2, (13.0, 12.3), "Baths A and B are mirror images, back to back on the wall between the bedrooms. 30 in. vanity and mirror on that wall, straight ahead as you walk in and under the full-height ceiling. Toilet in the alcove beside the chase, out of the sight line and under the lower ceiling. 60 in. tub at the west end: hold 60 in. between studs. Each bath is 5'-0\" x 5'-4\" plus the alcove."),
                    (2, (20.5, 12.3), ""),
-                   (3, (13.45, 5.7), "New 2x4 knee wall, in one line on both sides of the chase, where the ceiling is 6'-9\": the vanities, mirrors and their pipes go on it. The old knee wall and the cold eave stay behind it. Everything else in both baths is under the flat 7'-9\" ceiling: see the section. No dormer is added."),
+                   (3, (13.45, 5.7), "New 2x4 knee wall, in one line on both sides of the chase, where the ceiling is 6'-9\": the toilets back onto it. The old knee wall and the cold eave stay behind it. Tubs, vanities and doors are under the flat 7'-9\" ceiling: see the section. No dormer is added."),
                    (4, (21.0, 5.7), "The north half of bath B's alcove is under bedroom 2's existing dormer. The new wall crosses the dormer's mouth; a 10 in. return closes the pocket behind it."),
                    (5, (8.8, 12.8), "Tub valve at this end; access panel AP on the bedroom side: keep clear of furniture."), (5, (23.8, 12.8), ""),
                    (6, (18.3, 15.3), "Old bedroom 2 doorway walled up (red)."),
@@ -638,7 +638,8 @@ def draw_base(ax, fl, mode="arch"):
             col = NEWW if r["new"] else INK
             nm = r.get("disp") or (r["name"] if not big else r["name"].upper())
             if r.get("oneline"):                              # name and number on one line, for a room with no free floor
-                ax.text(x, y, f"{nm}  {r['no']}", fontsize=4.4, fontweight="bold", color=col, ha="center", va="center", zorder=12, gid="room", bbox=dict(fc="white", ec="none", pad=0.25))
+                ax.text(x, y, f"{nm}  {r['no']}", fontsize=4.4, fontweight="bold", color=col, ha="center", va="center", zorder=12, gid="room", rotation=r.get("labrot") or 0,
+                        bbox=dict(fc="white", ec="none", pad=0.25))
                 continue
             if r.get("compact"):
                 ax.text(x, y + 0.22, nm, fontsize=4.6, fontweight="bold", color=col, ha="center", va="center", zorder=12, gid="room", bbox=dict(fc="white", ec="none", pad=0.3))
@@ -689,34 +690,93 @@ def bsheet(number, title, fl, notes, legend=None, sub=None):
     return fig, bg, ax
 
 
+def _spline(pts, n=8):
+    """Smooth curve through the given points (Catmull-Rom), for drawing fixtures in elevation."""
+    P = np.array(pts, float); P = np.vstack([P[0], P, P[-1]]); out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for t in np.linspace(0, 1, n, endpoint=False):
+            t2, t3 = t * t, t * t * t
+            out.append(0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3))
+    out.append(P[-2]); return [tuple(q) for q in out]
+
+
 def attic_section(ax, X0=2.6, Y0=23.5):
-    """Cross-section through bath A, looking north, drawn beside the attic plan at the same scale. Across = plan y (west on the left), up = height."""
+    """Cross-section through bath A, looking north (the view as you walk in), drawn beside the attic plan at the same scale.
+    Across = plan y (west on the left), up = height. The toilet is cut through its centre line; the vanity and mirror are on the far wall."""
     X = lambda y: X0 + (15.3 - y); Zc = lambda z: Y0 + z
     sl = lambda y: 7.75 - max(0.0, 8.0 - y) * 0.917                       # ceiling height: flat 7'-9", then down 11 in 12 toward the east eave
     def poly(pts, **kw): ax.add_patch(MPoly([(X(y), Zc(z)) for y, z in pts], closed=True, **kw))
     def line(pts, **kw): ax.plot([X(y) for y, z in pts], [Zc(z) for y, z in pts], **kw)
-    def note(y, z, t, col="#333", fs=3.5, **kw): ax.text(X(y), Zc(z), t, fontsize=fs, color=col, ha=kw.pop("ha", "center"), va="center", zorder=12, gid="sec", linespacing=1.1, **kw)
+    def circ(y, z, r, **kw): ax.add_patch(plt.Circle((X(y), Zc(z)), r, **kw))
+    def note(y, z, t, col="#333", fs=3.5, box=False, **kw):
+        ax.text(X(y), Zc(z), t, fontsize=fs, color=col, ha=kw.pop("ha", "center"), va="center", zorder=12, gid="sec", linespacing=1.1,
+                bbox=dict(fc="white", ec="none", pad=0.2) if box else None, **kw)
     def height(y, z1, t, ty=None):                                           # dimension line floor to ceiling
         line([(y, 0), (y, z1)], color="#333", lw=0.35, zorder=11)
         for z in (0, z1): ax.plot([X(y) - 0.16, X(y) + 0.16], [Zc(z) - 0.16, Zc(z) + 0.16], color="#333", lw=0.55, zorder=11)
         ax.text(X(y), Zc(ty if ty is not None else z1 * 0.55), t, fontsize=3.8, color="#111", ha="center", va="center", rotation=90, zorder=12, gid="sec", bbox=dict(fc="white", ec="none", pad=0.25))
-    poly([(15.3, 0), (4.4, 0), (4.4, -0.75), (15.3, -0.75)], fc="#e9eaec", ec="#6b7480", lw=0.5, zorder=3)                      # floor
-    poly([(15.3, 7.75), (8.0, 7.75), (4.4, sl(4.4)), (4.4, sl(4.4) + 0.55), (8.15, 8.3), (15.3, 8.3)], fc="#e9eaec", ec="#6b7480", lw=0.5, zorder=3)   # ceiling and roof
+
+    # ---- shell: floor, ceiling and roof, knee walls, the wall to the bedroom
+    poly([(15.3, 0), (4.4, 0), (4.4, -0.75), (15.3, -0.75)], fc="#e9eaec", ec="#6b7480", lw=0.5, zorder=3)
+    poly([(15.3, 7.75), (8.0, 7.75), (4.4, sl(4.4)), (4.4, sl(4.4) + 0.55), (8.15, 8.3), (15.3, 8.3)], fc="#e9eaec", ec="#6b7480", lw=0.5, zorder=3)
     poly([(5.96, 0), (5.63, 0), (5.63, sl(5.63)), (5.96, sl(5.96))], fc=EXW, ec="#4a4f57", lw=0.4, zorder=4)                     # old knee wall
     poly([(6.9, 0), (6.57, 0), (6.57, sl(6.57)), (6.9, sl(6.9))], fc=NEWW, ec="#7d1a14", lw=0.4, zorder=4)                       # new knee wall
     poly([(14.33, 0), (14.0, 0), (14.0, 7.75), (14.33, 7.75)], fc=NEWW, ec="#7d1a14", lw=0.4, zorder=4)                          # bath / bedroom wall
-    poly([(14.0, 0), (11.5, 0), (11.5, 1.67), (14.0, 1.67)], fc="#eef4fb", ec=FXN, lw=0.7, zorder=5)                             # tub
-    poly([(8.65, 0), (6.9, 0), (6.9, 2.83), (8.65, 2.83)], fc="white", ec=FXN, lw=0.7, zorder=5)                                 # vanity
-    line([(6.94, 3.3), (6.94, 6.2)], color=FXN, lw=1.6, zorder=5)                                                                # mirror
-    poly([(10.8, 0), (9.6, 0), (9.6, 1.3), (10.8, 1.3)], fc="white", ec=FXE, lw=0.5, zorder=5)                                   # toilet on the far wall
-    poly([(11.0, 1.3), (9.4, 1.3), (9.4, 2.5), (11.0, 2.5)], fc="white", ec=FXE, lw=0.5, zorder=5)
-    height(9.1, 7.75, "7'-9\"", 5.2); height(7.25, sl(6.9), "6'-9\"", 4.9); height(5.25, sl(5.63), "5'-7\"", 2.6)
-    note(12.75, 0.85, "60 in. tub"); note(7.78, 1.4, "vanity"); note(10.2, 3.0, "toilet on\nthe far wall")
-    note(12.0, 6.9, "flat ceiling over the tub, toilet and door"); note(7.9, 7.05, "mirror", ha="left", col=FXN)
-    note(3.9, 6.3, "roof slopes about 11 in 12", ha="left"); note(3.9, 5.5, "new knee wall where the\nceiling is 6'-9\": vanity and\nits pipes go on it", ha="left", col=NEWW)
+    for yy in np.arange(5.75, 5.0, -0.12):                                                                                        # eave insulation behind the old knee wall
+        line([(yy, 0.15), (yy - 0.1, sl(yy) - 0.15)], color="#c9b98e", lw=0.35, zorder=3.5)
+
+    # ---- tub, cut across its width, with tile on the far end wall
+    poly([(14.0, 1.5), (11.5, 1.5), (11.5, 6.5), (14.0, 6.5)], fc="#f4f6f8", ec="#9aa3ad", lw=0.3, zorder=4.2)                  # tile surround
+    for zz in np.arange(2.0, 6.45, 0.5): line([(14.0, zz), (11.5, zz)], color="#d5dbe1", lw=0.25, zorder=4.3)
+    poly([(14.0, 0), (11.5, 0), (11.5, 1.5), (14.0, 1.5)], fc="white", ec=FXN, lw=0.8, zorder=5)                               # tub shell
+    poly(_spline([(11.72, 1.5), (11.8, 0.9), (11.95, 0.35), (12.3, 0.22), (13.2, 0.22), (13.55, 0.4), (13.78, 1.0), (13.82, 1.5)], 6),
+         fc="#eef4fb", ec=FXN, lw=0.5, zorder=5.1)                                                                                # basin, sloped back
+    circ(11.55, 6.45, 0.07, fc="white", ec="#4a4f57", lw=0.5, zorder=5.2)                                                         # curtain rod, end on
+
+    # ---- vanity on the far wall: toe kick, doors, drawer front, top, faucet; mirror and light above
+    poly([(11.25, 0), (8.95, 0), (8.95, 0.33), (11.25, 0.33)], fc="#d9dde2", ec=FXE, lw=0.4, zorder=4.5)
+    poly([(11.35, 0.33), (8.85, 0.33), (8.85, 2.67), (11.35, 2.67)], fc="white", ec=FXE, lw=0.6, zorder=4.5)
+    poly([(11.25, 2.2), (8.95, 2.2), (8.95, 2.58), (11.25, 2.58)], fc="white", ec=FXE, lw=0.4, zorder=4.6)                       # false drawer front
+    for (ya, yb) in ((11.25, 10.13), (10.07, 8.95)):
+        poly([(ya, 0.45), (yb, 0.45), (yb, 2.1), (ya, 2.1)], fc="white", ec=FXE, lw=0.4, zorder=4.6)
+    circ(10.25, 1.9, 0.05, fc=FXE, ec="none", zorder=4.7); circ(9.95, 1.9, 0.05, fc=FXE, ec="none", zorder=4.7)
+    poly([(11.42, 2.67), (8.78, 2.67), (8.78, 2.83), (11.42, 2.83)], fc="#e6e8eb", ec=FXE, lw=0.5, zorder=4.7)                  # top
+    line([(10.1, 2.83), (10.1, 3.32)] + _spline([(10.1, 3.32), (10.0, 3.42), (9.88, 3.32), (9.86, 3.15)], 5), color=FXE, lw=0.8, zorder=4.8)   # faucet
+    line([(10.32, 2.83), (10.32, 3.0), (10.45, 3.05)], color=FXE, lw=0.6, zorder=4.8)
+    poly([(11.15, 3.55), (9.05, 3.55), (9.05, 6.15), (11.15, 6.15)], fc="#dfe3e8", ec=FXE, lw=0.6, zorder=4.5)                  # mirror frame
+    poly([(11.05, 3.65), (9.15, 3.65), (9.15, 6.05), (11.05, 6.05)], fc="#eef4fb", ec=FXE, lw=0.3, zorder=4.6)
+    line([(10.75, 4.2), (10.1, 5.0)], color="white", lw=0.8, zorder=4.7); line([(10.55, 4.0), (10.3, 4.3)], color="white", lw=0.6, zorder=4.7)
+    poly([(10.65, 6.35), (9.55, 6.35), (9.55, 6.55), (10.65, 6.55)], fc="#fff6d6", ec=FXE, lw=0.4, zorder=4.6)                  # light over the mirror
+
+    # ---- toilet, cut through its centre line: tank against the new knee wall, closed lid, bowl and base, supply
+    W0 = 6.9; T = lambda d, z: (W0 + d, z)                                  # d = distance out from the knee wall
+    circ(*T(0.06, 0.55), 0.055, fc="white", ec="#4a4f57", lw=0.5, zorder=5.4)                                                     # shut-off at the wall
+    line([T(0.06, 0.55), T(0.3, 0.6), T(0.3, 1.25)], color="#4a4f57", lw=0.5, zorder=5.3)                                       # supply to the tank
+    poly([T(0.62, 0.0), T(0.6, 0.18), T(0.68, 0.55)] + _spline([T(0.68, 0.55), T(0.62, 0.95), T(0.6, 1.22)], 4) + [T(0.6, 1.25), T(2.02, 1.25)]
+         + _spline([T(2.02, 1.25), T(2.17, 1.12), T(2.15, 0.88), T(1.98, 0.7), T(1.75, 0.58)], 5)
+         + _spline([T(1.75, 0.58), T(1.62, 0.44), T(1.62, 0.2), T(1.75, 0.0)], 4),
+         fc="white", ec=FXN, lw=0.8, zorder=5.5)                                                                                  # bowl, trap and base
+    line(_spline([T(0.92, 1.18), T(1.15, 0.86), T(1.45, 0.74), T(1.78, 0.9), T(1.95, 1.18)], 5), color=FXN, lw=0.35, ls=(0, (2, 1.5)), zorder=5.6)   # bowl inside (hidden)
+    poly(_spline([T(0.56, 1.25), T(1.2, 1.24), T(1.9, 1.25), T(2.2, 1.29), T(2.22, 1.36), T(2.08, 1.41), T(1.2, 1.42), T(0.56, 1.4)], 4),
+         fc="white", ec=FXN, lw=0.7, zorder=5.7)                                                                                  # seat and closed lid
+    line([T(0.6, 1.33), T(2.12, 1.33)], color=FXN, lw=0.3, zorder=5.8)
+    poly([T(0.08, 1.25), T(0.68, 1.25), T(0.68, 2.22)] + _spline([T(0.68, 2.22), T(0.66, 2.3), T(0.6, 2.33)], 3) + [T(0.08, 2.33)],
+         fc="white", ec=FXN, lw=0.8, zorder=5.6)                                                                                  # tank
+    poly([T(0.05, 2.33), T(0.73, 2.33), T(0.73, 2.43), T(0.05, 2.43)], fc="white", ec=FXN, lw=0.7, zorder=5.7)                   # tank lid
+    line([T(0.68, 2.08), T(0.8, 2.05)], color=FXN, lw=0.9, zorder=5.7)                                                           # flush lever
+
+    # ---- dimensions and notes
+    height(11.43, 7.75, "7'-9\"", 7.0); height(5.25, sl(5.63), "5'-7\"", 2.6)
+    note(12.75, 0.75, "60 in. tub"); note(12.75, 4.0, "tile"); note(11.9, 6.75, "rod", fs=3.2)
+    note(10.1, 1.25, "30 in.\nvanity", box=True); note(10.1, 4.9, "mirror", box=True)
+    note(8.25, 2.05, "toilet,\nseat 16 in."); note(7.45, 3.15, "6'-9\" over\nthe tank", fs=3.2)
+    note(12.75, 7.25, "flat ceiling 7'-9\"\nover tub, vanity, door", fs=3.4)
+    note(3.9, 6.4, "roof slopes about 11 in 12", ha="left"); note(3.9, 5.5, "new knee wall where the\nceiling is 6'-9\": the toilet\nbacks onto it", ha="left", col=NEWW)
     note(3.9, 4.3, "old knee wall stays; the\ncold eave behind it gets\ninsulation, no pipes", ha="left")
     line([(4.05, 5.5), (6.5, 5.5)], color=NEWW, lw=0.4, zorder=11); line([(4.05, 4.3), (5.55, 4.3)], color="#333", lw=0.4, zorder=11)
-    note(15.3, -1.45, "SECTION THROUGH BATH A, LOOKING NORTH · bath B is its mirror image · no dormer is added", fs=4.4, ha="left", fontweight="bold", col=INK)
+    note(15.3, -1.3, "SECTION THROUGH BATH A, LOOKING NORTH (the view as you walk in)", fs=4.4, ha="left", fontweight="bold", col=INK)
+    note(15.3, -1.75, "Bath B is its mirror image. No dormer is added.", fs=4.0, ha="left", col=INK)
 
 
 def text_block(bg, x, y, title, lines, fs=5.6, col=INK, lh=0.135):
