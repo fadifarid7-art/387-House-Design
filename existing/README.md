@@ -13,15 +13,19 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   scope (G-001), floor plans (A-101 to A-104), schedules (A-601), electrical (E), HVAC (M), plumbing and gas (P). Built by
   `src/make_build390.py` from the plan model in `src/build390.py` and the trade modules `src/b390_*.py`. It supersedes the
   earlier before/after and proposed sets.
-- `drawings/390-Forest_A-101_Lower-flat_Rev5.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev4.pdf`: the lower and middle flat floor plans
+- `drawings/390-Forest_A-101_Lower-flat_Rev5.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev5.pdf`: the lower and middle flat floor plans
   as they stand in the floor-by-floor review (newer than the A-101 and A-102 inside the builder set; the upper flat and attic follow, and the
   trade sheets are redrawn once the four floor plans are agreed). Every floor-plan sheet is checked when it is built (`clarity()` in
   `src/build390.py`): no label may sit on another label, a fixture, furniture, a door swing, a wall or a dimension line, and nothing may run
   outside the border. The count is printed; A-101 and A-102 are at zero.
   Middle flat as found (owner's video): the furnace and water heater are in the louvered closet at the south end of the hall and the panel
-  is on the hall wall; the small room beside bedroom 1's door is that bedroom's closet. Rev 3 was planned around that. Rev 4 is checked
-  against the 3D scan as well: angled bay at the front (both corners), straight walls where the Polycam plan drew two diagonals, bedroom 1's
-  stepped north wall, and the real stair to the upper flat (7 risers, landing, 9 risers) with its outside door.
+  is on the hall wall; the small room beside bedroom 1's door is that bedroom's closet.
+  Middle flat rev 5: the bedroom side is drawn from wall faces measured in the 3D scan (`src/scan_survey.py`), because the phone-scan floor
+  plan had that side about 1'-6" too narrow (it assumes 4 in. walls; several are 7 to 12 in. thick). Inside width is 26'-10" on both sides
+  of the flat and the outside walls are straight, as the aerial photo shows. Bedroom 1 is 15'-10" x 7'-9" with a boxed-out section on the
+  outside wall; bedroom 2 is 9'-7" x 13'-3". The front is an angled bay (both corners).
+  Lower flat checked the same way on 27 Nov: its phone-scan plan agrees with the 3D scan to about 4 in. in every room checked (most within
+  2 in.); only the living room / kitchen width is looser (the scan suggests up to 8 in. wider), so A-101 was left as drawn.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the
