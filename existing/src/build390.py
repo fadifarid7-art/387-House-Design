@@ -24,7 +24,7 @@ EXISTING = dict(  # home inspection report, Oasis Home Inspections, 9 Oct 2026, 
     power="overhead service; 100 A 120/240 V panels (General Electric, Murray); some ungrounded receptacles, open splices",
     kitchens="dishwasher in every kitchen; electric ranges in the lower and middle flats, gas range in the upper flat; no range hoods",
     upper="the upper flat's furnace and water heater stand in the west end of Room B (new bedroom 4): they move to closet 307",
-    equipment="owner's videos: lower flat furnace closet with louvered doors beside the kitchen (room 109); middle flat furnace and water heater in the closet off bedroom 1 (room 208); a fireplace mantel on the chimney wall of old Room A",
+    equipment="owner's videos: lower flat furnace closet with louvered doors beside the kitchen (room 109); middle flat furnace and water heater in the louvered closet at the south end of the hall, with the electrical panel on the hall wall beside it; a fireplace mantel on the chimney wall of old Room A",
     attic="rafters cut or separated in places; roof flashing lifted", lower="bedroom 2's only window is a small high basement window")
 STACK = (17.3, 8.9)            # new 3 in. drain stack in the old chimney shaft, same spot on every level
 CHIMNEY = (15.8, 6.2, 18.3, 9.3)
@@ -97,47 +97,70 @@ LV = {
                    (17, (14.7, 14.55), "Furnace closet door walled up (position from the video: verify).")],
             dims=[(12.37, 3.85, 17.45, 3.85, 0.72), (15.0, 0.95, 15.0, 9.38, 0.8), (1.62, 8.6, 12.03, 8.6, 0.45), (24.63, 5.2, 30.25, 5.2, 0.62), (27.0, 4.64, 27.0, 12.78, 0.5),
                   (17.95, 9.09, 24.29, 9.09, 0.2), (20.8, 2.4, 20.8, 9.38, 0.72), (16.42, 13.6, 20.77, 13.6), (21.11, 15.7, 30.25, 15.7, 0.5), (30.0, 13.12, 30.0, 26.07, 0.62)]),
-    4: dict(name="Middle flat", view=((-2.5, 37.1), (-3, 30)), cut=[(31.0, 22.6, 31.45, 25.6)],
-            ap=[(16.9, 9.25, 18.1, 9.25), (10.4, 18.9, 11.6, 18.9)],
+    4: dict(name="Middle flat", view=((-2.5, 37.1), (-3, 30)),
+            # As found (scan + owner's video): furnace and water heater stand in the louvered closet at the south end of the hall, the panel is on the
+            # hall wall, the 4 x 3'-7" room beside bedroom 1's door is bedroom 1's closet, and bedroom 2's closet is on the outside wall.
+            cut=[(31.0, 22.6, 31.45, 25.6), (12.28, 13.81, 12.61, 16.42), (10.42, 7.82, 10.75, 12.75),     # upper flat entry; old bath door; old bedroom 2 opening
+                 (31.5, 0.56, 33.6, 3.8), (6.16, 25.3, 9.7, 25.8),                                          # scan artefacts beside walls the scan missed
+                 (12.63, 13.28, 15.29, 13.66)],                                                             # cased opening between the hall and the passage, drawn as a clear gap
+            ap=[(16.9, 6.09, 18.1, 6.09, 1), (5.96, 18.9, 7.16, 18.9, 1)],
             stairs=[(20.6, 24.75, 24.6, 27.3, "x-", "UP"), (17.2, 21.5, 19.6, 24.5, "y-", "UP")],
-            demo=[(10.75, 6.2, 15.7, 6.75), (15.1, 6.2, 15.75, 9.9), (15.2, 9.3, 17.3, 9.9), (31.7, 0.56, 33.6, 3.8), (6.2, 25.3, 8.3, 25.8), (10.35, 7.75, 10.85, 12.8), (16.2, 17.33, 18.87, 17.73), (15.95, 0.56, 16.35, 3.25), (10.39, 5.9, 10.79, 8.4), (5.77, 16.2, 6.17, 18.4)],
-            new=[Hh(8.88, 10.4, 18.73, T6), V(10.59, 8.4, 9.3), V(10.59, 11.8, 12.8), Hh(15.64, 0.05, 0.75), Hh(15.64, 5.1, 5.97), Hh(3.44, 16.0, 18.9), V(12.45, 13.64, 16.6)],
+            demo=[(10.76, 3.26, 16.33, 3.63), (15.96, 0.55, 16.33, 3.63), (10.76, 6.28, 15.47, 6.65), (15.09, 6.28, 15.47, 9.36), (15.09, 9.36, 17.19, 9.72),
+                  (5.78, 13.66, 6.16, 18.49)],
+            new=[Hh(5.79, 10.75, 18.74, T6), V(13.17, 6.04, 9.37), Hh(9.535, 10.75, 13.4), Hh(9.535, 16.4, 18.9),
+                 V(10.585, 9.3, 10.2), V(10.585, 12.7, 12.75), (12.28, 13.81, 12.61, 16.42), V(5.115, 13.64, 18.85), Hh(18.68, 4.95, 5.82)],
             fix=[V(34.76, 0.2, 5.6), Hh(0.37, 32.2, 34.93), Hh(26.0, 6.2, 15.45), V(15.28, 21.3, 26.17), V(31.23, 16.1, 17.9), Hh(0.37, 16.2, 18.95)],
-            doors=[("201", "v", 10.59, 9.3, 11.8, "lo", -1, "2'-6\" x 6'-8\"", "Bedroom 2"), ("202", "v", 10.59, 5.9, 8.4, "hi", 1, "2'-6\" x 6'-8\"", "Bath 2, from bedroom 2"),
-                   ("205", "v", 5.97, 16.2, 18.4, "hi", -1, "2'-2\" x 6'-8\"", "Bath 1, from bedroom 1"),
-                   ("203", "h", 17.53, 16.2, 18.87, "lo", -1, "2'-8\" x 6'-8\"", "Mechanical, solid core")],
-            bifolds=[("204", "h", 15.64, 0.75, 5.1, 1, "4'-4\" bifold", "Closet, bedroom 1")],
-            rooms=[room("201", "Living room", "living", [(19.07, 0.54, 34.59, 11.4), (22.17, 11.4, 31.06, 13.64)], "15'-6\" x 10'-10\" + dining", "8'-8\"", (29.0, 8.6)),
+            doors=[("200", "v", 34.76, 6.49, 9.17, "lo", -1, "2'-8\" x 6'-8\"", "Flat entrance (existing: verify)"),
+                   ("201", "v", 10.585, 10.2, 12.7, "hi", -1, "2'-6\" x 6'-8\"", "Bedroom 2, from the hall"),
+                   ("202", "v", 10.585, 0.6, 3.1, "lo", 1, "2'-6\" x 6'-8\"", "Bath 2, from bedroom 2"),
+                   ("203", "h", 9.535, 13.4, 15.4, "lo", 1, "3'-6\" pair x 6'-8\"", "Mechanical, solid core"), ("203", "h", 9.535, 15.4, 16.9, "hi", 1, "", ""),
+                   ("205", "h", 18.68, 9.7, 12.2, "hi", -1, "2'-6\" x 6'-8\"", "Bath 1, from bedroom 1"),
+                   ("206", "h", 17.525, 12.66, 15.0, "lo", 1, "2'-4\" x 6'-8\"", "Bedroom 1 (opening widened)")],
+            bifolds=[("204", "v", 10.585, 6.3, 9.3, -1, "3'-0\" bifold", "Closet, bedroom 2"), ("207", "v", 15.28, 18.3, 20.8, -1, "2'-6\" bifold", "Closet, bedroom 1")],
+            rooms=[room("201", "Living room", "living", [(19.07, 0.54, 34.59, 11.4), (22.17, 11.4, 31.06, 13.64)], "15'-6\" x 10'-10\" + dining", "8'-8\"", (28.9, 4.2)),
                    room("202", "Kitchen", "kitchen", [(19.86, 13.64, 31.06, 20.72)], "11'-2\" x 7'-1\"", "7'-4\"", (25.5, 16.6)),
-                   room("203", "Bedroom 1", "bed", [(0.05, 18.85, 15.11, 25.83), (0.05, 15.81, 5.8, 18.85), (12.62, 17.7, 15.11, 18.85)], "15'-0\" x 7'-0\" + 5'-9\" x 3'-0\"", "7'-8\"", (10.6, 23.6)),
+                   room("203", "Bedroom 1", "bed", [(0.05, 18.85, 15.11, 25.83), (0.05, 13.64, 4.95, 18.85), (12.62, 17.69, 15.11, 18.85)], "15'-0\" x 7'-0\" + alcove", "7'-8\"", (10.6, 21.6)),
                    room("204", "Bedroom 2", "bed", [(0.05, 0.54, 10.42, 13.3)], "10'-4\" x 12'-9\"", "8'-8\"", (6.8, 2.2)),
-                   room("205", "Bath 1 (bedroom 1)", "bath", [(6.14, 13.64, 12.28, 18.51)], "6'-2\" x 5'-0\"", "7'-4\"", (8.3, 17.4), True),
-                   room("206", "Bath 2 (bedroom 2)", "bath", [(10.76, 3.61, 18.73, 8.61)], "8'-0\" x 5'-0\"", "8'-0\"", (13.6, 7.3), True),
-                   room("207", "Hall", "hall", [(10.76, 9.15, 16.83, 13.3), (16.83, 9.15, 18.7, 11.4)], "6'-1\" x 4'-2\"", "7'-0\"", (13.8, 11.9), True),
-                   room("208", "Mechanical", "mech", [(15.45, 17.7, 19.52, 21.29)], "4'-1\" x 3'-7\"", "", (17.5, 20.8), True),
-                   room("209", "Laundry", "laundry", [(17.17, 11.77, 22.0, 13.47)], "", "", (19.6, 14.9)),
-                   room("210", "Passage", "hall", [(12.62, 13.64, 19.5, 17.36)], "", "7'-4\"", (15.6, 15.6)),
-                   room("211", "Clo.", "closet", [(10.76, 0.54, 18.73, 3.27)], "", "", (14.7, 1.9), True),
-                   room("212", "Clo.", "closet", [(0.05, 13.64, 5.8, 15.47)], "", "", (2.9, 14.5), True),
+                   room("205", "Bath 1 (bedroom 1)", "bath", [(5.28, 13.64, 12.28, 18.51)], "7'-0\" x 4'-10\"", "7'-4\"", (9.1, 17.1), True, disp="BATH 1"),
+                   room("206", "Bath 2 (bedroom 2)", "bath", [(10.75, 0.54, 18.74, 5.54)], "8'-0\" x 5'-0\"", "8'-0\"", (14.8, 2.0), True, disp="BATH 2"),
+                   room("207", "Hall", "hall", [(10.75, 9.7, 16.84, 13.3), (16.84, 9.7, 18.7, 11.41)], "6'-1\" x 3'-7\"", "7'-0\"", (12.25, 12.1)),
+                   room("208", "Mechanical", "mech", [(13.33, 6.04, 18.74, 9.37)], "5'-5\" x 3'-4\"", "", (16.0, 8.6), True, disp="MECH.", compact=True),
+                   room("209", "Laundry", "laundry", [(17.17, 11.74, 21.7, 13.64)], "", "", (19.45, 15.1)),
+                   room("210", "Passage", "hall", [(12.62, 13.64, 19.5, 17.36)], "", "7'-4\"", (14.6, 15.7)),
+                   room("211", "Closet (BR 2)", "closet", [(10.75, 6.04, 13.0, 9.37)], "", "", (11.87, 8.3), True),
+                   room("212", "Closet (BR 1)", "closet", [(15.45, 17.69, 19.52, 21.3)], "", "", (17.5, 19.9)),
                    room("213", "Stair hall (upper flat)", "stair", [(19.86, 21.06, 31.06, 27.38)], "", "8'-9\"", (26.5, 23.2))],
-            fx=[("tub", 16.23, 3.61, 18.73, 8.61, True), ("wc", 14.6, 3.61, "y+", True), ("van", 11.2, 3.61, 13.2, 5.36, True),
-                ("tub", 9.78, 13.58, 12.28, 18.58, True), ("wc", 8.53, 13.64, "y+", True), ("van", 6.14, 13.64, 7.3, 15.97, True),
+            fx=[("tub", 16.24, 0.54, 18.74, 5.54, True), ("wc", 14.95, 5.54, "y-", True), ("van", 11.0, 3.79, 13.5, 5.54, True),
+                ("tub", 5.28, 13.64, 7.78, 18.51, True), ("wc", 9.03, 13.64, "y+", True), ("van", 10.28, 13.64, 12.28, 15.39, True),
                 ("fridge", 19.9, 18.22, 22.9, 20.72), ("dw", 22.9, 18.64, 24.9, 20.72), ("base", 24.9, 18.64, 25.9, 20.72), ("sinkbase", 25.9, 18.64, 28.9, 20.72), ("base", 28.9, 18.64, 31.06, 20.72),
                 ("base", 28.98, 17.7, 31.06, 18.64), ("range", 28.9, 15.2, 31.06, 17.7),
-                ("washer", 17.2, 11.8, 19.5, 14.2), ("dryer", 19.6, 11.8, 21.9, 14.2), ("furnace", 15.6, 18.0, 17.06, 20.33), ("wh", 18.5, 19.3)],
+                ("washer", 17.2, 11.76, 19.45, 14.3), ("dryer", 19.45, 11.76, 21.7, 14.3),
+                ("furnace", 13.5, 6.14, 14.96, 8.56), ("wh", 16.0, 7.05), ("panel", 16.84, 11.8, 16.84, 13.05, -1, -0.375)],
             furn=[("bed", 0.05, 6.9, "x+"), ("night", 0.05, 9.5, 1.55, 11.0), ("desk", 1.0, 11.3, 5.0, 13.3), ("dresser", 0.05, 0.54, 1.55, 3.54),
-                  ("bed", 3.0, 25.83, "y-"), ("desk", 6.5, 23.83, 10.5, 25.83), ("dresser", 11.5, 24.33, 14.5, 25.83),
-                  ("couch", 19.2, 2.0, 22.2, 9.0, "x-"), ("tv", 33.2, 1.0, 34.59, 5.5), ("ctable", 24.5, 3.5, 26.5, 7.5), ("table", 23.0, 11.6, 28.0, 14.6)],
-            notes=[(1, (14.6, 8.88), "New 2x6 wall: bath 2, private to bedroom 2 (door from the bedroom only). Tub valve in this wall; access panel AP on the hall side."), (2, (17.0, 6.5), "Chimney and the old inner hall walls removed. Patch floor and ceiling."),
-                   (3, (10.59, 10.5), "4'-11\" opening re-framed for a 2'-6\" door."), (4, (2.9, 15.64), "New closet front, 4'-4\" bifold."),
-                   (12, (11.2, 15.0), "Bath 1 becomes private to bedroom 1: the old door to the passage is walled up and a new 2'-2\" door opens from the bedroom. To make that work in a 6'-2\" x 5'-0\" room the 60 in. tub moves to the old door wall, the toilet to the bedroom 2 wall, with a 14 in. deep wall-hung sink beside the door."),
-                   (5, (17.5, 18.6), "Today this closet holds the furnace and water heater behind louvered doors that open into bedroom 1 (owner's video). Wall up the bedroom side; new solid door from the passage; 5/8 in. type X board."),
-                   (6, (33.6, 0.37), "Walls not in the scan: verify."), (7, (11.0, 26.0), "Wall not in the scan: verify."),
-                   (8, (31.9, 19.2), "Window over the counter (photo). The scan shows a 4'-4\" opening; the amber piece beside it is wall behind the range: verify."),
-                   (9, (31.9, 24.1), "Upper flat's entry door from the porch: position not in the scan, verify."),
-                   (10, (15.28, 24.0), "Wall between bedroom 1 and the stair: not in the scan, verify."),
-                   (11, (17.4, 2.0), "Bedroom 2's closet is lengthened into the closed-in pocket beside the chimney: its end wall comes out and a new wall closes the tub end of bath 2.")],
-            dims=[(10.76, 5.9, 16.23, 5.9), (15.6, 3.61, 15.6, 8.61), (10.76, 10.2, 16.83, 10.2), (0.05, 13.64, 0.05, 15.47), (9.3, 13.64, 9.3, 18.51), (6.14, 16.6, 9.78, 16.6)]),
+                  ("bed", 0.05, 23.33, "x+"), ("night", 0.05, 19.2, 1.55, 20.7), ("desk", 0.05, 14.2, 2.05, 18.2), ("dresser", 8.0, 24.33, 11.0, 25.83),
+                  ("couch", 19.2, 2.0, 22.2, 9.0, "x-"), ("tv", 33.2, 1.0, 34.59, 5.5), ("ctable", 24.5, 3.5, 26.5, 7.5), ("table", 28.3, 9.9, 31.3, 12.9)],      # table kept out of the opening between living room and kitchen
+            tagpos={"207": (16.05, 20.65)},
+            lead={},
+            notes=[(1, (17.5, 3.0), "Bath 2, private to bedroom 2, where bedroom 2's old closet and the old furnace closet were: 60 in. tub, toilet, 30 in. vanity. Its door is the old closet doorway widened to 2'-6\"; it opens back against the outside wall."),
+                   (2, (17.95, 7.35), "New 2x6 wet wall. Tub valve at this end; access panel AP in the mechanical closet."),
+                   (3, (17.5, 1.35), "Not seen by the scan (behind the old furnace closet). Bath 2 needs 8'-0\" from the bedroom wall to the living room wall: open up and measure before ordering the tub."),
+                   (4, (15.2, 11.5), "Mechanical closet. Furnace and water heater stay at this end of the hall, where they are today (owner's video), so gas and duct runs stay short. Sealed-combustion units vented through the south wall. Pair of solid doors, 3'-6\" clear; 5/8 in. type X board."),
+                   (5, (18.1, 8.6), "Chimney removed, roof to lower flat. Its place is the pipe chase: drain stack S and risers."),
+                   (6, (8.6, 7.8), "New closet for bedroom 2, 3'-0\" bifold, in the old south end of the hall."),
+                   (7, (8.0, 10.0), "Bedroom 2's door moves north in the same wall: new 2'-6\" door, opens back against the wall."),
+                   (8, (14.5, 12.6), "Electrical panel stays on this wall (owner's video; verify). 30 x 36 in. kept clear."),
+                   (9, (6.5, 15.0), "Bath 1 becomes private to bedroom 1: door to the passage walled up, new 2'-6\" door from the bedroom. Tub stays at this end (60 in. between studs; the scan reads finished faces). Toilet and 24 in. vanity on the south wall."),
+                   (10, (3.9, 17.1), "Wall moves 10 in. west so tub, toilet and vanity each get full clearance. It may carry load: check before moving."),
+                   (11, (7.9, 19.5), "Access panel AP for the tub valve: keep clear of furniture."),
+                   (12, (13.9, 20.5), "Bedroom 1 door: opening widened from 1'-11\" to 2'-4\", the most that fits between the two walls."),
+                   (13, (17.5, 18.6), "Bedroom 1's closet, as today. Doorway not in the scan (position from the video: verify). New 2'-6\" bifold."),
+                   (14, (19.45, 16.5), "Washer and dryer stay in the recess, open to the passage as today. Doors do not fit: the passage would drop under 36 in."),
+                   (15, (31.4, 7.8), "Flat entrance (existing: verify size and swing)."),
+                   (16, (32.4, 1.5), "Wall not in the scan: verify."), (16, (11.0, 26.9), ""), (16, (16.2, 24.0), ""),
+                   (17, (32.2, 19.2), "Window over the counter (photo). Scan shows a 4'-4\" opening; the amber piece is wall behind the range: verify."),
+                   (18, (32.2, 24.1), "Upper flat's entry door from the porch: position not in the scan, verify.")],
+            dims=[(10.75, 3.2, 16.24, 3.2, 0.26), (16.02, 0.54, 16.02, 5.54, 0.2), (11.05, 9.7, 11.05, 13.3, 0.2),
+                  (5.28, 18.2, 12.28, 18.2, 0.49), (0.05, 18.45, 4.95, 18.45, 0.6), (10.75, 6.9, 13.0, 6.9, 0.5)]),
     5: dict(name="Upper flat, main floor", view=((-3.5, 36.1), (-3, 30)), cut=[],
             ap=[(9.95, 25.3, 9.95, 26.5)],
             stairs=[(16.95, 19.6, 19.8, 24.6, "y+", "DN"), (20.3, 20.7, 23.45, 23.2, "y+", "UP to attic")],
@@ -328,9 +351,9 @@ def s_couch(ax, x0, y0, x1, y1, back, col="#5b6470"):
     ax.text((x0 + x1) / 2, (y0 + y1) / 2, "COUCH 7'-0\"", fontsize=3.2, color=col, ha="center", va="center", zorder=5.2, rotation=90 if (y1 - y0) > (x1 - x0) else 0, gid="own")
 
 
-def dim(ax, x0, y0, x1, y1, at=0.5, fs=3.8, gid="dim"):
-    """Dimension string. at = where the figure sits along the line (0 to 1)."""
-    L = abs(x1 - x0) + abs(y1 - y0); t = ftin(round(L * 12) / 12)
+def dim(ax, x0, y0, x1, y1, at=0.5, fs=3.8, gid="dim", text=None):
+    """Dimension string. at = where the figure sits along the line (0 to 1). text = wording to print instead of the measured length."""
+    L = abs(x1 - x0) + abs(y1 - y0); t = text or ftin(round(L * 12) / 12)
     ax.plot([x0, x1], [y0, y1], color="#333", lw=0.35, zorder=11)
     for (a, b) in ((x0, y0), (x1, y1)):
         ax.plot([a - 0.16, a + 0.16], [b - 0.16, b + 0.16], color="#333", lw=0.55, zorder=11)
@@ -349,11 +372,12 @@ def keynote(ax, n, x, y, col=NEWW, to=None):
 
 
 def panel_box(f):
-    """Working space in front of a panel: 30 in. wide (centred on the panel), 36 in. deep, on side f[5] (-1 by default)."""
-    x0, y0, x1, y1 = f[1:5]; sd = f[5] if len(f) > 5 else -1
+    """Working space in front of a panel: 30 in. wide, 36 in. deep, on side f[5] (-1 by default). It is centred on the panel unless f[6] slides it
+    along the wall (the code lets the 30 in. sit to one side as long as it covers the panel)."""
+    x0, y0, x1, y1 = f[1:5]; sd = f[5] if len(f) > 5 else -1; sh = f[6] if len(f) > 6 else 0.0
     if x0 == x1:
-        c = (y0 + y1) / 2; hw = max(1.25, (y1 - y0) / 2); return (min(x0, x0 + sd * 3.0), c - hw, max(x0, x0 + sd * 3.0), c + hw)
-    c = (x0 + x1) / 2; hw = max(1.25, (x1 - x0) / 2); return (c - hw, min(y0, y0 + sd * 3.0), c + hw, max(y0, y0 + sd * 3.0))
+        c = (y0 + y1) / 2 + sh; hw = max(1.25, (y1 - y0) / 2); return (min(x0, x0 + sd * 3.0), c - hw, max(x0, x0 + sd * 3.0), c + hw)
+    c = (x0 + x1) / 2 + sh; hw = max(1.25, (x1 - x0) / 2); return (c - hw, min(y0, y0 + sd * 3.0), c + hw, max(y0, y0 + sd * 3.0))
 
 
 # ---------------------------------------------------------------------------------------------- base plan
@@ -393,7 +417,7 @@ def draw_base(ax, fl, mode="arch"):
             for t in np.arange(y0 + 0.9, y1 - 0.2, 0.9): ax.plot([x0, x1], [t, t], color="#6b7480", lw=0.3, zorder=4.4)
             a, b = (((x0 + x1) / 2, y0 + 0.4), ((x0 + x1) / 2, y1 - 0.4)); a, b = (b, a) if way == "y-" else (a, b)
         ax.annotate("", xy=b, xytext=a, arrowprops=dict(arrowstyle="->", color="#4a4f57", lw=0.6), zorder=4.5)
-        ax.text(a[0], a[1], lab_, fontsize=3.4, color="#4a4f57", ha="center", va="center", zorder=4.6, bbox=dict(fc="white", ec="none", pad=0.2))
+        ax.text(a[0], a[1], lab_, fontsize=3.4, color="#4a4f57", ha="center", va="center", zorder=4.6, gid="own", bbox=dict(fc="white", ec="none", pad=0.2))
     dc = NEWW if arch else "#8a9099"
     for d in L["doors"]:
         s_door(ax, d[1], d[2], d[3], d[4], d[5], d[6], col=dc)
@@ -620,7 +644,11 @@ def clarity(fig, ax, fl=None, bg=None, pad=1.0):
         obs = obstacles(fl, getattr(ax, "_leaders", None)); D = ax.transData.transform
         from shapely.ops import transform as _tf
         for px, gid, nm, onplan, _p in items:
-            if gid == "own" or not onplan: continue
+            if not onplan: continue
+            if gid == "own":
+                (u0, v0), (u1, v1) = inv.transform(px.bounds[:2]), inv.transform(px.bounds[2:]); shp = box(min(u0, u1), min(v0, v1), max(u0, u1), max(v0, v1))
+                out += [f"{nm} is on {on}" for og, on, ok in obs if ok[:4] in ("dim:", "lead") and og.intersects(shp)]
+                continue
             (u0, v0), (u1, v1) = inv.transform(px.bounds[:2]), inv.transform(px.bounds[2:])
             shp = box(min(u0, u1), min(v0, v1), max(u0, u1), max(v0, v1)) if not gid.startswith("keynote") else Polygon([inv.transform(c) for c in px.exterior.coords[:-1]])
             for og, on, ok in obs:
@@ -663,7 +691,7 @@ def arch_sheet(pdf, number, fl):
                           ("General", ["Dimensions are clear, finish face to finish", "face. Hold the sizes marked; verify the", "rest on site before framing.",
                                        "New walls 2x4 at 16 in. o.c.; 2x6 where a", "tub valve, toilet or the stack is in the wall.", "Bath walls: cement board at tubs, moisture-",
                                        "resistant board elsewhere.", "Headers over every new opening; any wall", "that may be bearing is flagged: shore and", "size the header before cutting.",
-                                       "Bedroom doors 2'-6\" min."]),
+                                       "Door sizes are in the list below."]),
                           ("New doors (all 6'-8\" high)", [f"{d[0]}   {d[7].replace(' x 6' + chr(39) + '-8' + chr(34), '')}   {d[8]}"[:46] for d in sorted(L["doors"] + [(b[0], 0, 0, 0, 0, 0, 0, b[6], b[7]) for b in L["bifolds"]]) if d[7]])], ALEG)
     draw_base(ax, fl, "arch")
     tp = L.get("tagpos", {})
@@ -675,17 +703,19 @@ def arch_sheet(pdf, number, fl):
         x, y = tp.get(b[0]) or (((b[3] + b[4]) / 2, b[2] + b[5] * 1.0) if b[1] == "h" else (b[2] + b[5] * 1.0, (b[3] + b[4]) / 2))
         ax.text(x, y, b[0], fontsize=3.6, color=NEWW, ha="center", va="center", zorder=13, gid="tag", bbox=dict(boxstyle="round,pad=0.15", fc="white", ec=NEWW, lw=0.5))
     for i, d in enumerate(L["dims"]):
-        dim(ax, *d[:4], at=d[4] if len(d) > 4 else 0.5, gid=f"dim:{i}")
-    lead = L.get("lead", {}); ax._leaders = {n: (p, lead[n]) for n, p, _t in L["notes"] if n in lead}
-    for n, (x, y), _t in L["notes"]:
-        keynote(ax, n, x, y, to=lead.get(n))
+        dim(ax, *d[:4], at=d[4] if len(d) > 4 else 0.5, gid=f"dim:{i}", text=d[5] if len(d) > 5 else None)
+    lead = L.get("lead", {}); ax._leaders = {n: (p, lead[n]) for n, p, t in L["notes"] if n in lead and t}
+    for n, (x, y), t in L["notes"]:
+        keynote(ax, n, x, y, to=lead.get(n) if t else None)
     y = getattr(fig, "_legend_end", 8.0) - 0.15
     bg.text(10.6, y, "KEYNOTES", fontsize=7, fontweight="bold", color=INK, va="center"); y -= 0.24
-    for n, _p, t in L["notes"]:
+    kn = [(n, wrap(t, 56)) for n, _p, t in L["notes"] if t]          # an empty text = the same keynote shown at a second place
+    need = sum(0.13 * len(w) + 0.08 for _n, w in kn); k = max(0.86, min(1.0, (y - MG - 0.12) / need))
+    for n, w in kn:
         bg.text(10.68, y, str(n), fontsize=5.6, color=NEWW, fontweight="bold", va="center", ha="center")
-        for i, ln in enumerate(wrap(t, 56)):
-            bg.text(10.85, y - i * 0.13, ln, fontsize=5.5, color=INK, va="center")
-        y -= 0.13 * len(wrap(t, 56)) + 0.08
+        for i, ln in enumerate(w):
+            bg.text(10.85, y - i * 0.13 * k, ln, fontsize=5.5, color=INK, va="center")
+        y -= (0.13 * len(w) + 0.08) * k
     bad = clarity(fig, ax, fl, bg)
     print(number, "label clashes:", len(bad))
     for m in bad:
