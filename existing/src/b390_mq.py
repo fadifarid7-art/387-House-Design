@@ -47,7 +47,9 @@ NORTH = np.array(de.FX["north_in_building_frame"]); EAST = np.array([NORTH[1], -
 SYSTEMS = {"A": dict(levels={3: None}, name="Lower flat"), "B": dict(levels={4: None}, name="Middle flat"),
            "C": dict(levels={5: None, 6: None}, name="Upper flat (main floor + attic)")}
 NOT_SERVED = {"closet", "mech", "laundry"}
-MERGE = {(5, "312"): (5, "306")}               # open stair: its load is supplied by the register in the hall it opens from
+MERGE = {(5, "312"): (5, "306"),               # open stair: its load is supplied by the register in the hall it opens from
+         (6, "403"): (6, "401"), (6, "404"): (6, "402")}   # attic baths: every wall is under the slope, the tub, the vanity or the door;
+                                                 # their small load comes from the bedroom through a 3/4 in. door undercut, pulled by the bath fan
 STAIR_HEATER = (4, "213")                       # the upper flat's entrance stair hall: electric wall heater (no duct can reach it without crossing the middle flat)
 
 
@@ -253,6 +255,21 @@ def return_grille(cfm):
     for s, area in (("14x20", 1.94), ("16x20", 2.22), ("20x20", 2.78), ("20x25", 3.47), ("20x30", 4.17), ("24x30", 5.0)):
         if cfm / area <= 300: return s
     return "2 x 20x25"
+
+
+def sidewall(cfm):
+    """High sidewall supply register, W x H in. (W along the wall), and the wall stack or boot that feeds it."""
+    for sz, cap, st in (("10x4", 70, "3-1/4 x 10"), ("12x4", 90, "3-1/4 x 10"), ("10x6", 130, "3-1/4 x 10"), ("12x6", 170, "3-1/4 x 14"),
+                        ("14x6", 210, "3-1/4 x 14"), ("14x8", 280, "two 3-1/4 x 14")):
+        if cfm <= cap: return sz, st
+    return "14x8", "two 3-1/4 x 14"
+
+
+def wall_return(cfm):
+    """Filter return grille in a wall, W x H in.: 14 in. wide fits one stud bay; about 300 fpm or less through the filter."""
+    for sz, area in (("14x20", 1.94), ("14x25", 2.43), ("14x30", 2.92)):
+        if cfm / area <= 310: return sz
+    return "2 x 14x30"
 
 
 def jump(cfm):

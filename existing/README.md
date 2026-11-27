@@ -51,16 +51,18 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   per flat; building service 200 A calculated, so the old cable (typically 4/0 Al, 180 A) is replaced; 3-position meter stack with 125 A
   meter-mains at the existing place (east wall, north end). Receptacles are placed by the NEC spacing rules from the plan model; kitchen
   counter receptacles alternate over 3 or 4 circuits. The plumbing sheets in the builder set predate the floor-plan review.
-- `drawings/390-Forest_Mechanical_Rev1.pdf`: the HVAC set for the agreed floor plans. `src/b390_mq.py` loads (Manual J method written out room
+- `drawings/390-Forest_Mechanical_Rev2.pdf`: the HVAC set for the agreed floor plans. `src/b390_mq.py` loads (Manual J method written out room
   by room: U x A x dT per surface, glass solar gain, people, lights, infiltration and the ASHRAE 62.2 ventilation rate), equipment (Manual S) and
-  room airflows; `src/b390_mr.py` places every register, return grille, jump duct and cap by a clearance search and routes every branch, return,
-  exhaust duct and vent on a 3 in. grid through its joist space (square to the walls; not across another flat, the trunk, the chase, a stair
-  opening or a panel's dedicated space; caps 3 ft from windows, doors and property lines, none on the west wall); `src/b390_m.py` draws M-001
-  notes, equipment and per-fan exhaust schedules, M-002 loads, M-003 air distribution, the condenser airflow check under the rear deck and the
-  chase, M-101 to M-104 duct plans. Result: variable-speed air conditioners, 1.5 ton lower and middle, 2 ton upper (sized up so it still gives 93 % at the owner's
-  reported 105 F; M-002 checks every flat at -15 F and 105 F), 40,000 Btu/h two-stage furnaces (enough at -15 F), 600 / 600 / 700 CFM, 14 x 8 in. trunks; the attic
-  is fed from the upper flat's main-floor trunk in the attic floor; middle flat dryer is a ventless heat-pump type. Line sets are NOT final:
-  they wait for the size of the walled area under the rear deck.
+  room airflows, checked again at the owner's reported -15 F and 105 F. `src/b390_mr.py` finds the walls around every room from the wall geometry and
+  puts each supply register HIGH ON AN INSIDE WALL (top 6 in. below the ceiling, throwing across the room toward the outside wall), each return
+  filter grille in a wall with a box behind it, transfer grilles beside or over bedroom doors, and wall caps 3 ft from windows, doors and property
+  lines; then routes every branch, return, exhaust duct and vent on a 3 in. grid through its joist space, square to the walls, without crossing the
+  trunk, another duct, the chase, a stair opening, another flat or a panel's space. `src/b390_m.py` draws M-001 notes, equipment and per-fan exhaust
+  schedules, M-002 loads (with the extremes check), M-003 the register-by-register schedule, condenser airflow under the rear deck and the chase,
+  M-501 construction details and 3D views of each flat's ducts, M-101 to M-104 plans with every duct drawn to scale and sized.
+  Result: variable-speed air conditioners, 1.5 ton lower and middle, 2 ton upper; 40,000 Btu/h two-stage furnaces; 14 x 8 in. trunks; the attic
+  is fed from the upper flat's main-floor trunk in the attic floor; middle flat dryer is a ventless heat-pump type (no wall within 35 ft
+  equivalent, even west). Line sets are NOT final: they wait for the size of the walled area under the rear deck.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the

@@ -34,23 +34,26 @@ TRUNK_W = 14 / 12                              # 14 x 8 in. trunk, fits one jois
 TRUNK_SIZE = "14 x 8"
 
 # Supply trunks (plan ft). From the furnace's supply plenum, in the ceiling framing.
-TRUNK = {3: [[(19.3, 3.3), (19.3, 11.95)], [(15.3, 11.95), (22.6, 11.95)], [(15.3, 11.95), (15.3, 16.1), (6.5, 16.1)]],
+TRUNK = {3: [[(18.9, 3.3), (18.9, 11.95)], [(15.3, 11.95), (22.6, 11.95)], [(15.3, 11.95), (15.3, 16.1), (6.5, 16.1)]],
          4: [[(13.7, 7.35), (12.4, 7.35), (12.4, 13.0)], [(13.7, 7.35), (13.7, 5.55), (22.8, 5.55), (22.8, 15.6)]],
          5: [[(16.45, 11.0), (16.45, 17.0), (4.5, 17.0)], [(16.45, 17.0), (20.6, 17.0)]]}
-# Return: grille in this room, duct to the drop beside the furnace (into its return platform).
-RET = {3: dict(room="107", drop=(20.95, 3.33), name="R-A"), 4: dict(room="207", drop=(13.25, 9.1), name="R-B"),
-       5: dict(room="306", drop=(18.5, 12.4), name="R-C1")}
-RET2 = dict(fl=6, room="405", name="R-C2", cfm=160)        # attic: floor grille at the top of the stair, boot on the R-C1 duct below
-# Upper flat: R-C1 (main-floor hall ceiling) and R-C2 (attic stair-hall floor) share one return box in the floor framing between them.
-RET_AT = {5: ((18.7, 14.85), "x"), 6: ((18.7, 15.65), "x")}
-VENTLESS = {4: "Heat-pump dryer, ventless: no outside wall the vent may use is within 35 ft equivalent (north windows, west neighbour, east stair, trunk)."}
+# Return: filter grille in a wall of one of these rooms, box behind it, duct to the drop beside the furnace (into its return platform).
+RET = {3: dict(rooms=("107",), drop=(20.95, 3.33), name="R-A"), 4: dict(rooms=("207", "210"), drop=(13.25, 9.1), name="R-B"),
+       5: dict(rooms=("301", "306"), drop=(16.2, 10.5), name="R-C1", through=True)}
+RET2 = dict(fl=6, rooms=("405",), name="R-C2", cfm=160, drop=(18.5, 12.4))      # attic: high wall return at the top of the stair, stack down, duct to F-C
+VENTLESS = {4: "Heat-pump dryer, ventless: no outside wall the vent may use is within 35 ft equivalent (west route about 51 ft eq.; north windows; east stair)."}
 # Vertical shafts: the old chimney becomes the chase; on the middle level the chimney is gone and the pipes rise behind the water heater.
 CHASE = {3: (17.4, 6.4, 18.0, 9.38), 4: (16.45, 6.15, 18.7, 8.6), 5: (15.65, 6.2, 17.85, 8.6), 6: (15.7, 5.96, 17.75, 8.4)}
-TSTAT = {3: (10.5, 13.12, (0, 1)), 4: (11.3, 13.55, (0, -1)), 5: (23.75, 18.6, (-1, 0))}
+TSTAT = {3: (3.0, 13.12, (0, 1)), 4: (11.3, 13.55, (0, -1)), 5: (23.75, 18.6, (-1, 0))}
 # Exhaust caps: which outside walls may take one, with a cost (ft of extra duct it is worth to avoid). None = never.
-# West: the neighbour's house is a few feet away (3 ft to the property line). East: the wood stair and the property line.
+# West: small caps are fine (owner); nothing big on that side. East: the wood stair and the property line.
 # Lower flat north end: below grade. Lower flat south: the rear deck and the condensers under it.
-CAPS = {3: dict(N=None, S=8.0, E=0.0, W=None), 4: dict(N=0.0, S=0.0, E=6.0, W=None), 5: dict(N=0.0, S=0.0, E=6.0, W=None)}
+CAPS = {3: dict(N=None, S=8.0, E=0.0, W=0.0), 4: dict(N=0.0, S=0.0, E=6.0, W=0.0), 5: dict(N=0.0, S=0.0, E=6.0, W=0.0)}
+BELOW_GRADE = {3: lambda p, s: s in ("N", "W") and p[0] > 21.0}     # lower flat north end (bedroom 2): north and west walls against earth
+HOST = {(4, "202"): "201", (5, "302"): "301"}
+CHASE_ROOMS = {5: ("314",), 6: ("408",)}
+# attic: where the ceiling is too low for a high wall register (the slopes): the bath alcoves under the east slope, and the west slope
+ATTIC_LOW = unary_union([box(11.0, 5.5, 22.7, 9.0), box(-1.0, 19.8, 32.0, 22.0)])         # pipe chases: no grille boots in their walls  # kitchens with every wall taken by cabinets, windows or openings: fed from the open living room
 REG = {"ceiling": (1.1, 0.6), "floor": (0.9, 0.5)}         # drawn register size (ft)
 RG_SIZE = {"14x20": (20 / 12, 14 / 12), "16x20": (20 / 12, 16 / 12), "20x20": (20 / 12, 20 / 12), "20x25": (25 / 12, 20 / 12)}
 
@@ -156,7 +159,7 @@ def cost_map(g, fl, own, kind):
         if f[0] == "tub": c[g.mask(box(*f[1:5]))] += 1.0
     c = c + g.occ
     ok = g.inside.copy()
-    if kind in ("supply", "return") and g.space == 5: ok &= g.attic
+    if kind in ("supply", "return") and g.space == 5: c = c + np.where(g.attic, 0.0, 3.0)      # under the eave floor: only if it must, R-8 duct
     c[~ok] = np.inf
     c[g.blocked] = np.inf
     if kind == "supply": c[g.band & ~g.centre] += 6.0
@@ -268,6 +271,100 @@ def windows_near(fl):
     return [(cx, cy, w) for cx, cy, w, h in mq.windows(fl)]
 
 
+@lru_cache(None)
+def wall_faces(fl, no):
+    """Wall faces around a room's open floor (walls inside the room's outline too, such as a pantry or laundry alcove), sampled every
+    3 in.: dicts with edge id, face point p, inward normal n, along-wall u, what is behind (interior / exterior / demising / none),
+    the room behind and the wall thickness."""
+    from shapely.prepared import prep
+    from shapely.geometry.polygon import orient
+    r = room_of(fl, no); R = room_shape(r); Sg = e.solid(fl); S_ = prep(Sg); P_ = prep(q.outline(fl)); out = []
+    L = b.LV[fl]; k = mq.flat_of(fl, r); others = [(rr, prep(room_shape(rr))) for rr in L["rooms"] if rr is not r]
+    inner = [room_shape(rr) for rr in L["rooms"] if rr is not r and R.buffer(.05).contains(room_shape(rr))]
+    free = R.buffer(.12, join_style="mitre").difference(Sg)
+    for sh in inner: free = free.difference(sh.buffer(.12, join_style="mitre"))
+    polys = [p_ for p_ in (free.geoms if hasattr(free, "geoms") else [free]) if p_.area > 1.0]
+    for pi, P in enumerate(polys):
+        P = orient(P, 1.0)
+        for ri, ring in enumerate([P.exterior] + list(P.interiors)):
+            c = list(ring.coords)
+            for si, (a_, b_) in enumerate(zip(c[:-1], c[1:])):
+                d = math.dist(a_, b_)
+                if d < .5: continue
+                u = ((b_[0] - a_[0]) / d, (b_[1] - a_[1]) / d); n_out = (u[1], -u[0])
+                for t in np.arange(.125, d - .1, .25):
+                    p = (a_[0] + u[0] * t, a_[1] + u[1] * t)
+                    if not R.buffer(.15).contains(Point(p)): continue
+                    f0 = next((dd for dd in np.arange(-.05, .3, .05) if S_.contains(Point(p[0] + n_out[0] * dd, p[1] + n_out[1] * dd))), None)
+                    if f0 is None: continue
+                    th = next((dd for dd in np.arange(f0 + .05, 2.5, .05) if not S_.contains(Point(p[0] + n_out[0] * dd, p[1] + n_out[1] * dd))), 2.5) - f0
+                    face = (p[0] + n_out[0] * f0, p[1] + n_out[1] * f0)
+                    bp = Point(face[0] + n_out[0] * (th + .3), face[1] + n_out[1] * (th + .3))
+                    if not P_.contains(bp): back, bno = "exterior", None
+                    else:
+                        rr = next((rr for rr, pr in others if pr.contains(bp)), None)
+                        if rr is None: back, bno = "none", None
+                        elif mq.flat_of(fl, rr) != k: back, bno = "demising", rr["no"]
+                        else: back, bno = "interior", rr["no"]
+                    out.append(dict(eid=(pi, ri, si), t=t, p=face, n=(-n_out[0], -n_out[1]), u=u, back=back, bno=bno, th=th))
+    return out
+
+
+# what may not be in front of (below) a high wall grille: cabinets with uppers, tall appliances, the tub, the vanity mirror, equipment
+WALL_BAD = ("fridge", "base", "sinkbase", "dw", "range", "wdstack", "washer", "dryer", "tub", "van", "furnace", "wh", "panel")
+
+
+@lru_cache(None)
+def wall_blockers(fl):
+    L = b.LV[fl]; shp = [b._fx_geom(f) for f in L["fx"] if (f[0] in WALL_BAD or (fl == 6 and f[0] == "wc")) and f[0] != "panel"]
+    shp += [box(*b.panel_box(f)) for f in L["fx"] if f[0] == "panel"]
+    return unary_union(shp)
+
+
+def wall_place(fl, r, w, backs=("interior", "exterior", "none")):
+    """Places on the walls of room r for a grille w ft wide: solid wall the whole width plus 2 in. each side, no door or opening,
+    nothing tall or wet below it, the wall behind of an allowed kind. Each: dict(p, n, u, back, bno, th, front)."""
+    rows = wall_faces(fl, r["no"]); gp = e.gaps(fl); bl = wall_blockers(fl); out = []
+    by = {}
+    for rw in rows:                                                 # samples on one wall line, whatever polygon segment they came from
+        n = rw["n"]; key = (round(n[0], 2), round(n[1], 2), round((rw["p"][0] * n[0] + rw["p"][1] * n[1]) / .15))
+        by.setdefault(key, []).append(rw)
+    half = w / 2 + .17
+    for key, rs in by.items():
+        u_ = (-key[1], key[0]); tt = lambda rw: rw["p"][0] * u_[0] + rw["p"][1] * u_[1]
+        rs.sort(key=tt); ts = np.array([tt(rw) for rw in rs])
+        for i, rw in enumerate(rs):
+            if rw["back"] not in backs or rw["bno"] in CHASE_ROOMS.get(fl, ()): continue
+            if fl == 6 and ATTIC_LOW.contains(Point(rw["p"])): continue
+            idx = np.nonzero(np.abs(ts - ts[i]) <= half)[0]
+            if len(idx) < int(2 * half / .25) or (len(idx) > 1 and np.max(np.diff(ts[idx])) > .32): continue
+            span = [rs[j] for j in idx]
+            if any(sp["back"] != rw["back"] or sp["bno"] != rw["bno"] for sp in span): continue
+            if any(gp.contains(Point(sp["p"])) for sp in span): continue
+            c = dict(p=rw["p"], n=rw["n"], u=rw["u"], back=rw["back"], bno=rw["bno"], th=rw["th"])
+            c["front"] = rect(c, w, .9)
+            if c["front"].intersects(bl): continue
+            out.append(c)
+    return out
+
+
+def rect(c, w, depth):
+    """Rectangle w wide on the wall face at c, depth into the room."""
+    p, n, u = c["p"], c["n"], c["u"]
+    pts = [(p[0] - u[0] * w / 2, p[1] - u[1] * w / 2), (p[0] + u[0] * w / 2, p[1] + u[1] * w / 2)]
+    pts += [(pts[1][0] + n[0] * depth, pts[1][1] + n[1] * depth), (pts[0][0] + n[0] * depth, pts[0][1] + n[1] * depth)]
+    return Polygon(pts)
+
+
+def wall_symbol(c, w, depth=.28):
+    return rect(c, w, depth)
+
+
+def cavity(c, w):
+    """The stud bays the grille's boot or box takes, for keeping grilles on the two faces of one wall apart."""
+    return rect(c, w + .7, -(c["th"] + .05))
+
+
 # ---------------------------------------------------------------------------------------------- the layout of one joist space
 @lru_cache(None)
 def layout(space):
@@ -280,122 +377,56 @@ def layout(space):
             if f_ == fl and o.distance(shp) < pad: return False
         return True
 
-    # ---- return grille(s)
-    rinfo = RET[space]; rcfm = S["cfm"] - (RET2["cfm"] if space == 5 else 0); rsize = mq.return_grille(rcfm)
-    fl = space; r = room_of(fl, rinfo["room"]); gw, gh = RG_SIZE.get(rsize, (1.7, 1.4))
-    best = None
-    if space in RET_AT:
-        (cx, cy), orient = RET_AT[space]; w_, h_ = (gw, gh) if orient == "x" else (gh, gw)
-        best = (0, (cx, cy), orient, box(cx - w_ / 2, cy - h_ / 2, cx + w_ / 2, cy + h_ / 2))
-    for qq in ([] if best else r["rects"]):
-        for orient in ("x", "y"):
-            w_, h_ = (gw, gh) if orient == "x" else (gh, gw)
-            for cx in np.arange(qq[0] + w_ / 2 + .15, qq[2] - w_ / 2 - .15 + 1e-6, G):
-                for cy in np.arange(qq[1] + h_ / 2 + .15, qq[3] - h_ / 2 - .15 + 1e-6, G):
-                    shp = box(cx - w_ / 2, cy - h_ / 2, cx + w_ / 2, cy + h_ / 2)
-                    if shp.intersects(g.trunk_shape.buffer(0.12)) or not room_shape(r).buffer(.05).contains(shp): continue
-                    if shp.intersects(box(*CHASE[fl]).buffer(.1)): continue
-                    i, j = g.cell((cx, cy))
-                    if g.blocked[i, j]: continue
-                    sc = math.dist((cx, cy), rinfo["drop"]) * 0.6 + (1.0 if shp.intersects(swings(fl)) else 0.0) + \
-                        (5.0 if LineString([(cx, cy), rinfo["drop"]]).intersects(g.trunk_shape) else 0.0)
-                    if best is None or sc < best[0]: best = (sc, (cx, cy), orient, shp)
-    if best is None:
-        out["problems"].append(f"no place for return grille {rinfo['name']} in room {rinfo['room']}"); rp = r["lab"]; shp = Point(rp).buffer(.6); orient = "x"
-    else:
-        _sc, rp, orient, shp = best
-    items.append((shp, fl))
-    cm = cost_map(g, fl, {i for i, rr in enumerate(b.LV[fl]["rooms"]) if rr["kind"] in ("hall", "mech")}, "return")
-    cells = dijkstra(g, cm, {g.cell(rinfo["drop"]): 0.0}, {g.cell(rp)})
-    rpath = corners(g, cells, rinfo["drop"], rp) if cells else [rinfo["drop"], rp]
-    if not cells: out["problems"].append(f"return {rinfo['name']}: no route")
-    g.occupy(rpath, r_on=0.55, r_near=0.9, on=60, near=6)
-    out["rets"].append(dict(name=rinfo["name"], fl=fl, p=rp, size=rsize, orient=orient, path=list(reversed(rpath)), cfm=rcfm, kind="ceiling", shape=shp))
-    if space == 5:                                                  # attic floor grille on the R-C1 duct
-        r6 = room_of(6, RET2["room"]); R6 = room_shape(r6).buffer(-0.2); ls = LineString(rpath); s2 = mq.return_grille(RET2["cfm"])
-        w2, h2 = RG_SIZE.get(s2, (1.7, 1.2)); cand = []
-        if 6 in RET_AT:
-            (px_, py_), o_ = RET_AT[6]; w_, h_ = (w2, h2) if o_ == "x" else (h2, w2)
-            cand = [(0, (px_, py_), o_, box(px_ - w_ / 2, py_ - h_ / 2, px_ + w_ / 2, py_ + h_ / 2))]
-            if not room_shape(r6).contains(cand[0][3]): out["problems"].append("R-C2 is not inside the attic stair hall")
-            if cand[0][3].intersects(g.trunk_shape): out["problems"].append("R-C2 box is on the trunk")
-            rpath = rpath[:-1] + [(px_, py_)] if False else rpath
-        for t in ([] if cand else np.linspace(0, ls.length, 80)):
-            p = ls.interpolate(t); seg_h = True
-            for a, c in zip(rpath[:-1], rpath[1:]):
-                if LineString([a, c]).distance(p) < 1e-6: seg_h = abs(a[1] - c[1]) < 1e-6
-            w_, h_ = (w2, h2) if seg_h else (h2, w2)
-            sh2 = box(p.x - w_ / 2, p.y - h_ / 2, p.x + w_ / 2, p.y + h_ / 2)
-            if R6.contains(sh2) and not sh2.intersects(swings(6)): cand.append((abs(p.y - 16.0), (p.x, p.y), "x" if seg_h else "y", sh2))
-        if cand:
-            _s, p2, o2, sh2 = min(cand, key=lambda t: t[0]); path2 = [p2, p2]
-        else:                                                       # not under the stair hall: its own short duct to R-C1's
-            p2 = (18.7, 15.3); o2 = "x"; sh2 = box(p2[0] - w2 / 2, p2[1] - h2 / 2, p2[0] + w2 / 2, p2[1] + h2 / 2)
-            cm6 = cost_map(g, 6, {next(i for i, rr in enumerate(b.LV[6]["rooms"]) if rr["no"] == RET2["room"])}, "return")
-            tgt = {g.cell(pp) for pp in (ls.interpolate(t).coords[0] for t in np.linspace(0, ls.length, 60))}
-            cells = dijkstra(g, cm6, {g.cell(p2): 0.0}, tgt); path2 = corners(g, cells, p2) if cells else [p2, p2]
-            g.occupy(path2, r_on=.45, r_near=.8, on=60, near=6)
-            out["problems"].append("R-C1's duct does not pass under the attic stair hall: R-C2 has its own duct")
-        items.append((sh2, 6))
-        out["rets"].append(dict(name=RET2["name"], fl=6, p=p2, size=s2, orient=o2, path=path2, cfm=RET2["cfm"], kind="floor", shape=sh2))
+    reach_cache = {}
 
-    # ---- supply registers
-    ATTIC = q.outline(6).buffer(-0.35) if space == 5 else None
-    fans = {}
-    for fl in LEVELS[space]:
-        for d in e.all_devices()[fl][0]:
-            if d["k"] == "F": fans.setdefault((fl, d["room"]), []).append((d["x"], d["y"]))
-    plan = []
-    for x in S["served"]:
-        fl = x["fl"]
-        if SPACE[fl] != space: continue
-        plan.append(x)
-    plan.sort(key=lambda x: -x["cfm"])
-    for x in plan:
-        fl = x["fl"]; r = x["r"]; n = mq.n_registers(r, x["cfm"]); floor = (fl == 6); rw, rh = REG["floor" if floor else "ceiling"]
-        R = room_shape(r); fx = fixtures(fl)
-        bad = unary_union([fx.get(kk, Polygon()).buffer(.25) for kk in ("tub", "range", "wc")] + [fx.get(kk, Polygon()) for kk in ("van", "fridge", "furnace", "wh", "washer", "dryer", "wdstack")] if floor else
-                          [fx.get(kk, Polygon()).buffer(.25) for kk in ("tub", "range")])
-        if floor: bad = bad.union(unary_union([box(*f[1:5]) for f in b.LV[fl]["fx"] if f[0] in ("base", "sinkbase", "dw")]))
-        pref = []
-        for cx, cy, w, h, nv, br in sorted(x["wins"], key=lambda t: -t[2]):
-            dd = 1.0 if floor else 1.5; pref.append((cx - nv[0] * dd, cy - nv[1] * dd))
-        if len(pref) < n and x["edges"]:
-            L_, nv, br, kind = max(x["edges"], key=lambda t: t[0]); x0, y0, x1, y1 = max(r["rects"], key=lambda qq: (qq[2] - qq[0]) * (qq[3] - qq[1]))
-            dd = 1.0 if floor else 1.5
-            for i in range(n - len(pref)):
-                if nv[0] == 0: pref.append((x0 + (x1 - x0) * (i + 1) / (n - len(pref) + 1), (y1 - dd) if nv[1] > 0 else (y0 + dd)))
-                else: pref.append(((x1 - dd) if nv[0] > 0 else (x0 + dd), y0 + (y1 - y0) * (i + 1) / (n - len(pref) + 1)))
-        if r["kind"] == "bath" or not pref:
-            # baths: away from the tub and the fan, over the floor in front of the vanity or by the door
-            fr = R.buffer(-.5).difference(bad)
-            pref = [(fr.centroid.x, fr.centroid.y)] if not fr.is_empty else [R.centroid.coords[0]]
-        got = []
-        for pi in range(n):
-            pp = pref[pi % len(pref)]; best = None
-            for qq in r["rects"]:
-                for orient in ("x", "y"):
-                    w_, h_ = (rw, rh) if orient == "x" else (rh, rw)
-                    for cx in np.arange(qq[0] + w_ / 2 + .2, qq[2] - w_ / 2 - .2 + 1e-6, G):
-                        for cy in np.arange(qq[1] + h_ / 2 + .2, qq[3] - h_ / 2 - .2 + 1e-6, G):
-                            shp = box(cx - w_ / 2, cy - h_ / 2, cx + w_ / 2, cy + h_ / 2)
-                            if not R.contains(shp) or shp.intersects(bad) or shp.intersects(g.trunk_shape.buffer(.15)): continue
-                            if shp.intersects(box(*CHASE[fl]).buffer(.1)): continue
-                            i, j = g.cell((cx, cy))
-                            if g.blocked[i, j] or not g.inside[i, j]: continue
-                            if space == 5 and not ATTIC.contains(shp): continue
-                            if any(math.dist((cx, cy), f_) < 1.6 for f_ in fans.get((fl, r["no"]), [])): continue
-                            if not clear_of_items(shp, fl, .5): continue
-                            if any(math.dist((cx, cy), gp) < 3.0 for gp in got): continue
-                            tr = g.trunk_shape.exterior.distance(Point(cx, cy))
-                            sc = math.dist((cx, cy), pp) + 0.12 * tr + (2.0 if shp.intersects(swings(fl)) else 0.0) + (0.6 if orient != ("x" if abs(pp[0] - cx) < abs(pp[1] - cy) else "y") else 0.0)
-                            if best is None or sc < best[0]: best = (sc, (cx, cy), orient, shp)
-            if best is None:
-                out["problems"].append(f"no place for a register in room {r['no']} (level {fl})"); continue
-            _s, p, orient, shp = best; got.append(p); items.append((shp, fl))
-            c = x["cfm"] / n
-            out["regs"].append(dict(p=p, cfm=c, d=mq.round_duct(c), g=mq.register(c), room=r["no"], flat=k, fl=fl, floor=floor, orient=orient, shape=shp))
-    # ---- jump ducts (levels 3 to 5) and transfer grilles (attic)
+    def reach(fl, p):
+        """Duct length (ft) from the trunk to a point by the cheapest square route through this joist space."""
+        if fl not in reach_cache:
+            cm = cost_map(g, fl, set(), "supply"); cm = np.where(np.isinf(cm), np.inf, 1.0 + np.where(g.wall[fl], 1.0, 0.0))
+            dist = np.full(cm.shape, np.inf); hp = []
+            for i, j in zip(*np.nonzero(g.centre)): dist[i, j] = 0.0; heapq.heappush(hp, (0.0, i, j))
+            while hp:
+                d0, i, j = heapq.heappop(hp)
+                if d0 > dist[i, j]: continue
+                for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    a_, b_ = i + di, j + dj
+                    if 0 <= a_ < g.nx and 0 <= b_ < g.ny and cm[a_, b_] < np.inf and d0 + cm[a_, b_] < dist[a_, b_]:
+                        dist[a_, b_] = d0 + cm[a_, b_]; heapq.heappush(hp, (dist[a_, b_], a_, b_))
+            reach_cache[fl] = dist
+        i, j = g.cell(p); best = min((reach_cache[fl][a_, b_] for a_ in range(i - 2, i + 3) for b_ in range(j - 2, j + 3) if 0 <= a_ < g.nx and 0 <= b_ < g.ny), default=np.inf)
+        return best * G if best < np.inf else 99.0
+
+    # ---- return grilles: in walls, 14 in. wide (one stud bay), with a sealed box behind
+    def place_return(fl, rooms, cfm, drop, high=True, need_back=None):
+        sz = mq.wall_return(cfm); w = 14 / 12; best = None
+        for no in rooms:
+            r = room_of(fl, no)
+            for c in wall_place(fl, r, w):
+                if need_back and not need_back(c): continue
+                if not clear_of_items(c["front"], fl, .1) or not clear_of_items(cavity(c, w), fl, .02): continue
+                inner = (c["p"][0] - c["n"][0] * c["th"] / 2, c["p"][1] - c["n"][1] * c["th"] / 2)
+                sc = math.dist(c["p"], drop) * .5 + (1.0 if c["front"].intersects(swings(fl)) else 0.0) + \
+                    (12.0 if LineString([inner, (inner[0], drop[1]), drop]).intersects(g.trunk_shape) and LineString([inner, (drop[0], inner[1]), drop]).intersects(g.trunk_shape) else 0.0)
+                if best is None or sc < best[0]: best = (sc, c, no)
+        if best is None:
+            out["problems"].append(f"no wall for return grille in rooms {rooms} (level {fl})"); return None
+        c = best[1]; shp = wall_symbol(c, w)
+        items.append((shp, fl)); items.append((c["front"], fl)); items.append((cavity(c, w), fl))
+        return dict(fl=fl, p=c["p"], n=c["n"], u=c["u"], w=w, size=sz, cfm=cfm, kind="wall", high=high, shape=shp, back=c["back"], bno=c["bno"], th=c["th"], room=best[2])
+
+    def mech_or_thick(fl):
+        mechs = {rr["no"] for rr in b.LV[fl]["rooms"] if rr["kind"] in ("mech", "closet", "laundry")}
+        return lambda c: (c["back"] == "interior" and c["bno"] in mechs) or c["th"] >= .7
+
+    for fl_ in LEVELS[space]:                                       # no grille within 2 ft of the thermostat
+        if fl_ in TSTAT: items.append((Point(TSTAT[fl_][:2]).buffer(2.0), fl_))
+    rinfo = RET[space]; rcfm = S["cfm"] - (RET2["cfm"] if space == 5 else 0)
+    rt = place_return(space, rinfo["rooms"], rcfm, rinfo["drop"], need_back=mech_or_thick(space))
+    if rt: rt.update(name=rinfo["name"], drop=rinfo["drop"], through=rinfo.get("through", False)); out["rets"].append(rt)
+    if space == 5:
+        r2 = place_return(6, RET2["rooms"], RET2["cfm"], RET2["drop"])
+        if r2: r2.update(name=RET2["name"], drop=RET2["drop"], through=False); out["rets"].append(r2)
+    # ---- transfer grilles: through the wall beside each bedroom door, high on the bedroom side, low on the hall side
     for fl in LEVELS[space]:
         L = b.LV[fl]; sw = swings(fl)
         for d in L["doors"]:
@@ -407,82 +438,122 @@ def layout(space):
                 bed = next((r for r in L["rooms"] if r["kind"] == "bed" and room_shape(r).contains(Point(P(cmid, w0 - .9)))), None); sgn = -1
             if bed is None: continue
             hall = next((r for r in L["rooms"] if r is not bed and room_shape(r).contains(Point(P(cmid, w0 - sgn * .9)))), None)
-            x_, _k = next(((xx, kk) for kk in [k] for xx in S["served"] if xx["fl"] == fl and xx["r"]["no"] == bed["no"]), (None, None))
+            x_ = next((xx for xx in S["served"] if xx["fl"] == fl and xx["r"]["no"] == bed["no"]), None)
             if x_ is None or hall is None: continue
-            jd = mq.jump(x_["cfm"])
-            if fl == 6:                                              # attic: through-wall transfer grilles beside the door
-                best = None; Wsh = e.solid(fl)
-                for t in list(np.arange(a1 + .35, a1 + 2.5, .1)) + list(np.arange(a0 - .35, a0 - 2.5, -.1)):
-                    seg = LineString([P(t - .5, w0), P(t + .5, w0)])
-                    if not Wsh.buffer(.02).contains(seg): continue
-                    if seg.buffer(.3).intersects(sw): continue
-                    if not room_shape(bed).buffer(.12).contains(Point(P(t, w0 + sgn * .35))) or not room_shape(hall).buffer(.12).contains(Point(P(t, w0 - sgn * .35))): continue
-                    sc = abs(t - cmid)
-                    if best is None or sc < best[0]: best = (sc, t)
-                if best is None:
-                    out["problems"].append(f"no wall beside door {d[0]} for a transfer grille"); continue
-                t = best[1]; th = 0.2
-                a_ = P(t, w0 + sgn * th); b_ = P(t, w0 - sgn * th)
-                out["jumps"].append(dict(a=a_, b=b_, d=jd, room=bed["no"], fl=fl, kind="wall", axis=axis, size="14x6" if x_["cfm"] > 80 else "12x6"))
-                items.append((LineString([a_, b_]).buffer(.5), fl)); continue
-            Bsh, Hsh = room_shape(bed).buffer(-.4), room_shape(hall).buffer(-.4); best = None
-            for t in np.arange(cmid - 4.0, cmid + 4.01, G):
-                for d1 in np.arange(0.75, 2.6, G):
-                    pa = P(t, w0 + sgn * d1); A = Point(pa).buffer(.38, cap_style="square")
-                    if not Bsh.contains(A) or A.intersects(g.trunk_shape.buffer(.12)) or not clear_of_items(A, fl, .3): continue
-                    ia, ja = g.cell(pa)
-                    if g.blocked[ia, ja]: continue
-                    for d2 in np.arange(0.75, 2.6, G):
-                        pb = P(t, w0 - sgn * d2); B = Point(pb).buffer(.38, cap_style="square")
-                        if not Hsh.contains(B) or B.intersects(g.trunk_shape.buffer(.12)) or not clear_of_items(B, fl, .3): continue
-                        ib, jb = g.cell(pb)
-                        if g.blocked[ib, jb]: continue
-                        ln = LineString([pa, pb])
-                        if ln.intersects(g.trunk_shape) or any(ln.intersects(o) for o, f_ in items if f_ == fl): continue
-                        sc = abs(t - cmid) * .7 + d1 + d2 + g.occ[g.cell(pa)] * .02 + g.occ[g.cell(pb)] * .02 + 1.2 * A.intersects(sw) + 1.2 * B.intersects(sw)
-                        if best is None or sc < best[0]: best = (sc, pa, pb)
+            best = None; Wsh = e.solid(fl)
+            for t in list(np.arange(a1 + .35, a1 + 3.0, .1)) + list(np.arange(a0 - .35, a0 - 3.0, -.1)):
+                seg = LineString([P(t - .62, w0), P(t + .62, w0)])
+                if not Wsh.buffer(.02).contains(seg): continue
+                if not room_shape(bed).buffer(.12).contains(Point(P(t, w0 + sgn * .35))) or not room_shape(hall).buffer(.12).contains(Point(P(t, w0 - sgn * .35))): continue
+                fa = box(*seg.buffer(.45, cap_style="flat").bounds)
+                if not clear_of_items(fa, fl, .05): continue
+                sc = abs(t - cmid) + (1.0 if seg.buffer(.3).intersects(sw) else 0.0)
+                if best is None or sc < best[0]: best = (sc, t)
             if best is None:
-                out["problems"].append(f"no place for the jump duct of bedroom {bed['no']}"); continue
-            _s, pa, pb = best
-            out["jumps"].append(dict(a=pa, b=pb, d=jd, room=bed["no"], fl=fl, kind="ceiling"))
-            for p in (pa, pb): items.append((Point(p).buffer(.38, cap_style="square"), fl))
-            g.occupy([pa, pb], r_on=.45, r_near=.8, on=30, near=4)
+                ce = mq.ceil_ft(fl, bed)
+                if ce >= 7.6:                                        # above the door: 12 in. of wall over the header
+                    t = cmid; th = 0.2
+                    a_ = P(t, w0 + sgn * th); b_ = P(t, w0 - sgn * th)
+                    out["jumps"].append(dict(a=a_, b=b_, room=bed["no"], fl=fl, kind="wall", axis=axis, size="14x6", cfm=x_["cfm"], over_door=True))
+                    continue
+                # jump duct: high wall grille in the bedroom and one in the hall, joined through the ceiling framing
+                jd = mq.jump(x_["cfm"]); lists = []
+                for rm, sg in ((bed, sgn), (hall, -sgn)):
+                    cands = [c for c in wall_place(fl, rm, 14 / 12, backs=("interior", "none")) if clear_of_items(c["front"], fl, .2) and clear_of_items(cavity(c, 14 / 12), fl, .02)]
+                    cands.sort(key=lambda c: math.dist(c["p"], P(cmid, w0))); lists.append(cands[:40])
+                pick = [None, None]
+                if all(lists):                                       # the pair with the shortest duct between them, near the door
+                    man = lambda a_, b_: abs(a_[0] - b_[0]) + abs(a_[1] - b_[1])
+                    ca, cb = min(((ca, cb) for ca in lists[0] for cb in lists[1] if man(ca["p"], cb["p"]) > .8),
+                                 key=lambda t_: man(t_[0]["p"], t_[1]["p"]) + .3 * (math.dist(t_[0]["p"], P(cmid, w0)) + math.dist(t_[1]["p"], P(cmid, w0))))
+                    pick = [ca, cb]
+                if None in pick:
+                    out["problems"].append(f"no wall for the jump duct of bedroom {bed['no']}"); continue
+                ins = [(c["p"][0] - c["n"][0] * c["th"] / 2, c["p"][1] - c["n"][1] * c["th"] / 2) for c in pick]
+                cm = cost_map(g, fl, {i for i, rr in enumerate(L["rooms"]) if rr["no"] in (bed["no"], hall["no"])}, "return")
+                for c_ in ins: cm[g.cell(c_)] = 1.0
+                cells = dijkstra(g, cm, {g.cell(ins[0]): 0.0}, {g.cell(ins[1])})
+                path = corners(g, cells, ins[0], ins[1]) if cells else [ins[0], ins[1]]
+                g.occupy(path, r_on=.35, r_near=.6, on=30, near=3)
+                for c in pick: items.append((wall_symbol(c, 14 / 12), fl)); items.append((c["front"], fl)); items.append((cavity(c, 14 / 12), fl))
+                out["jumps"].append(dict(a=pick[0]["p"], b=pick[1]["p"], ca=pick[0], cb=pick[1], path=path, d=jd, room=bed["no"], fl=fl, kind="jump", cfm=x_["cfm"], size="14x6"))
+                continue
+            t = best[1]; th = 0.2
+            a_ = P(t, w0 + sgn * th); b_ = P(t, w0 - sgn * th)
+            out["jumps"].append(dict(a=a_, b=b_, room=bed["no"], fl=fl, kind="wall", axis=axis, size="14x8" if x_["cfm"] > 110 else "14x6", cfm=x_["cfm"]))
+            items.append((LineString([a_, b_]).buffer(.6), fl))
+    # ---- supply registers: high on an inside wall (top 8 in. below the ceiling), throwing across the room toward the outside wall
+    ATTIC = q.outline(6).buffer(-0.35) if space == 5 else None
+    fans = {}
+    for fl in LEVELS[space]:
+        for d in e.all_devices()[fl][0]:
+            if d["k"] == "F": fans.setdefault((fl, d["room"]), []).append((d["x"], d["y"]))
+    plan = sorted([x for x in S["served"] if SPACE[x["fl"]] == space], key=lambda x: -x["cfm"])
+    tags = {}
+    for x in plan:
+        fl = x["fl"]; r = x["r"]; n = mq.n_registers(r, x["cfm"]); c_ = x["cfm"] / n; sz, stack = mq.sidewall(c_); w = int(sz.split("x")[0]) / 12
+        R = room_shape(r); got = []
+        rets_here = [rt_["p"] for rt_ in out["rets"] if rt_["fl"] == fl and rt_["room"] == r["no"]]
+        host = room_of(fl, HOST[(fl, r["no"])]) if (fl, r["no"]) in HOST else None
+        for pi in range(n):
+            best = None
+            for rm, ok_back, pen in ((r, ("interior",), 0.0), (r, ("interior", "exterior", "none"), 4.0)) + (((host, ("interior", "none"), 1.0),) if host else ()):
+                Rm = room_shape(rm).union(R)
+                for c in wall_place(fl, rm, w, backs=ok_back):
+                    p = c["p"]
+                    if any(math.dist(p, gp) < 4.0 for gp in got): continue
+                    if not clear_of_items(c["front"], fl, .2) or not clear_of_items(cavity(c, w), fl, .02): continue
+                    eave = space == 5 and fl == 5 and not ATTIC.contains(Point(p[0] - c["n"][0] * .3, p[1] - c["n"][1] * .3))
+                    ray = LineString([p, (p[0] + c["n"][0] * 40, p[1] + c["n"][1] * 40)]).intersection(Rm.buffer(.3))
+                    seg = ray if ray.geom_type == "LineString" else max(ray.geoms, key=lambda gg: gg.length) if not ray.is_empty and hasattr(ray, "geoms") else ray
+                    throw = seg.length if not seg.is_empty else 0
+                    ex = seg.coords[-1] if not seg.is_empty else p
+                    exitp = Point(ex[0] + c["n"][0] * .9, ex[1] + c["n"][1] * .9)
+                    ext = not q.outline(fl).contains(exitp)
+                    win = any(math.dist(ex, (wx, wy)) < ww / 2 + 1.5 for wx, wy, ww in windows_near(fl)) if ext else False
+                    if rm is not r:                                              # from the host room: the air stream (3 ft wide) must sweep this room
+                        jet = LineString([p, (p[0] + c["n"][0] * max(throw, 1), p[1] + c["n"][1] * max(throw, 1))]).buffer(1.5, cap_style="flat")
+                        if jet.intersection(R).area < 6.0: continue
+                    sc = 0.3 * reach(fl, p) + (max(0, 5 - throw) * 2 + max(0, throw - 16) * .5) - 3 * ext - 1.5 * win + pen + 3.0 * eave
+                    sc += sum(3.0 for rp in rets_here if math.dist(rp, p) < 6)
+                    sc += sum(2.0 for f_ in fans.get((fl, r["no"]), []) if math.dist(f_, p) < 2.0)
+                    if best is None or sc < best[0]: best = (sc, c, throw, ext, win)
+                if best: break
+            if best is None:
+                out["problems"].append(f"no wall for a register in room {r['no']} (level {fl})"); continue
+            _s, c, throw, ext, win = best; got.append(c["p"]); shp = wall_symbol(c, w); items.append((cavity(c, w), fl))
+            in_host = host is not None and not R.buffer(.3).contains(Point(c["p"][0] + c["n"][0] * .3, c["p"][1] + c["n"][1] * .3))
+            items.append((shp, fl)); items.append((c["front"], fl))
+            tags[FLAT[fl]] = tags.get(FLAT[fl], 0) + 1
+            out["regs"].append(dict(p=c["p"], n=c["n"], u=c["u"], w=w, th=c["th"], cfm=c_, d=mq.round_duct(c_), g=sz, stack=stack, room=r["no"], flat=k, fl=fl,
+                                    floor=False, kind="wall", shape=shp, throw=throw, faces_out=ext, back=c["back"], tag=f"S-{FLAT[fl]}{tags[FLAT[fl]]}",
+                                    feed="stack up from the floor framing" if fl == 6 else "boot down through the top plate", host=host["no"] if in_host else None))
+    # ---- return ducts (after the exhaust, which has the tighter length limits)
+    for rt in out["rets"]:
+        fl = rt["fl"]; inner = (rt["p"][0] - rt["n"][0] * rt["th"] / 2, rt["p"][1] - rt["n"][1] * rt["th"] / 2); drop = rt["drop"]
+        if rt["through"]: rt["path"] = [inner, drop]; continue
+        own = {i for i, rr in enumerate(b.LV[fl]["rooms"]) if rr["kind"] in ("hall", "mech", "laundry") or rr["no"] == rt["room"]}
+        cm = cost_map(g, fl, own, "return"); gi = g.cell(inner); cm[gi] = 1.0
+        cells = dijkstra(g, cm, {g.cell(drop): 0.0}, {gi})
+        rt["path"] = list(reversed(corners(g, cells, drop, inner))) if cells else [inner, drop]
+        if not cells: out["problems"].append(f"return {rt['name']}: no route")
+        g.occupy(rt["path"], r_on=0.6, r_near=0.95, on=60, near=6)
     # ---- branches: farthest first
-    for rg in sorted(out["regs"], key=lambda rg: -g.trunk_shape.distance(Point(rg["p"]))):
+    for rg in sorted(out["regs"], key=lambda rg: g.trunk_shape.distance(Point(rg["p"]))):
         fl = rg["fl"]; own = {i for i, rr in enumerate(b.LV[fl]["rooms"]) if rr["no"] == rg["room"]}
-        cm = cost_map(g, fl, own, "supply"); gc = g.cell(rg["p"])
+        cm = cost_map(g, fl, own, "supply"); tip = (rg["p"][0] - rg["n"][0] * .12, rg["p"][1] - rg["n"][1] * .12); gc = g.cell(tip)
         cm[gc] = 1.0
         src = {(i, j): 0.0 for i, j in zip(*np.nonzero(g.centre))}
         cells = dijkstra(g, cm, src, {gc})
         if not cells:
             out["problems"].append(f"branch to room {rg['room']} (level {fl}): no route"); rg["path"] = [rg["p"]]; continue
         a = nearest_points(LineString(g.trunk_lines[0]) if len(g.trunk_lines) == 1 else unary_union([LineString(t) for t in g.trunk_lines]), Point(g.pt(cells[0])))[0]
-        path = corners(g, cells, (a.x, a.y), rg["p"])
-        if len(path) >= 3 and math.dist(path[-1], path[-2]) < 0.6:          # a short jog at the end: slide the register onto the run instead
-            p0, p1 = path[-3], path[-2]; v = (path[-1][0] - p1[0], path[-1][1] - p1[1])
-            np_ = (p1[0], p1[1])
-            shp2 = shapely.affinity.translate(rg["shape"], -v[0], -v[1])
-            if room_shape(room_of(fl, rg["room"])).contains(shp2):
-                rg["p"] = np_; rg["shape"] = shp2; path = path[:-1]
+        path = corners(g, cells, (a.x, a.y), tip)
         rg["path"] = path; g.occupy(path)
-    # ---- vents and line sets: furnace and water heater to the chase (one level per space here: the mechanical room's level)
-    fl = space; L = b.LV[fl]; ch = box(*CHASE[fl])
-    tgt = {(i, j) for i, j in zip(*np.nonzero(g.mask(ch)))}
-    mech = {i for i, rr in enumerate(L["rooms"]) if rr["kind"] == "mech"}; bundle = []
-    for f in L["fx"]:
-        if f[0] not in ("furnace", "wh"): continue
-        c = ((f[1] + f[3]) / 2, (f[2] + f[4]) / 2) if f[0] == "furnace" else (f[1], f[2])
-        for what in (["vent", "ls"] if f[0] == "furnace" else ["vent"]):
-            cm = cost_map(g, fl, mech, "vent"); cm[g.blocked & g.mask(ch)] = 1.0
-            fp = box(*f[1:5]) if f[0] == "furnace" else Point(c).buffer(.92)
-            for i, j in zip(*np.nonzero(g.mask(fp))): cm[i, j] = min(cm[i, j], 1.0)
-            src = {(i, j): math.dist(g.pt((i, j)), c) / G * .5 for i, j in zip(*np.nonzero(g.mask(fp)))}
-            cells = dijkstra(g, cm, src, tgt)
-            if not cells: out["problems"].append(f"{what} from the {f[0]}: no route to the chase"); continue
-            path = corners(g, cells)
-            bundle.append(path)                                   # vents and line sets run together: no penalty between them
-            out["vent" if what == "vent" else "ls"].append(dict(path=path, what=f[0], fl=fl))
-    for path in bundle: g.occupy(path, r_on=.2, r_near=.4, on=20, near=2)
+    for rg in out["regs"]:
+        g.occ[g.mask(cavity(rg, rg["w"]).buffer(.8))] += 60.0
+    for rt in out["rets"]:
+        g.occ[g.mask(cavity(rt, rt["w"]).buffer(.35))] += 60.0
     # ---- exhaust: bath fans, dryers, range hoods
     caps = []
     for fl in LEVELS[space]:
@@ -506,7 +577,7 @@ def layout(space):
                 pt_ = g.pt((i, j)); bp = nearest_points(g.out.exterior, Point(pt_))[0]
                 n = np.array(pt_) - np.array([bp.x, bp.y]); n = -n / (np.linalg.norm(n) or 1)
                 s = side(n); pen = rules.get(s)
-                if pen is None: continue
+                if pen is None or (fl in BELOW_GRADE and BELOW_GRADE[fl](pt_, s)): continue
                 if any(math.dist(pt_, (wx, wy)) < 3.0 + w / 2 for wx, wy, w in windows_near(fl)): continue
                 if any(math.dist(pt_, c_) < 3.0 for c_ in caps): continue
                 if any(dd[8] and "entrance" in dd[8].lower() and LineString([((dd[3], dd[2]) if dd[1] == "h" else (dd[2], dd[3])), ((dd[4], dd[2]) if dd[1] == "h" else (dd[2], dd[4]))]).distance(Point(pt_)) < 3.0 for dd in L["doors"]): continue
@@ -534,7 +605,7 @@ def layout(space):
             for c_ in src: cm[c_] = 1.0
             goal = set(tc) | eave
             # Dijkstra from the source; target cost added on arrival by seeding from the targets instead
-            cells = dijkstra(g, cm, {c_: tc.get(c_, 2.0) for c_ in goal}, set(src))
+            cells = dijkstra(g, cm, {c_: tc.get(c_, 10.0 / G) for c_ in goal}, set(src))
             if not cells:
                 out["problems"].append(f"{kind} in room {room or '?'} (level {fl}): no allowed outside wall reachable"); continue
             cells = list(reversed(cells))
@@ -559,6 +630,24 @@ def layout(space):
                 out["dry"].append(rec)
             else:
                 out["exh"].append(rec)
+    # ---- vents and line sets: furnace and water heater to the chase (one level per space here: the mechanical room's level)
+    fl = space; L = b.LV[fl]; ch = box(*CHASE[fl])
+    tgt = {(i, j) for i, j in zip(*np.nonzero(g.mask(ch)))}
+    mech = {i for i, rr in enumerate(L["rooms"]) if rr["kind"] == "mech"}; bundle = []
+    for f in L["fx"]:
+        if f[0] not in ("furnace", "wh"): continue
+        c = ((f[1] + f[3]) / 2, (f[2] + f[4]) / 2) if f[0] == "furnace" else (f[1], f[2])
+        for what in (["vent", "ls"] if f[0] == "furnace" else ["vent"]):
+            cm = cost_map(g, fl, mech, "vent"); cm[g.blocked & g.mask(ch)] = 1.0
+            fp = box(*f[1:5]) if f[0] == "furnace" else Point(c).buffer(.92)
+            for i, j in zip(*np.nonzero(g.mask(fp))): cm[i, j] = min(cm[i, j], 1.0)
+            src = {(i, j): math.dist(g.pt((i, j)), c) / G * .5 for i, j in zip(*np.nonzero(g.mask(fp)))}
+            cells = dijkstra(g, cm, src, tgt)
+            if not cells: out["problems"].append(f"{what} from the {f[0]}: no route to the chase"); continue
+            path = corners(g, cells)
+            bundle.append(path)                                   # vents and line sets run together: no penalty between them
+            out["vent" if what == "vent" else "ls"].append(dict(path=path, what=f[0], fl=fl))
+    for path in bundle: g.occupy(path, r_on=.2, r_near=.4, on=20, near=2)
     for fl in LEVELS[space]:
         if fl in TSTAT:
             x, y, n = TSTAT[fl]
@@ -602,11 +691,9 @@ if __name__ == "__main__":
     import time
     for sp in (3, 4, 5):
         t = time.time(); D = layout(sp)
-        print(f"space {sp}: {time.time() - t:.1f}s  regs {len(D['regs'])} rets {len(D['rets'])} jumps {len(D['jumps'])} exh {len(D['exh'])} dry {len(D['dry'])} hood {len(D['hood'])} vent {len(D['vent'])} ls {len(D['ls'])}")
+        print(f"space {sp}: {time.time() - t:.1f}s  regs {len(D['regs'])} rets {len(D['rets'])} tg {len(D['jumps'])} exh {len(D['exh'])} dry {len(D['dry'])}")
         for pr in D["problems"]: print("   PROBLEM:", pr)
-        for rg in D["regs"]: print(f"   reg L{rg['fl']} {rg['room']} {rg['cfm']:.0f} at ({rg['p'][0]:.2f}, {rg['p'][1]:.2f}) path {[(round(a, 1), round(c, 1)) for a, c in rg.get('path', [])]}")
+        for rg in D["regs"]: print(f"   {rg['tag']} L{rg['fl']} {rg['room']} {rg['cfm']:.0f} {rg['g']} at ({rg['p'][0]:.1f}, {rg['p'][1]:.1f}) n {rg['n']} back {rg['back']} throw {rg['throw']:.1f} out {rg['faces_out']} len {LineString(rg['path']).length if len(rg.get('path', [])) > 1 else 0:.1f}")
+        for x in D["rets"]: print(f"   {x['name']} {x['size']} at {tuple(round(v, 2) for v in x['p'])} back {x['back']} {x['bno']} th {x['th']:.2f} path {[(round(a, 1), round(c, 1)) for a, c in x['path']]}")
+        for x in D["jumps"]: print(f"   TG L{x['fl']} {x['room']} {tuple(round(v, 2) for v in x['a'])}")
         for x in D["exh"] + D["dry"]: print(f"   exh L{x['fl']} {x.get('room')} to {x['to']} {[(round(a, 1), round(c, 1)) for a, c in x['path']]} eq {x.get('eq', '')}")
-        for x in D["rets"]: print(f"   ret {x['name']} at {tuple(round(v, 2) for v in x['p'])} path {[(round(a, 1), round(c, 1)) for a, c in x['path']]}")
-        for x in D["vent"] + D["ls"]: print(f"   {x['what']} L{x['fl']} {[(round(a, 1), round(c, 1)) for a, c in x['path']]}")
-        for x in D["jumps"]: print(f"   jump L{x['fl']} {x['room']} {x['kind']} {tuple(round(v, 2) for v in x['a'])} {tuple(round(v, 2) for v in x['b'])}")
-        for x in D["hood"]: print(f"   hood L{x['fl']} ducted {x['ducted']} {x['path']}")
