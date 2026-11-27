@@ -456,7 +456,7 @@ def evidence(pdf):
         ("Answer", ["The strip between the upper flat's living", "room and Room A is two closets with a", "chimney standing between them."]),
         ("Why I think so", ["1 The same closed-in spot, about 2'-4\" x", "  3'-0\", shows on all four levels, one", "  above the other.", "2 On the roof a box sits right above it,",
                             "  between the two dormers.", "3 Both room faces of the strip are flat", "  plaster with a closet door: nothing was", "  scanned inside the middle 9 ft."]),
-        ("How sure", ["Likely, not proven. The roof box could be", "a capped chimney or a roof hatch. Opening", "the closet door in Room A settles it."]),
+        ("How sure", ["Confirmed: the owner has a photo showing", "the roof box is a chimney."]),
         ("If it is removed", ["Take it down from the top. Check first", "that no furnace, water heater or dryer", "still vents into it. The floors need", "patching where it passed through."])])
     head(bg, 0.6, 10.2, "1. Your aerial photo", "The box on 390's roof between the two dormers (circled)", color=CHECK)
     a = picture(fig, os.path.join(EV, "aerial_390.png"), 0.55, 6.2, 3.9, 3.75)

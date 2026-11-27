@@ -20,6 +20,8 @@ OPEN = "#b9770e"      # still open: check on site
 ISSUE = "SCAN CLEAN-UP · 27 NOV 2026"
 KIND = ["EXISTING HOUSE AS SCANNED", "BEFORE / AFTER THE SCAN FIXES"]
 LEGEND = ["Red tags F = fixes made · amber tags U = still open"]
+ISSUE2 = ["PROPOSED LAYOUT · 27 NOV 2026"]
+WARN = ["FROM A PHONE SCAN · VERIFY ON SITE", "Not a survey. Sizes are good to about 2 in. per room.\nNothing inside walls, floors or ceilings is known."]
 CHECK = "#1f6f78"     # checked against the 3D scan
 
 
@@ -48,8 +50,8 @@ def sheet(number, title, house, sub, notes=None):
     by = MG
     bg.plot([x0, W - MG], [by + 2.35, by + 2.35], color=INK, lw=0.6)
     bg.add_patch(Rectangle((x0 + 0.12, by + 1.5), TB - 0.24, 0.75, fill=False, ec=ACCENT, lw=1.1))
-    bg.text(x0 + TB / 2, by + 2.02, "FROM A PHONE SCAN · VERIFY ON SITE", fontsize=7.0, fontweight="bold", color=ACCENT, ha="center", va="center")
-    bg.text(x0 + TB / 2, by + 1.74, "Not a survey. Sizes are good to about 2 in. per room.\nNothing inside walls, floors or ceilings is known.", fontsize=5.6,
+    bg.text(x0 + TB / 2, by + 2.02, WARN[0], fontsize=7.0, fontweight="bold", color=ACCENT, ha="center", va="center")
+    bg.text(x0 + TB / 2, by + 1.74, WARN[1], fontsize=5.6,
             color=ACCENT, ha="center", va="center", linespacing=1.25)
     bg.plot([x0, W - MG], [by + 1.40, by + 1.40], color=INK, lw=0.6)
     bg.text(tx, by + 1.22, "SHEET TITLE", fontsize=5.6, color=GREY, va="center")
@@ -58,7 +60,7 @@ def sheet(number, title, house, sub, notes=None):
     for i, t in enumerate(tl):
         bg.text(tx, by + (0.98 if len(tl) == 1 else 1.05 - 0.16 * i), t, fontsize=9.2 if len(tl) == 1 else 8.2, fontweight="bold", color=INK, va="center")
     bg.text(tx, by + 0.66, LEGEND[0], fontsize=5.8, color=INK, va="center")
-    bg.text(tx, by + 0.30, ISSUE if KIND[0].startswith("EXISTING") else "PROPOSED LAYOUT · 27 NOV 2026", fontsize=6.2, color=GREY, va="center")
+    bg.text(tx, by + 0.30, ISSUE if KIND[0].startswith("EXISTING") else ISSUE2[0], fontsize=6.2, color=GREY, va="center")
     bg.text(W - MG - 0.14, by + 0.42, number, fontsize=20, fontweight="bold", color=INK, ha="right", va="center")
     return fig, bg
 
