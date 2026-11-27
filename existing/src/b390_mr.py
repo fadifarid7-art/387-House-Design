@@ -45,6 +45,7 @@ VENTLESS = {}                                   # every dryer vented; long-radiu
 ELBOW_EQ = 1.75                                 # IRC Table M1502.4.5.1: 6 in. radius smooth 90 degree elbow = 1'-9" (mitered 4 in. radius = 5 ft)
 # Vertical shafts: the old chimney becomes the chase; on the middle level the chimney is gone and the pipes rise behind the water heater.
 CHASE = {3: (17.4, 6.4, 18.0, 9.38), 4: (16.45, 6.15, 18.7, 8.6), 5: (15.65, 6.2, 17.85, 8.6), 6: (15.7, 5.96, 17.75, 8.4)}
+TSTAT2 = {6: (19.95, 14.5, (0, 1))}            # upper flat zone 2 (attic) thermostat, stair hall wall beside the return
 TSTAT = {3: (3.0, 13.12, (0, 1)), 4: (11.3, 13.55, (0, -1)), 5: (23.75, 18.6, (-1, 0))}
 # Exhaust caps: which outside walls may take one, with a cost (ft of extra duct it is worth to avoid). None = never.
 # West: small caps are fine (owner); nothing big on that side. East: the wood stair and the property line.
@@ -270,6 +271,11 @@ def fixtures(fl):
     return {k: unary_union(v) for k, v in out.items()}
 
 
+def plenum(space):
+    """The furnace's supply plenum, on top of it (plan outline)."""
+    f = next(f for f in b.LV[space]["fx"] if f[0] == "furnace"); return box(*f[1:5])
+
+
 def windows_near(fl):
     return [(cx, cy, w) for cx, cy, w, h in mq.windows(fl)]
 
@@ -371,7 +377,7 @@ def cavity(c, w):
 # ---------------------------------------------------------------------------------------------- the layout of one joist space
 @lru_cache(None)
 def layout(space):
-    g = grid(space); out = dict(regs=[], rets=[], jumps=[], exh=[], dry=[], hood=[], vent=[], ls=[], heater=[], problems=[], items=[])
+    g = grid(space); out = dict(regs=[], rets=[], jumps=[], exh=[], dry=[], hood=[], vent=[], ls=[], heater=[], dampers=[], problems=[], items=[])
     items = out["items"]                                           # (shape, level) of everything placed, for clearances
     k = FLAT[space]; S = mq.system(k)
 
@@ -423,6 +429,7 @@ def layout(space):
 
     for fl_ in LEVELS[space]:                                       # no grille within 2 ft of the thermostat
         if fl_ in TSTAT: items.append((Point(TSTAT[fl_][:2]).buffer(2.0), fl_))
+        if fl_ in TSTAT2: items.append((Point(TSTAT2[fl_][:2]).buffer(.6), fl_))
     rinfo = RET[space]; rcfm = S["cfm"] - (RET2["cfm"] if space == 5 else 0)
     rt = place_return(space, rinfo["rooms"], rcfm, rinfo["drop"], need_back=mech_or_thick(space))
     if rt: rt.update(name=rinfo["name"], drop=rinfo["drop"], through=rinfo.get("through", False)); out["rets"].append(rt)
@@ -494,7 +501,7 @@ def layout(space):
     plan = sorted([x for x in S["served"] if SPACE[x["fl"]] == space], key=lambda x: -x["cfm"])
     tags = {}
     for x in plan:
-        fl = x["fl"]; r = x["r"]; n = mq.n_registers(r, x["cfm"]); c_ = x["cfm"] / n; cmax = max(x["cfm"], x.get("cfm_summer", x["cfm"])) / n
+        fl = x["fl"]; r = x["r"]; n = mq.n_registers(r, x["cfm"]); c_ = x["cfm"] / n; cmax = x.get("cfm_size", x["cfm"]) / n
         sz, stack = mq.sidewall(cmax); w = int(sz.split("x")[0]) / 12
         R = room_shape(r); got = []
         rets_here = [rt_["p"] for rt_ in out["rets"] if rt_["fl"] == fl and rt_["room"] == r["no"]]
@@ -529,13 +536,14 @@ def layout(space):
             in_host = host is not None and not R.buffer(.3).contains(Point(c["p"][0] + c["n"][0] * .3, c["p"][1] + c["n"][1] * .3))
             items.append((shp, fl)); items.append((c["front"], fl))
             tags[FLAT[fl]] = tags.get(FLAT[fl], 0) + 1
-            out["regs"].append(dict(p=c["p"], n=c["n"], u=c["u"], w=w, th=c["th"], cfm=c_, cfm_summer=x.get("cfm_summer", x["cfm"]) / n, d=mq.round_duct(cmax), g=sz, stack=stack, room=r["no"], flat=k, fl=fl,
+            out["regs"].append(dict(p=c["p"], n=c["n"], u=c["u"], w=w, th=c["th"], cfm=c_, cfm_size=cmax, d=mq.round_duct(cmax), g=sz, stack=stack, room=r["no"], flat=k, fl=fl,
                                     floor=False, kind="wall", shape=shp, throw=throw, faces_out=ext, back=c["back"], tag=f"S-{FLAT[fl]}{tags[FLAT[fl]]}",
                                     feed="stack up from the floor framing" if fl == 6 else "boot down through the top plate", host=host["no"] if in_host else None))
     # ---- return ducts (after the exhaust, which has the tighter length limits)
     for rt in out["rets"]:
         fl = rt["fl"]; inner = (rt["p"][0] - rt["n"][0] * rt["th"] / 2, rt["p"][1] - rt["n"][1] * rt["th"] / 2); drop = rt["drop"]
-        if rt["through"]: rt["path"] = [inner, drop]; continue
+        if rt["through"]:
+            rt["path"] = [inner, drop]; g.occupy(rt["path"], r_on=0.6, r_near=0.95, on=60, near=6); continue
         own = {i for i, rr in enumerate(b.LV[fl]["rooms"]) if rr["kind"] in ("hall", "mech", "laundry") or rr["no"] == rt["room"]}
         cm = cost_map(g, fl, own, "return"); gi = g.cell(inner); cm[gi] = 1.0
         cells = dijkstra(g, cm, {g.cell(drop): 0.0}, {gi})
@@ -545,14 +553,22 @@ def layout(space):
     # ---- branches: farthest first
     for rg in sorted(out["regs"], key=lambda rg: g.trunk_shape.distance(Point(rg["p"]))):
         fl = rg["fl"]; own = {i for i, rr in enumerate(b.LV[fl]["rooms"]) if rr["no"] == rg["room"]}
-        cm = cost_map(g, fl, own, "supply"); tip = (rg["p"][0] - rg["n"][0] * .12, rg["p"][1] - rg["n"][1] * .12); gc = g.cell(tip)
+        zone2 = FLAT[fl] in mq.ZONES and fl in mq.ZONES[FLAT[fl]]["levels"]
+        cm = cost_map(g, fl, own, "return" if zone2 else "supply"); tip = (rg["p"][0] - rg["n"][0] * .12, rg["p"][1] - rg["n"][1] * .12); gc = g.cell(tip)
         cm[gc] = 1.0
-        src = {(i, j): 0.0 for i, j in zip(*np.nonzero(g.centre))}
+        if zone2:                                                   # its own duct from the furnace's supply plenum, with a motorized damper
+            pl = plenum(space); src = {(i, j): 0.0 for i, j in zip(*np.nonzero(g.mask(pl.exterior.buffer(.15))))}
+            for c_ in src: cm[c_] = 1.0
+        else:
+            src = {(i, j): 0.0 for i, j in zip(*np.nonzero(g.centre))}
         cells = dijkstra(g, cm, src, {gc})
         if not cells:
             out["problems"].append(f"branch to room {rg['room']} (level {fl}): no route"); rg["path"] = [rg["p"]]; continue
-        a = nearest_points(LineString(g.trunk_lines[0]) if len(g.trunk_lines) == 1 else unary_union([LineString(t) for t in g.trunk_lines]), Point(g.pt(cells[0])))[0]
-        path = corners(g, cells, (a.x, a.y), tip)
+        if zone2:
+            a = nearest_points(plenum(space).exterior, Point(g.pt(cells[0])))[0]
+        else:
+            a = nearest_points(LineString(g.trunk_lines[0]) if len(g.trunk_lines) == 1 else unary_union([LineString(t) for t in g.trunk_lines]), Point(g.pt(cells[0])))[0]
+        path = corners(g, cells, (a.x, a.y), tip); rg["zone"] = 2 if zone2 else (1 if FLAT[fl] in mq.ZONES else None)
         rg["path"] = path; g.occupy(path)
     for rg in out["regs"]:
         g.occ[g.mask(cavity(rg, rg["w"]).buffer(.8))] += 60.0
@@ -654,6 +670,15 @@ def layout(space):
             bundle.append(path)                                   # vents and line sets run together: no penalty between them
             out["vent" if what == "vent" else "ls"].append(dict(path=path, what=f[0], fl=fl))
     for path in bundle: g.occupy(path, r_on=.2, r_near=.4, on=20, near=2)
+    if FLAT[space] in mq.ZONES:                                       # motorized zone dampers: zone 1 at the trunk's start, zone 2 on each attic duct
+        t0 = TRUNK[space][0]; v = (t0[1][0] - t0[0][0], t0[1][1] - t0[0][1]); L_ = math.hypot(*v)
+        pl = plenum(space); start = t0[0]
+        while pl.buffer(.2).contains(Point(start)): start = (start[0] + v[0] / L_ * .1, start[1] + v[1] / L_ * .1)
+        out["dampers"] = [dict(tag="MD-1", zone=1, p=(start[0] + v[0] / L_ * .6, start[1] + v[1] / L_ * .6), d=None, size="14 x 8", fl=space)]
+        for rg in out["regs"]:
+            if rg.get("zone") == 2 and len(rg.get("path", [])) > 1:
+                ls = LineString(rg["path"]); p = ls.interpolate(min(1.0, ls.length / 3))
+                out["dampers"].append(dict(tag=f"MD-{len(out['dampers']) + 1}", zone=2, p=(p.x, p.y), d=rg["d"], size=f"{rg['d']} in. round", fl=rg["fl"], reg=rg["tag"]))
     for fl in LEVELS[space]:
         if fl in TSTAT:
             x, y, n = TSTAT[fl]

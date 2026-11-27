@@ -62,8 +62,9 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   M-501 construction details and 3D views of each flat's ducts, M-101 to M-104 plans with every duct drawn to scale and sized.
   Result: variable-speed air conditioners, 1.5 ton lower and middle, 2 ton upper; 40,000 Btu/h two-stage furnaces; 14 x 8 in. trunks; the attic
   is fed from the upper flat's main-floor trunk in the attic floor; every dryer is vented (middle flat: 30 ft equivalent to the west wall with
-  long-radius elbows). Upper flat: attic slopes R-38 and knee walls R-30, and a summer
-  damper setting (41 % of the air to the attic) keep the attic within about 1 F of the main floor on one thermostat (M-002). Line sets are NOT final: they wait for the size of the walled area under the rear deck.
+  long-radius elbows). Upper flat: two zones on its one furnace and one condenser (main floor
+  T1 and damper MD-1 on the trunk; attic T2 and dampers MD-2, MD-3 on two ducts straight off the plenum; communicating zoning, modulating
+  furnace, no bypass), attic slopes R-38 and knee walls R-30. Line sets are NOT final: they wait for the size of the walled area under the rear deck.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the

@@ -47,6 +47,10 @@ NORTH = np.array(de.FX["north_in_building_frame"]); EAST = np.array([NORTH[1], -
 SYSTEMS = {"A": dict(levels={3: None}, name="Lower flat"), "B": dict(levels={4: None}, name="Middle flat"),
            "C": dict(levels={5: None, 6: None}, name="Upper flat (main floor + attic)")}
 NOT_SERVED = {"closet", "mech", "laundry"}
+# Upper flat: two zones on one furnace and one condenser. Zone 1 main floor, zone 2 attic, each with its own thermostat; motorized dampers;
+# modulating furnace and variable-speed condenser with the maker's communicating zoning, so no bypass damper. min_cfm: the least the
+# equipment moves (about 40 % of 700 CFM), which zone 2's ducts must carry on their own.
+ZONES = {"C": dict(levels=(6,), min_cfm=300)}
 MERGE = {(5, "312"): (5, "306"),               # open stair: its load is supplied by the register in the hall it opens from
          (6, "403"): (6, "401"), (6, "404"): (6, "402")}   # attic baths: every wall is under the slope, the tub, the vanity or the door;
                                                  # their small load comes from the bedroom through a 3/4 in. door undercut, pulled by the bath fan
@@ -230,14 +234,10 @@ def system(k):
         x["cfm"] = max(30, int(round(cfm * x["cfm_raw"] / tot / 5) * 5))
     out = dict(k=k, rooms=rl, served=served, vol=vol, inf_h=inf_h, inf_c=inf_c, vent=vent, lat=lat, H=H, Cs=Cs, Ct=Ct, tons=tons, tons_calc=tons_calc, tons_min=tons_min,
                furn=furn, cfm=cfm, shr=Cs / Ct, npeople=npeople, ext=X, summer=None)
-    for x in served: x["cfm_summer"] = x["cfm"]
-    if any(x["fl"] == 6 for x in served):                        # two floors on one thermostat: summer damper setting for the top floor
-        _system_cache[k] = out
-        ss = summer_share(k); att = [x for x in served if x["fl"] == 6]; low = [x for x in served if x["fl"] != 6]
-        fa = ss * cfm / sum(x["cfm"] for x in att); fl_ = (1 - ss) * cfm / sum(x["cfm"] for x in low)
-        for x in att: x["cfm_summer"] = int(round(x["cfm"] * fa / 5) * 5)
-        for x in low: x["cfm_summer"] = max(25, int(round(x["cfm"] * fl_ / 5) * 5))
-        out["summer"] = ss
+    for x in served: x["cfm_size"] = x["cfm"]
+    if k in ZONES:                                                 # zone 2 alone must carry the equipment's lowest airflow
+        z2 = [x for x in served if x["fl"] in ZONES[k]["levels"]]
+        for x in z2: x["cfm_size"] = max(x["cfm"], int(math.ceil(ZONES[k]["min_cfm"] / len(z2) / 5) * 5))
     return out
 
 

@@ -201,10 +201,16 @@ def plan_sheet(pdf, number, fl):
         ln = LineString(x_["path"]); off = ln.offset_curve(.22) if ln.length > 0 else ln
         x_["drawn"] = list(off.coords) if off.geom_type == "LineString" and not off.is_empty else x_["path"]
         poly(ax, x_["drawn"], color=LS, lw=1.0, ls=(0, (1, 1.5)), zorder=9.0); block.append(LineString(x_["drawn"]).buffer(.08))
-    if fl in mr.TSTAT:
-        x, y, n = mr.TSTAT[fl]; cx, cy = x + n[0] * .35, y + n[1] * .35
-        ax.add_patch(Circle((cx, cy), .28, fc="white", ec=INK, lw=.7, zorder=9.6)); ax.text(cx, cy, "T", fontsize=3.6, ha="center", va="center", color=INK, fontweight="bold", zorder=9.7, gid="own")
-        block.append(Point(cx, cy).buffer(.3))
+    zoned = k in mq.ZONES
+    for TS, lab in ((mr.TSTAT, "T1" if zoned else "T"), (mr.TSTAT2, "T2")):
+        if fl in TS:
+            x, y, n = TS[fl]; cx, cy = x + n[0] * .35, y + n[1] * .35
+            ax.add_patch(Circle((cx, cy), .3, fc="white", ec=INK, lw=.7, zorder=9.6)); ax.text(cx, cy, lab, fontsize=3.3, ha="center", va="center", color=INK, fontweight="bold", zorder=9.7, gid="own")
+            block.append(Point(cx, cy).buffer(.32))
+    for dm in D.get("dampers", []):                               # motorized zone damper: circle with a blade
+        x, y = dm["p"]; ax.add_patch(Circle((x, y), .26, fc="white", ec=SUP, lw=.8, zorder=9.8))
+        ax.plot([x - .2, x + .2], [y - .2, y + .2], color=SUP, lw=.9, zorder=9.9); ax.add_patch(Circle((x, y), .05, fc=SUP, ec=SUP, zorder=9.9))
+        block.append(Point(x, y).buffer(.3))
     for h in D["heater"]:
         (x, y), n = h["p"], h["n"]; r_ = box(x - .6 + n[0] * .1, y - .15 + n[1] * .15, x + .6 + n[0] * .1, y + .15 + n[1] * .15) if n[0] == 0 else box(x - .15 + n[0] * .15, y - .6, x + .15 + n[0] * .15, y + .6)
         patch(ax, r_, fc="#fde3c4", ec=EXH, lw=.7, zorder=9.5); block.append(r_)
@@ -234,6 +240,7 @@ def plan_sheet(pdf, number, fl):
         if f[0] == "furnace": P.label(((f[1] + f[3]) / 2, (f[2] + f[4]) / 2), f"F-{k} + coil", SUP, r0=.3)
     for x_ in D["ls"]: P.label(x_.get("drawn", x_["path"])[-1], f"LS-{k}: TBD", LS, r0=.5)
     for h in D["heater"]: P.label(h["p"], "EWH 1,000 W", EXH, r0=.5)
+    for dm in D.get("dampers", []): P.label(dm["p"], f"{dm['tag']} zone {dm['zone']}", SUP, r0=.5)
     if fl != 6:
         t0 = mr.TRUNK[mr.SPACE[fl]][0]; seg = max(zip(t0[:-1], t0[1:]), key=lambda sg: math.dist(*sg))
         P.label(((seg[0][0] + seg[1][0]) / 2, (seg[0][1] + seg[1][1]) / 2), f"Trunk {mr.TRUNK_SIZE} · {s['cfm']} CFM", SUP, r0=.9)
@@ -289,10 +296,12 @@ def keynotes(fl, D):
                 ("R-C1 high on the living-room wall, straight through into the furnace's return. R-C2 is in the attic stair hall (M-104).", r1["p"], None),
                 (TBD, lsend, None),
                 ("Bath fan: 4 in. duct to a small cap on the west wall (fine there; nothing big on that side). Dryer the same.", fan["cap"] if fan else None, None),
-                ("Supply ducts stay under the attic rooms (inside the insulation). The kitchen branch passes under the eave floor: R-8 insulated duct there.", kit["p"] if kit else None, (8.0, 10.0) if not kit else None)]
+                ("Supply ducts stay under the attic rooms (inside the insulation). The kitchen branch passes under the eave floor: R-8 insulated duct there.", kit["p"] if kit else None, (8.0, 10.0) if not kit else None),
+                ("Two zones, one furnace and one condenser: MD-1 on this floor's trunk (zone 1, thermostat T1); MD-2 and MD-3 on the two attic ducts off the plenum (zone 2, T2 upstairs; M-104). Zone panel at F-C.", D["dampers"][0]["p"] if D.get("dampers") else None, None)]
     tg = next((j for j in D["jumps"] if j["kind"] == "wall"), None); r2 = next((rt for rt in D["rets"] if rt["name"] == "R-C2"), None)
     fan = next((x_ for x_ in D["exh"]), None)
-    return [("Branches run in the attic floor framing off the main-floor trunk (dashed; M-103), then up an inside wall in a 3-1/4 in. stack to each high wall register.", (12.0, 17.0), None),
+    t2 = mr.TSTAT2.get(6)
+    return [("Zone 2: the attic has its own thermostat T2. Its two ducts come straight off the furnace's plenum below (motorized dampers MD-2, MD-3 on M-103), run in the attic floor framing, then up an inside wall stack to each register.", Point(t2[0], t2[1] + .35).buffer(.34) if t2 else (12.0, 17.0), None),
             ("R-C2 high on the stair-hall wall at the top of the stair; stack down to the floor framing, duct to F-C.", r2["p"] if r2 else None, None),
             ("Bath fans (circle): 4 in. insulated duct straight up through the roof slope to a roof cap with a damper.", fan["a"] if fan else None, None),
             ("TG: transfer grilles beside each bedroom door, high on the bedroom side, low on the hall side, in a lined stud bay (return path).", tg["a"] if tg else None, None)]
@@ -303,7 +312,8 @@ LEG = [("trunk", SUPF, "Supply trunk 14 x 8 in., to scale, in the joist space"),
        ("ret", RET, "Return filter grille in the wall, box behind; duct dashed"),
        ("tg", RET, "TG: transfer grilles through the wall (bedroom high,\nhall low); J: jump duct between two wall grilles"),
        ("exh", EXH, "Exhaust: bath fan EF (ceiling), dryer DV, range hood RH"),
-       ("vent", PVC, "PVC vent and intake, furnace and water heater"), ("ls", LS, "Refrigerant line set: NOT FINALIZED"), ("T", INK, "Thermostat, 5 ft, inside wall")]
+       ("vent", PVC, "PVC vent and intake, furnace and water heater"), ("ls", LS, "Refrigerant line set: NOT FINALIZED"), ("md", SUP, "MD: motorized zone damper (upper flat)"),
+       ("T", INK, "Thermostat, 5 ft, inside wall; T1 / T2 upper flat zones")]
 
 
 def legend(bg, x, y, fs=5.4, rh=.21):
@@ -322,6 +332,7 @@ def legend(bg, x, y, fs=5.4, rh=.21):
         elif k == "vent": bg.plot([x, x + .34], [y, y], color=PVC, lw=1.1, ls=(0, (5, 1.2, 1, 1.2)))
         elif k == "ls": bg.plot([x, x + .34], [y, y], color=LS, lw=1.0, ls=(0, (1, 1.5)))
         elif k == "T": bg.add_patch(Circle((x + .17, y), .06, fc="white", ec=INK, lw=.6)); bg.text(x + .17, y, "T", fontsize=3.2, ha="center", va="center")
+        elif k == "md": bg.add_patch(Circle((x + .17, y), .05, fc="white", ec=SUP, lw=.6)); bg.plot([x + .13, x + .21], [y - .04, y + .04], color=SUP, lw=.7)
         for i, ln in enumerate(t.split("\n")): bg.text(x + .55, y - i * .12, ln, fontsize=fs, color=INK, va="center")
         y -= rh + .12 * t.count("\n")
     return y
@@ -353,8 +364,8 @@ GEN = ["Scope: full gut; all heating, cooling, ductwork, exhaust and venting are
        "Venting: each furnace and water heater has 2 in. or 3 in. PVC exhaust and intake (sizes per the instructions) up the old chimney chase to a roof "
        "termination (lower level: the 2x6 pipe wall between bath 1 and the laundry); condensate to an indirect drain with a neutraliser, or a pump (plumbing).",
        "Insulation the loads depend on (build at least this): outside walls R-15, attic slopes R-38 closed-cell foam (fur the rafters if they are under 6 in.), "
-       "knee walls R-30, ceilings under the eaves R-49, all air-sealed. Upper flat: one thermostat for two floors; the attic branch dampers have a summer "
-       "setting (M-003) that keeps the attic within about 1 F of the main floor (M-002); set at the spring and fall service.",
+       "knee walls R-30, ceilings under the eaves R-49, all air-sealed. Upper flat: TWO ZONES on its one furnace and one condenser: zone 1 main floor "
+       "(thermostat T1), zone 2 attic (T2); motorized dampers MD-1 to MD-3; the maker's communicating zoning with a modulating furnace, so no bypass damper.",
        "Refrigerant line sets: insulated copper, sizes on M-003, down the chase. " + TBD,
        "Thermostats: one per flat, programmable, 5 ft up on an inside wall as drawn, 2 ft or more from any grille, away from sun, the kitchen and door swings. "
        "Start-up: set each register to its CFM on M-003 (balancing report), check the refrigerant charge, gas pressure and temperature rise."]
@@ -393,22 +404,25 @@ def notes_sheet(pdf):
     y = 9.95
     for i, t in enumerate(GEN):
         bg.text(.55, y, f"{i + 1}.", fontsize=5.8, color=INK, va="center", fontweight="bold")
-        for j, ln in enumerate(b.wrap(t, 190)): bg.text(.8, y - j * .14, ln, fontsize=5.8, color=INK, va="center")
-        y -= .14 * len(b.wrap(t, 190)) + .07
+        for j, ln in enumerate(b.wrap(t, 190)): bg.text(.8, y - j * .13, ln, fontsize=5.6, color=INK, va="center")
+        y -= .13 * len(b.wrap(t, 190)) + .06
     y -= .1
     bg.text(.5, y, "EQUIPMENT SCHEDULE", fontsize=7, fontweight="bold", color=INK, va="center"); y -= .2
     rows = [["Tag", "Serves", "Equipment", "Capacity", "Airflow", "Electrical (verify nameplate)", "Location"]]
     for k, s in SYS.items():
         mca, mocp = mq.AC_ELEC[s["tons"]]; liq, suc = mq.LINESET[s["tons"]]; loc = {"A": "laundry / mech. 105", "B": "mech. closet 208", "C": "mech. closet 307"}[k]
-        rows += [[f"F-{k}", q.FLATS[k]["name"].split(" (")[0], "Gas furnace, condensing 96 % AFUE, direct vent, 2-stage or modulating, upflow",
+        rows += [[f"F-{k}", q.FLATS[k]["name"].split(" (")[0], "Gas furnace, condensing 96 % AFUE, direct vent, " + ("modulating" if k in mq.ZONES else "2-stage or modulating") + ", upflow",
                   f"{s['furn'] / 1000:.0f}k Btu/h in, {s['furn'] * .96 / 1000:.1f}k out", f"{s['cfm']} CFM cool", "120 V, 15 A circuit, about 7 A", loc],
                  [f"CC-{k}", "", "Cased cooling coil on top of F-" + k + ", R-454B or R-32 per the condenser", f"{s['tons']:g} ton", "", "", "on F-" + k],
                  [f"AC-{k}", "", "Air conditioner, variable speed (inverter), 15.2 SEER2 or better", f"{s['tons']:g} ton", "", f"240 V, MCA {mca:g} A, MOCP {mocp} A", "under rear deck: TBD"]]
-    rows += [["EWH-1", "Upper flat stair hall 213", "Electric wall heater with built-in thermostat", "1,000 W", "", "240 V, 4.2 A, panel C", "stair hall 213 wall"]]
-    y = table(bg, .5, y, [.45, 1.25, 3.6, 1.35, .85, 1.75, 1.25], rows, fs=5.0, rh=.16) - .2
+    rows += [["EWH-1", "Upper flat stair hall 213", "Electric wall heater with built-in thermostat", "1,000 W", "", "240 V, 4.2 A, panel C", "stair hall 213 wall"],
+             ["ZP-C", "Upper flat", "Zone panel, 2 zones, communicating with F-C and AC-C (same maker); F-C modulating", "2 zones", "300 CFM min.", "24 V from F-C", "on F-C"],
+             ["MD-1..3", "Upper flat", "Motorized dampers: MD-1 14 x 8 on the trunk (zone 1); MD-2, MD-3 8 in. round (zone 2)", "", "", "24 V from ZP-C", "M-103"],
+             ["T-C1, C2", "Upper flat", "Thermostats: T1 main-floor hall, T2 attic stair hall", "", "", "thermostat cable", "M-103, M-104"]]
+    y = table(bg, .5, y, [.6, 1.25, 3.9, 1.2, .85, 1.6, 1.1], rows, fs=4.8, rh=.138) - .18
     bg.text(.5, y, "FAN, DRYER AND HOOD SCHEDULE (from the plans)", fontsize=7, fontweight="bold", color=INK, va="center"); y -= .2
     rows = [["Tag", "Flat: room", "Type", "Airflow CFM", "Duct", "Outside", "Control"]] + exhaust_rows()
-    table(bg, .5, y, [.6, 1.25, 2.85, 1.25, 2.1, 1.65, 1.3], rows, fs=4.9, rh=.148)
+    table(bg, .5, y, [.6, 1.25, 2.85, 1.25, 2.1, 1.65, 1.3], rows, fs=4.8, rh=.138)
     bad = b.clarity(fig, None, None, bg); print("M-001 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
     b.save(fig, "M-001", pdf)
 
@@ -483,16 +497,15 @@ def loads_sheet(pdf):
               "(9 F / 87 F, exceeded a few days a year); sizing to the record would make units that short-cycle and leave the air damp.",
               f"So: variable-speed condensers, checked to give at least 90 % at {E['t_out_c']} F at full speed ({mq.CAP_105:.0%} of rating assumed)."]:
         bg.text(x0, yy, t, fontsize=4.9, color=INK, va="center"); yy -= .125
-    yy -= .15; sC = SYS["C"]; ss = sC["summer"]; sh0 = sum(x["cfm"] for x in sC["served"] if x["fl"] == 6) / sC["cfm"]
-    bg.text(x0, yy, "UPPER FLAT: ATTIC vs MAIN FLOOR IN SUMMER (one thermostat, main floor at 75 F)", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .13
-    rows = [["Outdoor", f"Dampers as balanced ({sh0:.0%} to the attic)", f"Summer setting ({ss:.0%} to the attic)"]]
+    yy -= .15
+    bg.text(x0, yy, "UPPER FLAT: WHY TWO ZONES (main floor and attic, one furnace and one condenser)", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .13
+    rows = [["Outdoor", "One thermostat downstairs: attic", "Two zones: attic"]]
     for dout, nm in ((-7, "80 F, sunny"), (0, "87 F (design)"), (18, "105 F")):
-        rows.append([nm, f"attic {mq.top_floor('C', None, dout):.1f} F", f"attic {mq.top_floor('C', ss, dout):.1f} F"])
-    yy = table(bg, x0, yy, [.9, 1.6, 1.6], rows, fs=4.8, rh=.14) - .1
-    for t in ["Attic slopes R-38 foam and knee walls R-30 (up from R-30 / R-20) take about 1 F off the attic.",
-              "The summer damper setting does the rest: the two attic branch dampers open further, the main-floor",
-              "ones close slightly (CFM on M-003). Set at the spring and fall service. The return at the top of the",
-              "attic stair takes the warm air that rises up the open stair."]:
+        rows.append([nm, f"{mq.top_floor('C', None, dout):.1f} F with the main floor at 75 F", "held at its own setting"])
+    yy = table(bg, x0, yy, [.9, 2.0, 1.3], rows, fs=4.8, rh=.14) - .1
+    for t in ["Attic slopes R-38 foam and knee walls R-30 (up from R-30 / R-20) take about 1 F off the attic. The attic is under the roof",
+              "and its loads move differently from the main floor's; with its own thermostat T2 and dampers it gets air when it needs it.",
+              "Zone 2 alone must take the equipment's lowest airflow (about 300 CFM): its two registers and ducts are sized for 150 each."]:
         bg.text(x0, yy, t, fontsize=4.9, color=INK, va="center"); yy -= .125
     bad = b.clarity(fig, None, None, bg); print("M-002 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
     b.save(fig, "M-002", pdf)
@@ -510,10 +523,10 @@ def dist_sheet(pdf):
     xx = .5
     for k, s in SYS.items():
         D = mr.layout(mr.SPACE[{"A": 3, "B": 4, "C": 5}[k]])
-        rows = [["Tag", "Room", "CFM", "Summer", "Register", "Duct", "Fed by", "Throw"]]
+        rows = [["Tag", "Room", "CFM", "Zone", "Register", "Duct", "Fed by", "Throw"]]
         for rg in sorted(D["regs"], key=lambda rg: int(rg["tag"].split(k)[1])):
             r = mr.room_of(rg["fl"], rg["room"]); nm = f"{r['no']} {r['name'].split(' (')[0]}"[:20] + (f" (from {rg['host']})" if rg.get("host") else "")
-            rows.append([rg["tag"], nm, f"{rg['cfm']:.0f}", f"{rg['cfm_summer']:.0f}" if rg["cfm_summer"] != rg["cfm"] else "same", f"{rg['g']} high wall", f"{rg['d']} in. Ø",
+            rows.append([rg["tag"], nm, f"{rg['cfm']:.0f}", {1: "1", 2: "2 (MD)"}.get(rg.get("zone"), ""), f"{rg['g']} high wall", f"{rg['d']} in. Ø",
                          ("stack " if rg["fl"] == 6 else "boot ") + rg["stack"].replace(" ", ""), f"{rg['throw']:.0f} ft"])
         for x in s["rooms"]:
             if "via" in x and x["r"]["kind"] == "bath":
@@ -527,7 +540,7 @@ def dist_sheet(pdf):
         bg.text(xx, y, f"SYSTEM {k} · {s['cfm']} CFM · trunk {mr.TRUNK_SIZE} in. ({vel:.0f} fpm)", fontsize=6.0, fontweight="bold", color=INK, va="center")
         y = table(bg, xx, y - .1, wid, rows, fs=4.6, rh=.128) - .2
     bg.text(xx, y, "Registers: high on an inside wall, top 6 in. below the ceiling, face blades set to throw across the room. Tags as on the plans.", fontsize=4.9, color=GREY, va="center"); y -= .14
-    bg.text(xx, y, "Summer: upper flat dampers set to the Summer column at the spring service, back to CFM at the fall service (keeps the attic level).", fontsize=4.9, color=GREY, va="center"); y -= .22
+    bg.text(xx, y, "Upper flat zones: 1 main floor (T1, MD-1 on the trunk), 2 attic (T2, MD-2 and MD-3 on its own ducts from the plenum).", fontsize=4.9, color=GREY, va="center"); y -= .22
     # ventilation
     bg.text(.5, y, "WHOLE-HOUSE VENTILATION (IRC M1505.4.3: 0.03 x floor area + 7.5 x (bedrooms + 1))", fontsize=6.0, fontweight="bold", color=INK, va="center"); y -= .12
     rows = [["Flat", "Floor sf", "Bedrooms", "Required CFM", "Provided by"]] + [[k, f"{q.AREA[k]:,}", f"{q.FLATS[k]['beds']}", f"{0.03 * q.AREA[k]:.0f} + {7.5 * (q.FLATS[k]['beds'] + 1):.1f} = {SYS[k]['vent']:.0f}",
