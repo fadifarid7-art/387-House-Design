@@ -148,42 +148,45 @@ def upper(pdf):
         ax.text(18.4, 25.2, "UP from\nmiddle level", fontsize=3.8, color=CHECK, ha="center", va="center", zorder=12)
 
     def pr(ax):
-        # bath 2 at the chimney column: clear 5'-0" x 8'-0"
-        erase(ax, 18.14 - 0.2, 0.33, 18.14 + 0.2, 13.1)            # old strip wall and closet door
-        erase(ax, 15.45 - 0.2, 0.4, 15.45 + 0.2, 3.67, show=False)  # living-room closet opening closed
-        wall_v(ax, 15.45, 0.33, 3.8)
+        erase(ax, 18.14 - 0.2, 0.33, 18.14 + 0.2, 13.1)             # strip wall and closet door out
+        erase(ax, 15.45 - 0.2, 0.4, 15.45 + 0.2, 3.67, show=False); wall_v(ax, 15.45, 0.33, 3.8)   # living-room closet opening closed
         chimney(ax, 15.7, 6.2, 18.0, 9.2, removed=True)
-        wall_v(ax, 20.78, 0.33, 13.1); wall_h(ax, 4.94, 15.62, 20.62)
-        erase(ax, 20.6, 13.27 - 0.2, 23.5, 13.27 + 0.2, show=False); wall_h(ax, 13.27, 20.6, 21.1); wall_h(ax, 13.27, 23.6, 23.7)
-        door(ax, "h", 13.27, 21.1, 23.6, "hi", -1)                  # bedroom 3 door, moved 5 in.
-        erase(ax, 17.9, 13.27 - 0.2, 20.4, 13.27 + 0.2, show=False); door(ax, "h", 13.27, 17.9, 20.4, "hi", -1)
-        tub(ax, 15.62, 5.11, 20.62, 7.61); wc(ax, 15.62, 9.0, "x+"); lav(ax, 15.62, 10.85, 17.2, 12.35); stack(ax, 15.45, 8.0)
-        door(ax, "v", 20.78, 1.0, 3.5, "lo", 1)                     # closet door from bedroom 3
-        # closet for bedroom 4, taken from the old Room A
-        wall_h(ax, 10.94, 23.7, 31.35); wall_v(ax, 23.7, 10.94, 13.27)
-        erase(ax, 25.3, 13.27 - 0.2, 30.3, 13.27 + 0.2)
-        ax.plot([25.3, 26.55, 27.8, 29.05, 30.3], [13.27, 13.9, 13.27, 13.9, 13.27], color=NEW, lw=0.7, zorder=8)
+        # bedroom 4 = Room B carried 4 ft into the old Room A
+        wall_h(ax, 8.94, 20.61, 31.35); wall_v(ax, 20.78, 8.77, 13.1)
+        erase(ax, 20.6, 13.27 - 0.2, 23.5, 13.27 + 0.2, show=False); wall_h(ax, 13.27, 20.6, 23.7)   # old Room A door walled up
+        erase(ax, 23.87, 13.27 - 0.2, 31.35, 13.27 + 0.2)           # wall between Room B and Room A out: beam over
+        wall_h(ax, 13.27, 23.53, 23.9)
+        ax.plot([23.1, 23.55, 23.1, 23.55, 23.1], [9.3, 10.2, 11.1, 12.0, 12.9], color=NEW, lw=0.7, zorder=8)       # closet folding door
+        wall_v(ax, 23.1, 9.1, 9.3); wall_v(ax, 23.1, 12.9, 13.1)
         door(ax, "v", 23.7, 15.42, 17.75, "lo", 1)                  # door hung in the existing opening
-        label(ax, 18.1, 10.2, "Bath 2", "5'-0\" x 8'-0\"", NEW, 4.4); label(ax, 18.1, 2.6, "Closet", "5'-0\" x 4'-5\"", NEW, 4.2)
-        label(ax, 26.2, 5.6, "Bedroom 3", sz(10.4, 10.44) + "\nplus entry 2'-7\" x 2'-4\"", NEW, 4.8)
-        label(ax, 27.6, 20.2, "Bedroom 4", sz(7.82 - 0.33, 13.76 - 0.33), NEW, 4.8); label(ax, 27.5, 12.1, "Closet 2'-0\" x 7'-6\"", None, NEW, 3.8)
+        # bedroom 3 = rest of Room A + the old strip; entry and closet where the strip met the hall
+        erase(ax, 18.0, 13.27 - 0.2, 20.5, 13.27 + 0.2, show=False); door(ax, "h", 13.27, 18.0, 20.5, "hi", -1)
+        wall_v(ax, 17.79, 6.83, 9.0); wall_v(ax, 17.79, 12.6, 13.1); wall_h(ax, 6.83, 15.62, 17.96)
+        ax.plot([17.79, 18.25, 17.79, 18.25, 17.79], [9.0, 9.9, 10.8, 11.7, 12.6], color=NEW, lw=0.7, zorder=8)
+        stack(ax, 16.3, 7.6)
+        label(ax, 27.6, 19.5, "Bedroom 4", "7'-6\" x 17'-9\" · 133 sf", NEW, 4.8); label(ax, 22.0, 11.1, "Clo.", None, NEW, 3.6)
+        label(ax, 24.5, 4.6, "Bedroom 3", "15'-9\" x 8'-5\" · 133 sf\nplus entry 2'-8\" x 4'-4\"", NEW, 4.8); label(ax, 16.7, 10.3, "Clo.", None, NEW, 3.6)
         label(ax, 7.8, 6.7, "Living room", "15'-0\" x 12'-9\"", GREY, 4.6); label(ax, 3.9, 20.2, "Kitchen", None, GREY, 4.6); label(ax, 13.3, 22.3, "Bath 1", "existing", GREY, 4.4)
         label(ax, 20.2, 15.3, "Hall", None, GREY, 4.2)
-    level_sheet(pdf, "PR-103", "390 Forest: upper flat, bedroom 4 and bath 2", 5, "Rear building · upper flat main floor", ((-3, 36), (-3, 30)),
-                [("This flat", ["Now: 3 bedrooms (Room A + two in the attic),", "1 bath.", "Proposed: 4 bedrooms, 3 baths.", "N1-N6 on this floor, N7-N9 in the attic."]), HOW],
-                [("C1", (18.4, 22.0), "Stair confirmed. This flat's own stair comes up from the middle level under the attic stair and arrives in the hall facing the bath door. The attic stair starts beside it, turns at a landing and runs back over it. It is steep: about 1 ft up per 1 ft forward."),
-                 ("C2", (16.8, 10.6), "Old U5 answered. The 2'-8\" strip is two closets with a chimney between them: an open closet off the living room, a closed closet door from Room A, and a chimney about 2'-4\" x 3'-0\" that also shows on the three other levels and on the roof (PR-105)."),
-                 ("C3", (27.6, 23.5), "Room B checked as a bedroom: 7'-6\" x 13'-5\" clear (108 sf to wall centres), ceiling 7'-2\", one window. It meets the size rules today. It has a cased opening and no door. It cannot be made wider: the outside wall is on one side and the stair hall on the other."),
-                 ("C4", (6.0, 25.6), "Walls, doors and windows: every wall on the plan matches a wall surface in the scan within 3 in. Eight windows confirmed. No wall is missing or extra on this level."),
-                 ("C5", (13.3, 19.0), "Ceilings from the true floor: living room 8'-2\", Room A 8'-1\", bath 8'-3\"; kitchen, hall and Room B 7'-2\" to 7'-5\" (dropped ceilings). My earlier figures for this flat were 1'-2\" to 1'-5\" too tall.")],
-                [("N1", (16.9, 7.6), "Take out the chimney from the roof down (confirm first that nothing still vents into it). Its shaft becomes the pipe space for one new drain stack serving the new baths on all levels."),
-                 ("N2", (19.0, 8.6), "Bath 2, 5'-0\" x 8'-0\": 60 in. tub, toilet and sink, door from the hall. Built from the closet strip plus 2'-8\" of Room A."),
-                 ("N3", (26.2, 2.4), "Bedroom 3 (old Room A) becomes 10'-5\" x 10'-5\" with a 5'-0\" x 4'-5\" closet. Both windows stay. Door moves 5 in."),
-                 ("N4", (27.6, 17.2), "Bedroom 4 (old Room B): keeps its full 7'-6\" x 13'-5\". A door is hung in the existing opening."),
-                 ("N5", (29.4, 12.1), "New closet for bedroom 4, 2'-0\" x 7'-6\" with a 5 ft folding door, taken from Room A's side so bedroom 4 loses no floor."),
-                 ("N6", (14.6, 2.0), "The living-room closet opening is closed; that space becomes bedroom 3's closet.")],
+    level_sheet(pdf, "PR-103", "390 Forest: upper flat, bedrooms 3 and 4", 5, "Rear building · upper flat main floor", ((-3, 36), (-3, 30)),
+                [("This flat", ["Now: 3 bedrooms (Room A + two in the attic),", "1 bath.", "Proposed: 4 bedrooms, 3 baths:", "2 bedrooms + the existing bath here,", "2 bedrooms each with a private bath in", "the attic (PR-104)."]),
+                 ("Bedroom 4, plainly", ["Room B cannot be made WIDER. One side is", "the outside wall; the other is the 3'-8\"", "passage to the attic stair.", "So it is made LONGER: 4 ft is taken from",
+                                          "Room A, and the old closet strip is given", "back to Room A in exchange."]), HOW],
+                [("C1", (18.4, 22.0), "Stair confirmed. This flat's own stair comes up from the middle level under the attic stair and arrives in the hall facing the bath door. The attic stair starts beside Room B's wall, turns at a platform under the window and runs back over the lower stair."),
+                 ("C2", (16.8, 10.6), "Old U5: the 2'-8\" strip is two closets with a chimney between them (PR-105)."),
+                 ("C3", (27.6, 23.5), "Room B today: 7'-6\" x 13'-5\" clear, ceiling 7'-2\", one window, a cased opening with no door."),
+                 ("C4", (6.0, 25.6), "Every wall on the plan matches a wall surface in the scan within 3 in. Eight windows confirmed."),
+                 ("C5", (13.3, 19.0), "Ceilings from the true floor: living room 8'-2\", Room A 8'-1\", bath 8'-3\"; kitchen, hall and Room B 7'-2\" to 7'-5\" (dropped ceilings).")],
+                [("N1", (16.9, 7.9), "Chimney taken out from the roof down (confirm first that nothing vents into it). Its shaft carries one new drain stack S from the attic to the lower flat; on this floor it is boxed inside bedroom 3's closet."),
+                 ("N2", (27.6, 13.3), "Wall between Room B and Room A removed for 7'-6\". A beam is needed here; size it with the structural design. This wall may carry the attic floor."),
+                 ("N3", (27.6, 10.6), "Bedroom 4 grows from 7'-6\" x 13'-5\" (101 sf) to 7'-6\" x 17'-9\" (133 sf) and gains a 2 ft x 4 ft closet. A door is hung in its existing opening."),
+                 ("N4", (26.0, 8.0), "New wall, 10'-7\" long, between bedroom 3 and bedroom 4."),
+                 ("N5", (24.5, 2.2), "Bedroom 3 (old Room A): 13'-1\" x 12'-9\" becomes 15'-9\" x 8'-5\" (133 sf) because the closet strip and chimney space are added to it. Both windows stay."),
+                 ("N6", (19.3, 7.4), "Bedroom 3's new door, 2'-6\", from the hall where the strip ended, with a 2 ft x 6 ft closet beside it. The old Room A door is walled up."),
+                 ("N7", (14.3, 2.0), "The living-room closet opening is closed. The living room, kitchen and bath 1 are not touched.")],
                 [("U2", (30.6, 20.5), "Bedroom 4's window scans at about 27 x 65 in. It must open at least 5.7 sf clear for escape; measure it. Bedroom 3's two windows the same."),
-                 ("U13", (16.8, 4.9), "The middle 9 ft of the strip was never scanned. Open the closet door in Room A and look: chimney size, any flue or pipe still in use.")],
+                 ("U13", (16.8, 4.9), "The middle 9 ft of the strip was never scanned. Open the closet door in Room A and look before pricing."),
+                 ("U21", (30.2, 15.0), "Bedrooms 3 and 4 share bath 1 on this floor. A second bath here would cost bedroom 3 another 5 ft; say if you want it.")],
                 ex, pr)
 
 
@@ -195,25 +198,35 @@ def attic(pdf):
         ax.text(18.6, 24.6, "UP from\nupper flat", fontsize=3.8, color=CHECK, ha="center", va="center", zorder=12)
 
     def pr(ax):
-        chimney(ax, 15.9, 6.3, 18.3, 8.5, removed=True)
-        wall_v(ax, 9.43, 12.4, 21.0); wall_h(ax, 12.4, 9.43, 16.55); wall_h(ax, 15.73, 9.43, 16.7)
-        door(ax, "v", 9.43, 12.75, 15.25, "lo", -1)                 # bedroom 1 door
-        door(ax, "h", 15.73, 9.9, 12.2, "hi", 1)                    # bath door
-        tub(ax, 14.1, 15.9, 16.6, 20.9); wc(ax, 12.85, 21.0, "y-"); lav(ax, 9.6, 18.4, 11.35, 20.4); stack(ax, 16.3, 21.6)
-        label(ax, 12.3, 17.4, "Bath 3", "7'-0\" x 5'-1\"", NEW, 4.2); label(ax, 13.1, 14.1, "Landing 3'-0\" wide", None, NEW, 3.8)
-        label(ax, 4.9, 15.0, "Attic bedroom 1", sz(8.67, 12.8) + "\nplus dormer bay 5'-8\" x 5'-9\"", NEW, 4.8); label(ax, 13.0, 10.3, "Closet alcove", "7'-0\" x 3'-7\"", NEW, 4.0)
-        label(ax, 25.5, 14.5, "Attic bedroom 2", "unchanged · 216 sf", GREY, 4.8)
-    level_sheet(pdf, "PR-104", "390 Forest: attic, bath 3", 6, "Rear building · attic of the upper flat", ((-3, 36), (-3, 30)),
-                [("This level", ["Two bedrooms stay. A bath is added beside", "the stair so neither bedroom is a way", "through to it.", "It sits over the upper flat's existing bath,", "so its drain drops into that bath's wall."]), HOW],
+        erase(ax, 15.5, 6.0, 18.6, 8.8, show=False); chimney(ax, 15.9, 6.3, 18.3, 8.5, removed=True)
+        # private bath for bedroom 1, over the upper flat's bath 1
+        wall_v(ax, 9.43, 15.56, 21.0); wall_h(ax, 15.73, 9.43, 16.7)
+        door(ax, "h", 15.73, 9.9, 12.2, "hi", 1)
+        tub(ax, 14.1, 15.9, 16.6, 20.9); wc(ax, 12.85, 21.0, "y-"); lav(ax, 9.6, 18.4, 11.35, 20.4)
+        # private bath for bedroom 2, where the chimney was
+        wall_v(ax, 16.7, 5.7, 8.8); wall_h(ax, 5.7, 15.7, 18.5); wall_h(ax, 6.2, 15.53, 16.87); wall_v(ax, 19.9, 5.53, 8.77)
+        wall_h(ax, 8.6, 19.73, 22.34); wall_v(ax, 22.17, 8.43, 13.37); wall_h(ax, 13.2, 20.03, 22.34)
+        erase(ax, 16.95, 13.0, 19.7, 13.4, show=False); wall_h(ax, 13.2, 16.87, 19.8)        # old bedroom 2 door walled up
+        erase(ax, 20.0, 13.7, 20.4, 16.2, show=False); door(ax, "v", 20.2, 13.7, 16.2, "lo", 1)   # new bedroom 2 door off the landing
+        door(ax, "v", 22.17, 9.1, 11.4, "lo", -1)
+        shower(ax, 16.87, 5.87, 19.73, 8.5); wc(ax, 16.87, 11.75, "x+"); lav(ax, 19.5, 11.53, 21.3, 13.03); stack(ax, 17.2, 9.4)
+        label(ax, 12.2, 17.0, "Bath A", "7'-0\" x 5'-1\"", NEW, 4.2); label(ax, 20.5, 10.0, "Bath B", None, NEW, 4.2)
+        label(ax, 5.2, 13.5, "Attic bedroom 1", "16'-3\" x 7'-5\" + 8'-8\" x 5'-3\"\nplus dormer bay · 215 sf", NEW, 4.8)
+        label(ax, 26.6, 14.8, "Attic bedroom 2", "11'-5\" x 11'-9\" plus\ndormer bay · 185 sf", NEW, 4.8)
+    level_sheet(pdf, "PR-104", "390 Forest: attic, a private bath for each bedroom", 6, "Rear building · attic of the upper flat", ((-3, 36), (-3, 30)),
+                [("This level", ["Two bedrooms stay. Each gets its own bath,", "entered only from that bedroom.", "Bath A sits over the upper flat's bath, so", "its drain drops into that bath's wall.",
+                                 "Bath B sits where the chimney was, on the", "new stack S."]), HOW],
                 [("C1", (18.6, 19.5), "Attic stair confirmed in the scan: it arrives at a landing between the two bedroom doors."),
-                 ("C2", (17.1, 7.4), "The boxed-out corner between the two dormers is the chimney on its way to the roof. Nobody scanned inside it."),
-                 ("C3", (5.0, 18.5), "Headroom from the true floor: flat ceiling 7'-8\" to 8'-0\" across both rooms, below 7 ft only in the last 1 to 2 ft by the knee walls. Corrected: I gave 7'-11\" to 9'-4\" before."),
+                 ("C2", (17.1, 7.4), "The boxed-out corner between the two dormers is the chimney on its way to the roof."),
+                 ("C3", (5.0, 18.5), "Headroom from the true floor: flat ceiling 7'-8\" to 8'-0\" across both rooms, below 7 ft only in the last 1 to 2 ft by the knee walls."),
                  ("C4", (25.5, 4.2), "Five windows confirmed: one in each dormer, one in each end wall, one on the stair. The small door in bedroom 2 leads into the roof space behind the knee wall.")],
-                [("N7", (12.3, 19.6), "Bath 3, 7'-0\" x 5'-1\": 60 in. tub against the stair wall, toilet at the knee wall, sink. Ceiling over the tub's shower end is 7'-8\"."),
-                 ("N8", (7.9, 13.9), "New wall and door for bedroom 1, set back so a 3'-0\" landing leads from the stair to both the bedroom and the bath."),
-                 ("N9", (13.0, 8.9), "The corner left behind the landing becomes bedroom 1's closet alcove. With the chimney gone it gains about 2 ft.")],
-                [("U14", (16.9, 14.2), "Bedroom 1's doorway off the landing reads as about 2 ft wide in the scan. Measure it; the new landing needs 3 ft."),
-                 ("U15", (15.4, 20.3), "Headroom drops to about 6'-6\" in the last foot by the knee wall, where the toilet tank goes. Fine for a toilet; confirm on site.")],
+                [("N8", (12.3, 19.4), "Bath A, private to bedroom 1, 7'-0\" x 5'-1\": 60 in. tub against the stair wall, toilet at the knee wall, sink. Door from inside bedroom 1."),
+                 ("N9", (18.3, 7.2), "Bath B, private to bedroom 2: toilet and sink in a 5'-1\" x 4'-3\" room, with a 2'-10\" x 2'-8\" shower in the space the chimney leaves. Door from inside bedroom 2."),
+                 ("N10", (21.6, 15.0), "Bedroom 2's door moves 3 ft round the corner of the landing, because the old doorway would open into bath B. The old doorway is walled up."),
+                 ("N11", (16.2, 9.8), "The wall between the two bedrooms is carried on across the old chimney space.")],
+                [("U14", (16.9, 14.4), "Bedroom 1's doorway off the landing reads as about 2 ft wide in the scan. Measure it."),
+                 ("U15", (14.6, 21.6), "Headroom drops to about 6'-6\" in the last foot by the knee wall, where bath A's toilet tank goes, and to about 6'-8\" at the back of bath B's shower. Confirm both on site."),
+                 ("U22", (20.9, 17.6), "The new bedroom 2 door is cut through the wall beside the stair's top landing. Check that the landing is at least 3 ft deep there.")],
                 ex, pr)
 
 
@@ -244,10 +257,10 @@ def middle(pdf):
                  ("C3", (31.9, 18.5), "Two outside doors on the porch side: a 4'-4\" wide door from the kitchen end and one in the bay. A porch floor shows outside at this level. The window in the bay's angled wall is confirmed; the bay is real."),
                  ("C4", (13.9, 15.2), "Inside doors confirmed: bath, bedroom 1, bedroom 2 (a 4'-11\" opening), a door across the hall and the closet. All walls match the scan within 3 in. except the items under U."),
                  ("C5", (5.2, 3.0), "Ceilings from the true floor: living room / kitchen and bedroom 2 are 8'-8\" with a dropped part at 7'-4\" to 7'-8\"; bedroom 1 7'-8\"; bath 7'-4\". Earlier I gave 7'-3\" and 8'-3\": the tall parts had been cut off.")],
-                [("N1", (17.0, 7.6), "Chimney taken out through this level (see PR-103). The new drain stack S comes down here from the upper flat's bath 2 and carries this bath too."),
-                 ("N10", (13.4, 5.2), "Bath 2, 8'-0\" x 5'-0\": 60 in. tub across the far end, toilet and sink on the closet wall, door from the hall. Uses the south half of the hall and the closed-in space."),
-                 ("N11", (9.4, 10.5), "Bedroom 2's 4'-11\" opening becomes a normal 2'-6\" door, moved clear of the new bath wall."),
-                 ("N12", (15.9, 12.4), "The hall that is left, 6'-3\" x 4'-4\", still links the living room, bedroom 2 and the new bath. The old door across the hall and the short walls behind it go.")],
+                [("N1", (17.0, 7.6), "Chimney taken out through this level (see PR-103). The new drain stack S comes down here from the attic bath above and carries this bath too."),
+                 ("N12", (13.4, 5.2), "Bath 2, 8'-0\" x 5'-0\": 60 in. tub across the far end, toilet and sink on the closet wall, door from the hall. Uses the south half of the hall and the closed-in space."),
+                 ("N13", (9.4, 10.5), "Bedroom 2's 4'-11\" opening becomes a normal 2'-6\" door, moved clear of the new bath wall."),
+                 ("N14", (15.9, 12.4), "The hall that is left, 6'-3\" x 4'-4\", still links the living room, bedroom 2 and the new bath. The old door across the hall and the short walls behind it go.")],
                 [("U16", (17.0, 9.9), "What is in the closed-in space besides the chimney is unknown. Cut an inspection hole from the hall before pricing."),
                  ("U17", (18.6, 11.4), "Two short angled wall pieces at the hall / living room corner are still unexplained (scan rounding, or boxed pipes). Photo please."),
                  ("U9", (33.8, 2.0), "The outside wall at the south-east corner of the living room was not captured.")],
@@ -279,9 +292,9 @@ def lower(pdf):
                  ("C3", (29.6, 5.8), "Outside doors found in the scan: one from the laundry, one from bedroom 2, and a 2'-10\" opening in the living room wall. No stair connects this flat to the flats above."),
                  ("C4", (14.6, 7.8), "Closet off the hall: the scan shows a round tank-sized object in it, possibly the water heater."),
                  ("C5", (25.7, 17.5), "Ceilings from each room's own floor: living room 7'-6\", kitchen 6'-10\", bedroom 1 6'-10\", bedroom 2 7'-1\", bath 7'-0\", laundry 6'-10\". Several are under 7 ft.")],
-                [("N1", (19.3, 10.9), "Chimney base taken out with the rest of the chimney. The new drain stack S from the two baths above lands here, next to both baths of this flat."),
-                 ("N13", (15.3, 2.4), "Bath 2, 4'-3\" x 8'-4\": 3 ft x 4'-3\" shower, toilet and sink on the wall shared with the existing bath, door from the hall. Replaces the hall closet and the closet behind it."),
-                 ("N14", (14.7, 11.2), "The door is on the hall so both bedrooms can use it. It could open from bedroom 1 instead if you want a private bath.")],
+                [("N1", (19.3, 10.9), "Chimney base taken out with the rest of the chimney. The new drain stack S from the baths above lands here, next to both baths of this flat."),
+                 ("N15", (15.3, 2.4), "Bath 2, 4'-3\" x 8'-4\": 3 ft x 4'-3\" shower, toilet and sink on the wall shared with the existing bath, door from the hall. Replaces the hall closet and the closet behind it."),
+                 ("N16", (14.7, 11.2), "The door is on the hall so both bedrooms can use it. It could open from bedroom 1 instead if you want a private bath.")],
                 [("U18", (5.0, 3.0), "Bedroom 1 shows NO window in the scan. A bedroom needs a window you can climb out of. Check; a window may have been hidden by a curtain."),
                  ("U19", (15.3, 4.2), "If the round object in the closet is the water heater, it needs a new home (the laundry is the natural place) before this bath can be built."),
                  ("U3", (23.0, 1.2), "This flat's position under the others is good to about 12 in., so the stack line must be set out on site."),
@@ -291,39 +304,43 @@ def lower(pdf):
 
 # ================================================================== summary + chimney evidence
 def summary(pdf):
-    sx.KIND[:] = ["PROPOSED INTERIOR CHANGES", "CHECK RESULTS AND SUMMARY"]
+    sx.KIND[:] = ["PROPOSED INTERIOR CHANGES", "8 BEDROOMS · 7 BATHS · SUMMARY"]
     sx.LEGEND[:] = ["C = checked in the 3D scan · N = new work · U = confirm on site"]
-    fig, bg = sheet("PR-001", "390 Forest: check results and what is proposed", "390 Forest Ave", "Rear building · all levels", [
-        ("Result", ["Lower flat   2 bed 1 bath -> 2 bed 2 bath", "Middle flat  2 bed 1 bath -> 2 bed 2 bath", "Upper flat   3 bed 1 bath -> 4 bed 3 bath", "Whole house  7 bed 3 bath -> 8 bed 6 bath"]),
-        ("One idea ties it together", ["The chimney runs up the middle of the", "house through all four levels. Taking it", "out frees its shaft for one new drain", "stack, and three of the four new baths", "sit right against that shaft.",
-                                       "The attic bath sits over the upper flat's", "existing bath and uses its drain."]),
+    fig, bg = sheet("PR-001", "390 Forest: 8 bedrooms, 7 baths", "390 Forest Ave", "Rear building · all levels · issue 2", [
+        ("Result", ["Lower flat   2 bed 1 bath -> 2 bed 2 bath", "Middle flat  2 bed 1 bath -> 2 bed 2 bath", "Upper flat   3 bed 1 bath -> 4 bed 3 bath", "Whole house  7 bed 3 bath -> 8 bed 7 bath"]),
+        ("Changed since issue 1", ["Upper flat: no second bath on the main", "floor. Instead each attic bedroom gets a", "private bath.", "Bedroom 4 made 4 ft longer by re-framing", "the wall to Room A."]),
+        ("One idea ties it together", ["The chimney runs up the middle of the", "house through all four levels. Taking it", "out frees its shaft for one new drain", "stack. Three of the four new baths sit",
+                                       "against that shaft; the fourth sits over", "the upper flat's existing bath."]),
         ("Not done yet", ["Beams, joists, bearing walls, pipe sizes,", "vents, electrical, fire separation between", "flats, permits. 441 Baird St plans."]),
         ("Sheets", ["PR-101 lower flat", "PR-102 middle flat", "PR-103 upper flat", "PR-104 attic", "PR-105 chimney evidence"])])
-    head(bg, 0.6, 10.2, "What the check found", "Every level compared with the 3D scan slice, the photo model and your aerial photo", color=CHECK)
-    rows = [["Item", "Result", "Sheet"],
-            ["Inside walls", "All four levels match the scan within about 3 in. No missing or extra walls. Three spots still unexplained (U16, U17, lower flat closet).", "all"],
-            ["Stairs", "One inside stair: from the porch-level stair hall (middle level) up to the upper flat, then on to the attic, one flight over the other. The lower and middle flats have no inside stair.", "102-104"],
-            ["Chimney", "One, in the middle of the house, about 2'-4\" x 3'-0\". Closed in on every level; seen on the roof in your aerial photo.", "105"],
-            ["Old U5 strip", "Two closets with the chimney between them. Not a stair.", "103, 105"],
-            ["Windows", "390 lower flat 3, middle flat 5, upper flat 8, attic 5: all confirmed. Lower flat bedroom 1 shows none (U18).", "all"],
-            ["Doors", "All confirmed. Upper flat Room B has an opening with no door. Middle flat bedroom 2 has a 4'-11\" opening.", "all"],
-            ["Floor levels", "Lower flat has two floor levels 1'-5\" apart. Floor to floor: 9'-5\", 10'-1\", 9'-4\"; attic ceiling 7'-9\".", "101"],
-            ["Ceiling heights", "CORRECTED. Upper flat and attic were 1'-2\" to 1'-5\" too tall in my last set: I had measured from the ceiling of the flat below. Now from each room's own floor.", "all"]]
-    y = table(bg, 0.6, 9.8, [1.15, 9.3, 0.85], rows, fs=6.0, rh=0.34)
-    head(bg, 0.6, y - 0.4, "Rooms after the changes", "Clear sizes. Grey rows are unchanged rooms", color=FIX)
+    head(bg, 0.6, 10.2, "Bedrooms and baths, flat by flat", "Clear sizes, wall face to wall face. NEW = built or re-framed in this proposal", color=FIX)
     r2 = [["Flat", "Room", "Now", "Proposed", "Ceiling"],
-          ["Lower", "Bath 2 (new)", "two closets", "4'-3\" x 8'-4\", shower", "about 7'-0\""],
-          ["Middle", "Bath 2 (new)", "half of the hall + closed space", "8'-0\" x 5'-0\", tub", "about 8'-0\""],
-          ["Middle", "Hall", "8'-4\" x 10'-0\"", "6'-3\" x 4'-4\"", ""],
-          ["Upper", "Bedroom 3 (Room A)", "13'-1\" x 12'-9\", 175 sf", "10'-5\" x 10'-5\" + closet 5'-0\" x 4'-5\"", "8'-1\""],
-          ["Upper", "Bedroom 4 (Room B)", "7'-6\" x 13'-5\", no door, no closet", "7'-6\" x 13'-5\" + door + closet 2'-0\" x 7'-6\"", "7'-2\""],
-          ["Upper", "Bath 2 (new)", "closet strip + chimney", "5'-0\" x 8'-0\", tub", "8'-1\""],
-          ["Attic", "Bath 3 (new)", "corner of bedroom 1", "7'-0\" x 5'-1\", tub", "7'-8\""],
-          ["Attic", "Bedroom 1", "257 sf", "8'-8\" x 12'-10\" + dormer bay + closet alcove, about 170 sf", "7'-9\""],
-          ["Attic", "Bedroom 2", "216 sf", "unchanged", "7'-10\""]]
-    y2 = table(bg, 0.6, y - 0.8, [0.8, 2.0, 3.2, 4.2, 1.1], r2, fs=6.0, rh=0.215)
-    bg.text(0.6, y2 - 0.3, "Bedroom 4 cannot be made wider: an outside wall is on one side and the stair hall on the other. It is already a legal bedroom size, so the changes are a door and a closet.\n"
-            "If you would rather have a bigger bedroom 4 and a smaller bedroom 3, the wall between them can move instead of building the closet there; say so and I will redraw it.", fontsize=6.2, va="top", color=INK, linespacing=1.4)
+          ["Lower", "Bedroom 1", "11'-8\" x 12'-2\", 142 sf", "unchanged", "6'-10\""],
+          ["Lower", "Bedroom 2", "9'-6\" x 13'-3\", 113 sf", "unchanged", "7'-1\""],
+          ["Lower", "Bath 1", "6'-9\" x 7'-6\", tub", "unchanged", "7'-0\""],
+          ["Lower", "Bath 2  NEW", "two closets beside bath 1", "4'-3\" x 8'-4\", shower, door from the hall", "about 7'-0\""],
+          ["Middle", "Bedroom 1", "150 sf (L-shaped)", "unchanged", "7'-8\""],
+          ["Middle", "Bedroom 2", "10'-8\" x 13'-1\", 140 sf", "unchanged; door narrowed to 2'-6\"", "8'-8\""],
+          ["Middle", "Bath 1", "6'-6\" x 5'-3\", tub", "unchanged", "7'-4\""],
+          ["Middle", "Bath 2  NEW", "half of the hall + closed-in chimney space", "8'-0\" x 5'-0\", tub, door from the hall", "about 8'-0\""],
+          ["Upper", "Bedroom 3 (Room A)  NEW", "13'-1\" x 12'-9\", 167 sf", "15'-9\" x 8'-5\", 133 sf + entry and closet", "8'-1\""],
+          ["Upper", "Bedroom 4 (Room B)  NEW", "7'-6\" x 13'-5\", 101 sf, no door, no closet", "7'-6\" x 17'-9\", 133 sf + door + closet", "7'-2\" / 8'-1\""],
+          ["Upper", "Bath 1", "6'-9\" x 10'-0\", tub", "unchanged; shared by bedrooms 3 and 4", "8'-3\""],
+          ["Attic", "Bedroom 1", "257 sf", "about 215 sf", "7'-9\""],
+          ["Attic", "Bath A  NEW", "corner of bedroom 1", "7'-0\" x 5'-1\", tub, private to bedroom 1", "7'-8\""],
+          ["Attic", "Bedroom 2", "216 sf", "about 185 sf; door moved 3 ft", "7'-10\""],
+          ["Attic", "Bath B  NEW", "chimney space + corner of bedroom 2", "5'-1\" x 4'-3\" + 2'-10\" x 2'-8\" shower, private to bedroom 2", "7'-8\""]]
+    y2 = table(bg, 0.6, 9.8, [0.75, 2.2, 3.2, 4.2, 1.0], r2, fs=6.0, rh=0.215)
+    head(bg, 0.6, y2 - 0.4, "Framing that changes", "Everything else stays as built", color=FIX)
+    r3 = [["Where", "Taken out", "Built"],
+          ["All levels", "Chimney, roof to lower flat; floors and roof patched", "One drain stack and vent in its shaft"],
+          ["Lower flat", "Walls of the two closets beside bath 1", "Bath 2 walls and door"],
+          ["Middle flat", "Door across the hall and the short walls behind it", "Bath 2 wall and door; bedroom 2 door re-framed"],
+          ["Upper flat", "Closet-strip wall (13 ft); 7'-6\" of the wall between Room A and Room B, with a new beam; old Room A door", "10'-7\" wall between bedrooms 3 and 4; bedroom 3 door and two closets"],
+          ["Attic", "Old bedroom 2 doorway (walled up)", "Bath A and bath B walls; new bedroom 2 door"]]
+    y3 = table(bg, 0.6, y2 - 0.8, [1.1, 5.4, 4.85], r3, fs=6.0, rh=0.215)
+    bg.text(0.6, y3 - 0.28, "Bedroom 4 cannot be made wider than 7'-6\": the outside wall is on one side and the 3'-8\" passage to the attic stair on the other. Making it wider means rebuilding that stair.\n"
+            "Still to confirm before pricing: what is inside the chimney strip, whether the lower flat's hall closet holds the water heater, and a window in the lower flat's bedroom 1.", fontsize=6.2, va="top", color=INK, linespacing=1.4)
     save(fig, "PR-001", pdf)
 
 
@@ -355,7 +372,7 @@ def evidence(pdf):
 
 
 if __name__ == "__main__":
-    out = os.path.join(HERE, "drawings", "390-Forest_Proposed-Bedroom-and-Baths.pdf")
+    out = os.path.join(HERE, "drawings", "390-Forest_8-Bed-7-Bath_Proposed.pdf")
     with PdfPages(out) as pdf:
         summary(pdf); lower(pdf); middle(pdf); upper(pdf); attic(pdf); evidence(pdf)
     print("wrote", out)
