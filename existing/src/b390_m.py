@@ -297,7 +297,7 @@ def keynotes(fl, D):
                 (TBD, lsend, None),
                 ("Bath fan: 4 in. duct to a small cap on the west wall (fine there; nothing big on that side). Dryer the same.", fan["cap"] if fan else None, None),
                 ("Supply ducts stay under the attic rooms (inside the insulation). The kitchen branch passes under the eave floor: R-8 insulated duct there.", kit["p"] if kit else None, (8.0, 10.0) if not kit else None),
-                ("Two zones, one furnace and one condenser: MD-1 on this floor's trunk (zone 1, thermostat T1); MD-2 and MD-3 on the two attic ducts off the plenum (zone 2, T2 upstairs; M-104). Zone panel at F-C.", D["dampers"][0]["p"] if D.get("dampers") else None, None)]
+                ("Two zones, one furnace and one condenser: MD-1 on this floor's trunk (zone 1, T1); MD-2 and MD-3 on the two attic ducts off the plenum (zone 2, T2 upstairs; M-104). All three fail open, in this closet's ceiling.", D["dampers"][0]["p"] if D.get("dampers") else None, None)]
     tg = next((j for j in D["jumps"] if j["kind"] == "wall"), None); r2 = next((rt for rt in D["rets"] if rt["name"] == "R-C2"), None)
     fan = next((x_ for x_ in D["exh"]), None)
     t2 = mr.TSTAT2.get(6)
@@ -365,7 +365,8 @@ GEN = ["Scope: full gut; all heating, cooling, ductwork, exhaust and venting are
        "termination (lower level: the 2x6 pipe wall between bath 1 and the laundry); condensate to an indirect drain with a neutraliser, or a pump (plumbing).",
        "Insulation the loads depend on (build at least this): outside walls R-15, attic slopes R-38 closed-cell foam (fur the rafters if they are under 6 in.), "
        "knee walls R-30, ceilings under the eaves R-49, all air-sealed. Upper flat: TWO ZONES on its one furnace and one condenser: zone 1 main floor "
-       "(thermostat T1), zone 2 attic (T2); motorized dampers MD-1 to MD-3; the maker's communicating zoning with a modulating furnace, so no bypass damper.",
+       "(thermostat T1), zone 2 attic (T2); the maker's communicating zoning with a modulating furnace, so no bypass damper. Dampers MD-1 to MD-3 fail open "
+       "(a dead actuator leaves both floors heated and cooled) and sit at the plenum in the mechanical closet ceiling, reachable for service.",
        "Refrigerant line sets: insulated copper, sizes on M-003, down the chase. " + TBD,
        "Thermostats: one per flat, programmable, 5 ft up on an inside wall as drawn, 2 ft or more from any grille, away from sun, the kitchen and door swings. "
        "Start-up: set each register to its CFM on M-003 (balancing report), check the refrigerant charge, gas pressure and temperature rise."]
@@ -417,7 +418,7 @@ def notes_sheet(pdf):
                  [f"AC-{k}", "", "Air conditioner, variable speed (inverter), 15.2 SEER2 or better", f"{s['tons']:g} ton", "", f"240 V, MCA {mca:g} A, MOCP {mocp} A", "under rear deck: TBD"]]
     rows += [["EWH-1", "Upper flat stair hall 213", "Electric wall heater with built-in thermostat", "1,000 W", "", "240 V, 4.2 A, panel C", "stair hall 213 wall"],
              ["ZP-C", "Upper flat", "Zone panel, 2 zones, communicating with F-C and AC-C (same maker); F-C modulating", "2 zones", "300 CFM min.", "24 V from F-C", "on F-C"],
-             ["MD-1..3", "Upper flat", "Motorized dampers: MD-1 14 x 8 on the trunk (zone 1); MD-2, MD-3 8 in. round (zone 2)", "", "", "24 V from ZP-C", "M-103"],
+             ["MD-1..3", "Upper flat", "Motorized dampers, NORMALLY OPEN (fail open): MD-1 14 x 8 trunk (zone 1); MD-2, MD-3 8 in. round (zone 2)", "", "", "24 V from ZP-C", "mech. 307 ceiling"],
              ["T-C1, C2", "Upper flat", "Thermostats: T1 main-floor hall, T2 attic stair hall", "", "", "thermostat cable", "M-103, M-104"]]
     y = table(bg, .5, y, [.6, 1.25, 3.9, 1.2, .85, 1.6, 1.1], rows, fs=4.8, rh=.138) - .18
     bg.text(.5, y, "FAN, DRYER AND HOOD SCHEDULE (from the plans)", fontsize=7, fontweight="bold", color=INK, va="center"); y -= .2

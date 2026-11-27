@@ -677,7 +677,7 @@ def layout(space):
         out["dampers"] = [dict(tag="MD-1", zone=1, p=(start[0] + v[0] / L_ * .6, start[1] + v[1] / L_ * .6), d=None, size="14 x 8", fl=space)]
         for rg in out["regs"]:
             if rg.get("zone") == 2 and len(rg.get("path", [])) > 1:
-                ls = LineString(rg["path"]); p = ls.interpolate(min(1.0, ls.length / 3))
+                ls = LineString(rg["path"]); p = ls.interpolate(min(.35, ls.length / 3))     # at the plenum collar, inside the mechanical closet
                 out["dampers"].append(dict(tag=f"MD-{len(out['dampers']) + 1}", zone=2, p=(p.x, p.y), d=rg["d"], size=f"{rg['d']} in. round", fl=rg["fl"], reg=rg["tag"]))
     for fl in LEVELS[space]:
         if fl in TSTAT:
