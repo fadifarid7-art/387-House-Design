@@ -22,7 +22,8 @@ P441 = json.load(open(os.path.join(D, "441_polycam_plan.json")))
 FX = json.load(open(os.path.join(D, "390_fixed.json")))
 REG = load_reg()
 FPI = 16 / 3.0
-LEVEL = {2: "Basement", 3: "Lower flat", 4: "Middle flat", 5: "Upper flat", 6: "Attic (part of the upper flat)"}
+DY2 = 782.45     # Polycam page offset between its 'Floor 2' and Floor 4 (their wall lines then coincide)
+LEVEL = {2: "Polycam 'Floor 2' (not a level)", 3: "Lower flat", 4: "Middle flat", 5: "Upper flat", 6: "Attic (part of the upper flat)"}
 Z = {3: -7.08, 4: -4.23, 5: -1.56, 6: 1.35, "top": 4.08}
 
 # ---- Polycam name -> (name used here, assumed?) ----
@@ -38,7 +39,7 @@ N390 = {
         "Hallway 1": ("Hall, stair to attic", False), "Hallway 4": ("Closet", True), "Other 3": ("Room A (bedroom)", True),
         "Other 5": ("Room B (bedroom)", True), "Other 9": ("Stair landing", False), "Other 14": ("Chase", True), "Other 15": ("Chase", True)},
     6: {"Bedroom 1": ("Attic bedroom 1", False), "Bedroom 2": ("Attic bedroom 2", False), "Hallway 2": ("Stair hall", False)},
-    2: {"Other 1": ("Basement (outline incomplete)", False)},
+    2: {"Other 1": ("Not a room: outline of the house", False)},
 }
 N441 = {
     1: {"Basement": ("Basement (half the footprint)", False)},
@@ -183,7 +184,7 @@ def fix_list(bg, x, y, items, width=6.2, fs=6.2):
     return y
 
 
-def floor_sheet(pdf, number, house, title, plan, fl, T, names, heights, fixes, opens, view, notes, sub, north_vec=None, extra=None, fpi=FPI):
+def floor_sheet(pdf, number, house, title, plan, fl, T, names, heights, fixes, opens, view, notes, sub, north_vec=None, extra=None, fpi=FPI, flags=True):
     """One level: Polycam's export on the left, the corrected plan on the right, tagged."""
     F = plan[str(fl)]
     fig, bg = sheet(number, title, "390 Forest Ave" if house == "390" else "441 Baird St", sub, notes)
@@ -199,11 +200,11 @@ def floor_sheet(pdf, number, house, title, plan, fl, T, names, heights, fixes, o
     ax = sx.axes(fig, 0.6 + left_w + 0.35 + max(0, (7.35 - wplan) / 2), 4.25 + max(0, (5.55 - hplan) / 2), vx, vy, fpi)
     G, st = sx.regularize(F, T)
     draw_floor(ax, G, sx.IDENT, names=names, heights=heights)
-    for run in sx.uncaptured_exterior(G, sx.IDENT):
+    for run in (sx.uncaptured_exterior(G, sx.IDENT) if flags else []):
         ax.plot([p[0] for p in run], [p[1] for p in run], color=OPEN, lw=1.6, ls=(0, (3, 2)), zorder=9)
     fixes = list(fixes) + [("F12", None, f"Walls straightened: {st['n_square'] // 2} wall runs set exactly square and lined up on {st['lines']} common lines, corners closed. "
                             f"No wall moved more than {max(st['max_move_in'], 0.5):.1f} in." + (f" Walls were up to {st['max_skew']:.1f} degrees out of square in the scan." if st['max_skew'] > 0.3 else ""))]
-    big_diag = [d_ for d_ in st["diag"] if d_[2] >= 1.0]
+    big_diag = [d_ for d_ in st["diag"] if d_[2] >= 1.0] if flags else []
     if big_diag:
         opens = list(opens) + [("U10", None, f"{len(big_diag) // 2 or 1} short angled wall piece(s), {ftin(min(d_[2] for d_ in big_diag))} to {ftin(max(d_[2] for d_ in big_diag))} long, are kept as scanned. "
                                 "Some are real (a bay, a cut corner); some may be the scan rounding a corner. Circled in amber.")]
@@ -234,7 +235,8 @@ def sheet_390_stack(pdf):
     notes = [
         ("What was wrong", [
             "The export numbers the levels Floor 1 to 6.",
-            "Floor 1 is a stray object, not a level.",
+            "Floor 1 is a stray object and Floor 2 is a",
+            "copy of the outside walls: not levels.",
             "The lowest flat is drawn turned 45 degrees.",
             "In the 3D scan itself that flat is twisted",
             "11 degrees against the floors above: the",
@@ -243,7 +245,7 @@ def sheet_390_stack(pdf):
             "common origin, so walls cannot be stacked.",
         ]),
         ("What I did", [
-            "F1 Named the levels: basement, lower flat,",
+            "F1 Named the four real levels: lower flat,",
             "   middle flat, upper flat, attic.",
             "F2 Turned the lowest flat square.",
             "F3 Took out the 11 degree twist and seated",
@@ -255,8 +257,8 @@ def sheet_390_stack(pdf):
             "F10 North from the scan's GPS / compass.",
         ]),
         ("Still open", [
-            "U1 Basement is not in the 3D scan, so it",
-            "   cannot be stacked or measured.",
+            "U1 Nothing below the lower flat was",
+            "   scanned. Basement or crawl space: unknown.",
             "U3 The lower flat is placed by outline",
             "   only: good to about 12 in. sideways.",
         ]),
@@ -307,8 +309,8 @@ def sheet_390_stack(pdf):
         axs.annotate("", xy=(11.5, y1), xytext=(11.5, y0), arrowprops=dict(arrowstyle="<->", lw=0.5, color=INK))
         axs.text(10.6, (y0 + y1) / 2, ftin(y1 - y0), fontsize=6, ha="right", va="center")
     axs.add_patch(plt.Rectangle((14, -9.5), 30, 9.5, fc="#fdf3e3", ec=OPEN, lw=0.8, ls="--"))
-    axs.text(29, -4.3, "BASEMENT", fontsize=7, fontweight="bold", ha="center", va="center", color=OPEN)
-    axs.text(29, -6.2, "not in the 3D scan: height unknown", fontsize=6, ha="center", va="center", color=OPEN)
+    axs.text(29, -4.3, "BELOW THE LOWER FLAT", fontsize=7, fontweight="bold", ha="center", va="center", color=OPEN)
+    axs.text(29, -6.2, "not scanned: basement, cellar or crawl space unknown", fontsize=6, ha="center", va="center", color=OPEN)
     axs.text(3.0, 13, "floor\nto\nfloor", fontsize=5.6, ha="center", va="center", color=GREY)
     tag(axs, 46.5, -4.3, "U1", OPEN, r=1.3); tag(axs, 8.0, 34.0, "F4", FIX, r=1.3)
     # footprint table
@@ -316,7 +318,7 @@ def sheet_390_stack(pdf):
     for fl in (6, 5, 4, 3):
         Tf = T390(fl); B = np.array([Tf(q) for w in P390[str(fl)]["walls"] for q in w["pts"]])
         rows.append([LEVEL[fl].split(" (")[0], f"{ftin(np.ptp(B[:, 0]))} x {ftin(np.ptp(B[:, 1]))}", f"{TWIST[fl]:+.1f} deg", "seated by outline" if fl == 3 else "as scanned"])
-    rows.append(["Basement", "partial outline only", "-", "not stacked (U1)"])
+    rows.append(["'Floor 2'", "copy of the middle flat's outside walls", "-", "dropped (F13)"])
     head(bg, 7.6, 5.05, "After: footprint check", "Each level's outline once squared: they agree within about 12 in. except where there is a bay or stair")
     table(bg, 7.6, 4.55, [1.3, 1.9, 0.9, 1.5], rows, fs=6.2, rh=0.22)
     bg.text(7.6, 2.95, "The middle flat reads 3'-6\" longer because its stair and bay window project past the main wall line.\nThe attic is narrower because its walls are the knee walls under the roof.", fontsize=6.0, va="top", color=INK, linespacing=1.3)
@@ -409,14 +411,30 @@ def ex390(pdf):
     ], ((-3, 36), (-3, 30)), gen(6, ["Two bedrooms reached by the stair", "from the upper flat's hall."]) + [how], "Rear building · attic", nv, extra=extra6)
 
     F2 = P390["2"]
-    floor_sheet(pdf, "EX-106", "390", "390 Forest: basement, before and after", P390, 2, Tsimple(F2), N390[2], {}, [
-        ("F1", None, "The export calls this 'Floor 2' and lists an empty 'Floor 1' holding one stray object. Renamed Basement; the stray 'Floor 1' is dropped."),
-        ("F8", None, "Sizes in feet and inches."),
+    T4 = T390(4)
+    T2 = lambda p: T4((p[0], p[1] + DY2))                        # noqa: E731
+
+    def extra2(ax, bg, fig):
+        G4, _ = sx.regularize(P390["4"], T4)
+        for w in G4["walls"]:
+            q = w["pts"] + [w["pts"][0]]
+            ax.plot([a_[0] for a_ in q], [a_[1] for a_ in q], color="#1f5fa8", lw=0.55, zorder=20)
+        ax.text(38.6, -2.1, "blue outline = the middle flat's walls (EX-103) · dark = Polycam's 'Floor 2' walls, lying on the same lines", fontsize=5.6, color="#1f5fa8", ha="right")
+    c2 = centre(F2, "Other 1", 0)
+    floor_sheet(pdf, "EX-106", "390", "390 Forest: Polycam's 'Floor 2' is not a basement", P390, 2, T2, N390[2], {}, [
+        ("F13", (c2[0] - 60, c2[1] + 60), "Identified. These six wall pieces are the middle flat's own outside walls drawn a second time: the west wall, south wall, east wall and the corner notch "
+                                           "fall on the middle flat's lines within 1/8 in., and the angled piece runs parallel to the side of its bay window, about 1'-6\" inside it. Blue shows the middle flat laid over it."),
+        ("F1", None, "Dropped as a level, with the stray 'Floor 1'. My last issue called this sheet Basement and drew a guessed outline in amber dashes: that was wrong and is removed."),
+        ("F14", None, "Why Polycam made it: it has no rooms, doors or windows, and its listed height of 16'-6\" is the lower flat's floor to the middle flat's ceiling "
+                      "(9'-4\" + 7'-3\"). It is the shell of two storeys saved as if it were one room. The slanted edge of its 777 sf area is only the app closing the shape."),
     ], [
-        ("U1", centre(F2, "Other 1"), "This level is NOT in the 3D scan. Its listed ceiling height (16'-6\") is wrong and the real one is unknown."),
-        ("U9", (centre(F2, "Other 1")[0] + 120, centre(F2, "Other 1")[1] - 110), "Amber dashes: walls were captured on two sides only. The rest of the outline is assumed from the scanned floor area."),
-        ("U8", None, "It cannot be placed under the floors above: no common reference. Water heaters, panels, drains and any outside door are not shown."),
-    ], ((-3, 37), (-3, 31)), [("Level", ["Basement, one open space, about 777 sf.", "Needs its own scan or tape measure:", "ceiling height, posts and beams, stairs,", "outside door or windows, where the drains", "leave, heaters and electrical panels."]), how], "Rear building · basement")
+        ("U1", (c2[0] + 60, c2[1] - 80), "Whether the house has a basement, cellar or crawl space is NOT known from these files. The 3D scan holds nothing below the lower flat's floor."),
+        ("U12", None, "Outside the lower flat the scan caught ground 1 to 8 ft below that flat's floor, so there is room for a cellar or crawl space under it. "
+                      "Tell me what is down there; it decides how new bathroom drains can run."),
+    ], ((-3, 39), (-3, 31)), [("What this is", ["Not a floor of the house. It is a leftover", "from the scanning app: the outside walls", "of the lower two storeys, saved as an", "extra 'floor' with one 777 sf 'room'.",
+                                               "Nothing on it is new information."]),
+                              ("What is needed", ["If there is a basement or cellar: a scan", "or photos of it, showing the stairs, any", "outside door, posts and beams, where the", "drains leave, heaters and panels."]), how],
+        "Rear building · Polycam 'Floor 2'", nv, extra=extra2, flags=False)
 
 
 # =============================================================================== 441 Baird St
@@ -509,7 +527,7 @@ def sheet_log(pdf):
     ])
     head(bg, 0.6, 10.2, "Fixes made", "What the scan showed, and what I did", color=FIX)
     rows = [["Tag", "House", "What the scan showed", "What I did", "Sheet"],
-            ["F1", "both", "Levels numbered Floor 1 to 6 (390) and 1 to 3 (441); 390's Floor 1 is a stray object", "Named the levels; dropped the stray one", "101, 201"],
+            ["F1", "both", "Levels numbered Floor 1 to 6 (390) and 1 to 3 (441); 390's Floor 1 is a stray object", "Named the real levels; dropped Floor 1 and Floor 2", "101, 201"],
             ["F2", "390", "Lowest flat drawn turned 45 degrees", "Turned square", "101, 102"],
             ["F3", "390", "3D scan has the lowest flat twisted 11 degrees against the floors above", "Twist removed; seated on the common footprint by outline", "101, 102"],
             ["F4", "both", "Levels sit apart on the page, no common origin", "Stacked on one origin; 390 level heights measured in the scan", "101, 201"],
@@ -520,11 +538,13 @@ def sheet_log(pdf):
             ["F9", "390", "Middle flat bath: tub and sink, no toilet", "Unnamed object in the corner circled as the likely toilet", "103"],
             ["F10", "390", "North shown only as a small compass symbol on the export page", "North arrow added from the geo-referenced scan (phone compass, approximate)", "101"],
             ["F11", "441", "Address reads 390 Forest Ave", "Labelled 441 Baird St (county record)", "201"],
-            ["F12", "both", "Walls up to 3 degrees out of square (390 lower flat); small jogs and open corners", "Walls set exactly square, lined up on common lines, corners closed", "all"]]
+            ["F12", "both", "Walls up to 3 degrees out of square (390 lower flat); small jogs and open corners", "Walls set exactly square, lined up on common lines, corners closed", "all"],
+            ["F13", "390", "'Floor 2': six wall pieces and one 777 sf 'room', which I first read as a basement", "Shown to be the middle flat's outside walls drawn twice; not a basement", "106"],
+            ["F14", "390", "'Floor 2' listed 16'-6\" high", "Explained: lower flat floor to middle flat ceiling, two storeys saved as one room", "106"]]
     y = table(bg, 0.6, 9.8, [0.45, 0.55, 5.0, 4.9, 1.0], rows, fs=6.1, rh=0.235)
     head(bg, 0.6, y - 0.45, "Still open: could not be fixed from the files", "Each needs a look on site, a tape measure, or another scan", color=OPEN)
     rows2 = [["Tag", "House", "What is missing or doubtful", "What would settle it"],
-             ["U1", "390", "Basement is not in the 3D scan; its height, stairs, doors and utilities are unknown", "Scan or photos of the basement"],
+             ["U1", "390", "Nothing below the lower flat was scanned: basement, cellar or crawl space unknown", "Tell me what is under the lower flat; scan or photos"],
              ["U2", "both", "Window sill heights and whether windows open could not be read (glass and blinds)", "Measure the bedroom windows"],
              ["U3", "both", "Walls are drawn 4 in. thick everywhere; real thickness unknown, so room sizes are good to about 2 in.", "Tape check of a few rooms"],
              ["U4", "both", "Nothing inside walls or floors: drain stacks, joists, bearing walls, wiring", "Look in the basement and attic; open a ceiling"],
@@ -532,9 +552,10 @@ def sheet_log(pdf):
              ["U6", "390", "Stairs and entrances only partly scanned", "Tell me where each flat's door and stair are"],
              ["U7", "441", "No 3D scan: heights and stacking not checked", "Export the .laz for 441"],
              ["U8", "441", "No stairs captured on any level", "Scan or describe the stairs"],
-             ["U9", "both", "Outside walls missed in places (390 middle flat south-east corner, both basements)", "Rescan those corners"],
+             ["U9", "both", "Outside walls missed in places (390 middle flat south-east corner, 441 basement)", "Rescan those corners"],
              ["U10", "both", "Short angled wall pieces kept as scanned: real cut corners or the scan rounding a corner", "Look at each circled spot"],
-             ["U11", "390", "Upper flat living room and a few small spaces have too few 3D points for a height", "Tape measure"]]
+             ["U11", "390", "Upper flat living room and a few small spaces have too few 3D points for a height", "Tape measure"],
+             ["U12", "390", "Ground outside is 1 to 8 ft below the lower flat's floor: room for a cellar under it", "Same as U1; it decides how new drains can run"]]
     table(bg, 0.6, y - 0.85, [0.45, 0.55, 6.4, 4.5], rows2, fs=6.1, rh=0.235)
     save(fig, "EX-001", pdf)
 
