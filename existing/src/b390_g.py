@@ -68,7 +68,7 @@ def cover(pdf):
         "4  Lower flat ceilings are too low for a soffit: ducts in joist space (M-101).",
         "5  Exhaust caps on the east wall: verify grade and the stair. Line",
         "   sets wait for the deck area's size (M-001, M-003).",
-        "6  Middle flat dryer: heat-pump, no vent; hood recirculating (M-102).",
+        "6  Middle flat dryer vent: 30 of 35 ft eq., long-radius elbows (M-102).",
         "7  Middle bath 2 toilet drain crosses joists on its way to stack S1: fur",
         "   the lower flat ceiling there or shift the toilet (P-102).",
         "8  Upper kitchen drain runs 14 ft to stack S2: 3 1/2 in. of fall (P-103).",

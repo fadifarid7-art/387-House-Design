@@ -278,7 +278,7 @@ def keynotes(fl, D):
         return [("Furnace F-B with its coil, in the mechanical closet. Two trunks: west up the hall, east along the bath 2 wall into the living room.", fur, None),
                 ("Stair hall 213 is the upper flat's: no duct can reach it without crossing this flat, so it gets a 1,000 W electric wall heater EWH on panel C.", D["heater"][0]["p"] if D["heater"] else None, None),
                 (TBD, lsend, None),
-                ("Dryer: heat-pump type, no vent. No outside wall it may vent through is within the 35 ft limit (north windows, west neighbour, east stair, the trunk).", dry, None),
+                ("Dryer vent: 4 in. rigid to the west wall, about 19.5 ft with 5 smooth long-radius elbows = 30 ft equivalent of the 35 ft allowed. No extra elbows, no flex.", dry, None),
                 ("Range hood recirculating: the only outside wall beside the range has the kitchen window within 3 ft.", rng, None),
                 ("Pipes and vents from below rise at the back of this closet, where the chimney was, behind the water heater.", chc, None)]
     if fl == 5:
@@ -346,9 +346,10 @@ GEN = ["Scope: full gut; all heating, cooling, ductwork, exhaust and venting are
        "Outside caps (IRC M1504.3, M1502.3): 3 ft or more from property lines and from windows and doors; 10 ft from the furnace and water heater intakes "
        "unless 3 ft above them; 12 in. above grade; not blowing onto the east stair or a walkway. West wall: small caps are fine; nothing large goes on that "
        "side. The lower flat's north end is below grade. Caps are drawn where these rules allow: verify on site before cutting (detail 5).",
-       "Dryers A and C: 4 in. rigid smooth metal duct, no screws through it, to a wall cap with a damper, 35 ft equivalent length maximum (5 ft per 90 "
-       "degree elbow); lengths in the schedule below. Dryer B: heat-pump (ventless): even through the west wall the vent is about 51 ft equivalent. Range "
-       "hoods: ducted in 6 in. metal in the upper flat; recirculating in the lower (inside wall) and middle (window within 3 ft) flats; 300 CFM or less.",
+       "Dryers (all three vented, normal dryers): 4 in. rigid smooth metal duct, no screws through it, no flex except the 8 ft transition, to a wall cap with a "
+       "damper; 35 ft equivalent maximum. Elbows: smooth long-radius 90s, 6 in. centerline radius or more, 1'-9\" each (IRC Table M1502.4.5.1; a standard mitered "
+       "elbow counts 5 ft). Middle flat: 30 ft equivalent to the west wall: no added elbows; if the route changes, add a listed dryer booster fan. Range hoods: "
+       "ducted in 6 in. metal in the upper flat; recirculating in the lower (inside wall) and middle (window within 3 ft) flats; 300 CFM or less.",
        "Venting: each furnace and water heater has 2 in. or 3 in. PVC exhaust and intake (sizes per the instructions) up the old chimney chase to a roof "
        "termination (lower level: the 2x6 pipe wall between bath 1 and the laundry); condensate to an indirect drain with a neutraliser, or a pump (plumbing).",
        "Refrigerant line sets: insulated copper, sizes on M-003, down the chase. " + TBD,

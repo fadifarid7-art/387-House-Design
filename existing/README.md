@@ -61,8 +61,8 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   schedules, M-002 loads (with the extremes check), M-003 the register-by-register schedule, condenser airflow under the rear deck and the chase,
   M-501 construction details and 3D views of each flat's ducts, M-101 to M-104 plans with every duct drawn to scale and sized.
   Result: variable-speed air conditioners, 1.5 ton lower and middle, 2 ton upper; 40,000 Btu/h two-stage furnaces; 14 x 8 in. trunks; the attic
-  is fed from the upper flat's main-floor trunk in the attic floor; middle flat dryer is a ventless heat-pump type (no wall within 35 ft
-  equivalent, even west). Line sets are NOT final: they wait for the size of the walled area under the rear deck.
+  is fed from the upper flat's main-floor trunk in the attic floor; every dryer is vented (middle flat: 30 ft equivalent to the west wall with
+  long-radius elbows). Line sets are NOT final: they wait for the size of the walled area under the rear deck.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the

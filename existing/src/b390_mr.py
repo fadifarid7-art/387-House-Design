@@ -41,7 +41,8 @@ TRUNK = {3: [[(18.9, 3.3), (18.9, 11.95)], [(15.3, 11.95), (22.6, 11.95)], [(15.
 RET = {3: dict(rooms=("107",), drop=(20.95, 3.33), name="R-A"), 4: dict(rooms=("207", "210"), drop=(13.25, 9.1), name="R-B"),
        5: dict(rooms=("301", "306"), drop=(16.2, 10.5), name="R-C1", through=True)}
 RET2 = dict(fl=6, rooms=("405",), name="R-C2", cfm=160, drop=(18.5, 12.4))      # attic: high wall return at the top of the stair, stack down, duct to F-C
-VENTLESS = {4: "Heat-pump dryer, ventless: no outside wall the vent may use is within 35 ft equivalent (west route about 51 ft eq.; north windows; east stair)."}
+VENTLESS = {}                                   # every dryer vented; long-radius elbows keep them within 35 ft equivalent
+ELBOW_EQ = 1.75                                 # IRC Table M1502.4.5.1: 6 in. radius smooth 90 degree elbow = 1'-9" (mitered 4 in. radius = 5 ft)
 # Vertical shafts: the old chimney becomes the chase; on the middle level the chimney is gone and the pipes rise behind the water heater.
 CHASE = {3: (17.4, 6.4, 18.0, 9.38), 4: (16.45, 6.15, 18.7, 8.6), 5: (15.65, 6.2, 17.85, 8.6), 6: (15.7, 5.96, 17.75, 8.4)}
 TSTAT = {3: (3.0, 13.12, (0, 1)), 4: (11.3, 13.55, (0, -1)), 5: (23.75, 18.6, (-1, 0))}
@@ -96,6 +97,8 @@ class Grid:
                     blk |= self.mask(box(*r))
         if space == 4:                                          # the upper flat's stair hall: no middle-flat duct over it
             r = next(r for r in b.LV[4]["rooms"] if r["no"] == "213"); blk |= self.mask(unary_union([box(*x) for x in r["rects"]]).buffer(0.3))
+        for ab in b.LV[space].get("above") or []:              # a stair overhead takes the ceiling framing: no duct through it
+            blk |= self.mask(box(*ab[:4]).buffer(.1))
         if space == 5:                                          # stair openings through the attic floor
             for st in b.LV[6]["stairs"]: blk |= self.mask(box(*st[:4]))
             for st in b.LV[5]["stairs"]:
@@ -598,6 +601,8 @@ def layout(space):
                 cap = (bp.x, bp.y) if abs(bp.x - a_.x) < .05 or abs(bp.y - a_.y) < .05 else (bp.x, bp.y)
                 out["hood"].append(dict(a=(a_.x, a_.y), path=[(a_.x, a_.y), cap], cap=cap, ducted=True, fl=fl)); caps.append(cap); continue
             own = {i for i, rr in enumerate(L["rooms"]) if (room and rr["no"] == room) or (fp is not None and room_shape(rr).intersects(fp))}
+            if kind == "dry":                                     # dryers: the shortest equivalent length wins, whatever room the duct passes over
+                own = {i for i, rr in enumerate(L["rooms"]) if mq.flat_of(fl, rr) == FLAT[fl]}
             cm = cost_map(g, fl, own, "exhaust")
             cm[g.capzone] += 20.0                                  # never run along the outside wall
             for c_ in tc: cm[c_] = 50.0
@@ -624,7 +629,7 @@ def layout(space):
             rec = dict(a=path[0], path=path, cap=path[-1], to=to, fl=fl, room=room)
             if kind == "dry":
                 Ld = sum(math.dist(a, c) for a, c in zip(path[:-1], path[1:])); bends = max(0, len(path) - 2) + 2
-                rec["eq"] = Ld + 2.0 + 5.0 * bends; rec["bends"] = bends; rec["len"] = Ld
+                rec["eq"] = Ld + 2.0 + ELBOW_EQ * bends; rec["bends"] = bends; rec["len"] = Ld; rec["eq_mitered"] = Ld + 2.0 + 5.0 * bends
                 rec["ventless"] = False
                 if rec["eq"] > 35: out["problems"].append(f"dryer vent level {fl}: {rec['eq']:.0f} ft equivalent, over 35")
                 out["dry"].append(rec)
