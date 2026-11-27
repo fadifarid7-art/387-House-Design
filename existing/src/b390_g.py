@@ -37,7 +37,8 @@ def cover(pdf):
     y = b.text_block(bg, 0.6, y - 0.05, "Basis of design: assumptions the builder must confirm", [
         "A  Natural gas is on site. Each flat is taken to have its own gas and electric meter. Meter and service locations are not on the scan.",
         "B  What is there now, all to be removed (inspection report, 9 Oct 2026): three gas forced-air furnaces with ducts (1996, 1997, 2019), three 40 gal gas",
-        "   water heaters (2017, 2022, 2022), 100 A panels on an overhead service, no central cooling. The upper flat's furnace and heater stand in Room B.",
+        "   water heaters (2017, 2022, 2022), 100 A panels on an overhead service, no central cooling. Furnace and heater positions today (owner's videos): lower",
+        "   flat in the louvered closet by the kitchen (109), middle flat in the closet off bedroom 1 (208), upper flat standing in Room B (new bedroom 4).",
         "   Built 1911: assume lead paint, and test plaster, flooring and pipe wrap for asbestos before demolition.",
         "C  Foundation is stone with a crawl space under part of the house (its access door was stuck). Joist direction and bearing walls are not known. Any wall to be cut is treated as",
         "   bearing until shown otherwise: shore it and size the header.",

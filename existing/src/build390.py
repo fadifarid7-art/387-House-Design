@@ -24,6 +24,7 @@ EXISTING = dict(  # home inspection report, Oasis Home Inspections, 9 Oct 2026, 
     power="overhead service; 100 A 120/240 V panels (General Electric, Murray); some ungrounded receptacles, open splices",
     kitchens="dishwasher in every kitchen; electric ranges in the lower and middle flats, gas range in the upper flat; no range hoods",
     upper="the upper flat's furnace and water heater stand in the west end of Room B (new bedroom 4): they move to closet 307",
+    equipment="owner's videos: lower flat furnace closet with louvered doors beside the kitchen (room 109); middle flat furnace and water heater in the closet off bedroom 1 (room 208); a fireplace mantel on the chimney wall of old Room A",
     attic="rafters cut or separated in places; roof flashing lifted", lower="bedroom 2's only window is a small high basement window")
 STACK = (17.3, 8.9)            # new 3 in. drain stack in the old chimney shaft, same spot on every level
 CHIMNEY = (15.8, 6.2, 18.3, 9.3)
@@ -69,7 +70,7 @@ LV = {
                   ("table", 4.0, 13.6, 9.0, 16.6)],
             notes=[(1, (14.9, 4.5), "Bath 2: new room. 2x6 wet wall on the bath 1 side."), (2, (12.28, 5.0), "New wall 9 in. inside the old one (old wall out)."),
                    (3, (17.3, 7.6), "Chimney base removed. Patch floor. Stack S in wet wall."), (4, (4.6, 10.43), "New closet front, 4'-7\" bifold."),
-                   (5, (18.6, 13.9), "Existing closet becomes the mechanical closet: new solid door, 5/8 in. type X board walls and ceiling."),
+                   (5, (18.6, 13.9), "The furnace closet with louvered doors (seen in the owner's video) is rebuilt as mechanical closet 109: new solid door, 5/8 in. type X board walls and ceiling."),
                    (6, (24.6, 12.95), "Frame a 2'-8\" door in the bedroom 2 doorway."), (7, (20.0, 26.94), "Wall not in the scan: verify."),
                    (8, (27.6, 25.2), "Bedroom 2 has only a small high basement window (photo). It is not an escape window: a bedroom here needs a larger window or an outside door. Decide before work starts."),
                    (9, (29.6, 22.7), "Door on this wall: closet or outside door? Verify.")],
@@ -105,7 +106,7 @@ LV = {
                   ("couch", 19.2, 2.0, 22.2, 9.0, "x-"), ("tv", 33.2, 1.0, 34.59, 5.5), ("ctable", 24.5, 3.5, 26.5, 7.5), ("table", 23.0, 11.6, 28.0, 14.6)],
             notes=[(1, (13.6, 8.77), "New 2x6 wall: bath 2. Tub valve in this wall."), (2, (17.0, 6.5), "Chimney and the old inner hall walls removed. Patch floor and ceiling."),
                    (3, (10.59, 10.5), "4'-11\" opening re-framed for a 2'-6\" door."), (4, (2.9, 15.64), "New closet front, 4'-4\" bifold."),
-                   (5, (17.5, 18.6), "Existing closet becomes the mechanical closet: new solid door, 5/8 in. type X board."),
+                   (5, (17.5, 18.6), "Today this closet holds the furnace and water heater behind louvered doors that open into bedroom 1 (owner's video). Wall up the bedroom side; new solid door from the passage; 5/8 in. type X board."),
                    (6, (33.6, 0.37), "Walls not in the scan: verify."), (7, (11.0, 26.0), "Wall not in the scan: verify."),
                    (8, (31.9, 19.2), "Window over the counter (photo). The scan shows a 4'-4\" opening; the amber piece beside it is wall behind the range: verify."),
                    (9, (31.9, 24.1), "Upper flat's entry door from the porch: position not in the scan, verify."),
@@ -139,7 +140,7 @@ LV = {
             furn=[("couch", 0.5, 1.5, 3.5, 8.5, "x-"), ("tv", 13.9, 4.2, 15.28, 9.2), ("ctable", 6.0, 3.3, 8.0, 6.7), ("table", 6.0, 9.4, 11.0, 12.4),
                   ("bed", 31.35, 5.4, "x-"), ("night", 29.85, 8.0, 31.35, 9.5), ("desk", 18.6, 0.33, 22.6, 2.33), ("dresser", 25.5, 0.33, 28.5, 1.83),
                   ("bed", 28.85, 26.86, "y-"), ("desk", 29.35, 15.4, 31.35, 19.4)],
-            notes=[(1, (17.0, 7.6), "Chimney removed roof to lower flat. Patch floor, ceiling and roof. Stack S boxed in the closet corner."),
+            notes=[(1, (17.0, 7.6), "Chimney removed roof to lower flat, with the fireplace mantel on this wall of old Room A (owner's video). Patch floor, ceiling and roof. Stack S boxed in the closet corner."),
                    (2, (18.14, 7.3), "Wall opened 4'-7\" for closet doors; header over."), (3, (18.0, 10.2), "New mechanical closet: 2x4 walls, 5/8 in. type X board, pair of solid doors to the hall."),
                    (4, (27.6, 10.94), "New 2x4 wall: closet for bedroom 4."), (5, (28.1, 13.27), "Wall opened 5'-0\" for closet doors; header over (wall may be bearing)."),
                    (6, (23.7, 16.5), "Opening widened from 2'-4\" to 2'-8\"; new door."), (7, (16.8, 3.9), "Closet end wall: build if not there."),
@@ -196,6 +197,15 @@ def geom(fl):
         if len(q) >= 4 and max(np.ptp(q[:, 0]), np.ptp(q[:, 1])) < 1.0: return False      # scan artefact, not a door
         c = np.mean(np.array(o["pts"]), 0)
         return cut is None or not cut.buffer(0.3).contains(Polygon([(c[0] - .01, c[1] - .01), (c[0] + .01, c[1] - .01), (c[0] + .01, c[1] + .01)]).centroid)
+    fixu = unary_union([box(*r) for r in L["fix"]]).buffer(0.02) if L["fix"] else None
+    def trim(o):
+        """Cut a scanned opening back where a wall is now drawn across part of it."""
+        if fixu is None or len(o["pts"]) < 4: return o
+        d_ = Polygon(o["pts"]).buffer(0).difference(fixu)
+        if d_.is_empty: return None
+        if d_.geom_type != "Polygon": d_ = max(d_.geoms, key=lambda q: q.area)
+        return dict(o, pts=[list(c) for c in d_.exterior.coords[:-1]])
+    G["doors"] = [t_ for t_ in (trim(o) for o in G["doors"]) if t_]; G["openings"] = [t_ for t_ in (trim(o) for o in G["openings"]) if t_]
     out = dict(walls=walls, doors=[o for o in G["doors"] + G["openings"] if keep(o)], windows=[o for o in G["windows"] if len(o["pts"]) >= 4],
                rooms=G["rooms"], arcs=[a for a in G.get("arc_pts", [])])
     _G[fl] = out
