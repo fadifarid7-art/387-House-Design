@@ -1,6 +1,7 @@
 """390 Forest Ave builder set: ELECTRICAL sheets E-001 and E-101 to E-104 (power, lighting, life safety).
 Design intent only. NEC 2020 dwelling rules are the layout guide; everything is to be confirmed by the licensed electrician.
-Receptacles, appliance outlets, lights and bedroom alarms are placed from the plan model; switches and a few closet devices are hand-placed and snapped to the wall."""
+Receptacles, counter and appliance outlets, lights and bedroom alarms are placed from the plan model (b.LV, b.RANGE_FUEL);
+switches, hall alarms and the outlets in the mechanical closets are hand-placed points that snap to the nearest wall."""
 import math
 import os
 import sys
@@ -20,20 +21,21 @@ from common import GREY, INK, table  # noqa: E402
 PW, LT, LS = "#1d4e89", "#c45a00", "#b3261e"      # power (blue), lighting (orange), life safety (red)
 HALO = [withStroke(linewidth=1.3, foreground="white")]
 PANEL_OF = {3: "A", 4: "B", 5: "C", 6: "C"}
-FLAT = {"A": dict(name="Lower flat", amps=100, sf=790, ac=18, sp=24, mech="109", beds=[("103", "Bedroom 1"), ("104", "Bedroom 2")], baths=[("105", "Bath 1"), ("106", "Bath 2")]),
-        "B": dict(name="Middle flat", amps=100, sf=870, ac=18, sp=24, mech="208", beds=[("203", "Bedroom 1"), ("204", "Bedroom 2")], baths=[("205", "Bath 1"), ("206", "Bath 2")]),
-        "C": dict(name="Upper flat + attic", amps=125, sf=1450, ac=22, sp=30, mech="307", beds=[("303", "Bedroom 3"), ("304", "Bedroom 4"), ("401", "Attic bedroom 1"), ("402", "Attic bedroom 2")],
+FLAT = {"A": dict(name="Lower flat", lv=3, amps=100, sf=790, ac=18, mech="109", beds=[("103", "Bedroom 1"), ("104", "Bedroom 2")], baths=[("105", "Bath 1"), ("106", "Bath 2")]),
+        "B": dict(name="Middle flat", lv=4, amps=100, sf=870, ac=18, mech="208", beds=[("203", "Bedroom 1"), ("204", "Bedroom 2")], baths=[("205", "Bath 1"), ("206", "Bath 2")]),
+        "C": dict(name="Upper flat + attic", lv=5, amps=125, sf=1450, ac=22, mech="307", beds=[("303", "Bedroom 3"), ("304", "Bedroom 4"), ("401", "Attic bedroom 1"), ("402", "Attic bedroom 2")],
                   baths=[("305", "Bath 1"), ("403", "Attic bath A"), ("404", "Attic bath B")])}
 
 
 def circuits(k):
     """Branch circuits of one flat: (key, breaker, wire, what it serves). AF = arc-fault, GF = ground-fault, DF = both in one breaker."""
-    f = FLAT[k]
+    f = FLAT[k]; el = b.RANGE_FUEL[f["lv"]] == "electric"
     c = [("SA1", "20 A 1P DF", "12-2", "Kitchen counter receptacles A"), ("SA2", "20 A 1P DF", "12-2", "Kitchen counter B + wall recepts"), ("REF", "20 A 1P AF", "12-2", "Refrigerator"),
-         ("RNG", "20 A 1P AF", "12-2", "Gas range, 120 V receptacle"), ("MW", "20 A 1P AF", "12-2", "Range hood / microwave")]
+         ("RNG", "50 A 2P GF", "6-3", "Electric range, 240 V recept (14-50R)") if el else ("RNG", "20 A 1P AF", "12-2", "Gas range, 120 V receptacle"),
+         ("MW", "20 A 1P AF", "12-2", "Range hood / microwave"), ("DW", "15 A 1P DF", "14-2", "Dishwasher, recept in sink cabinet")]
     c += [("B" + n, "20 A 1P GF", "12-2", f"{nm}: vanity receptacle") for n, nm in f["baths"]]
     c += [("LAU", "20 A 1P DF", "12-2", "Laundry: washer receptacle"), ("DRY", "30 A 2P GF", "10-3", "Dryer, 240 V receptacle (14-30R)"), ("FUR", "15 A 1P AF", "14-2", "Gas furnace, switch at the unit"),
-          ("WH", "20 A 1P AF", "12-2", "Water heater vent + service recepts"), ("AC", "30 A 2P", "10-2", "AC condenser, disconnect at unit")]
+          ("WH", "20 A 1P AF", "12-2", "Water heater vent + service recepts"), ("AC", "30 A 2P", "10-2", "New cooling (optional): AC condenser")]
     c += [("R" + n, "15 A 1P AF", "14-2", f"{nm}: receptacles") for n, nm in f["beds"]]
     c += [("LIV", "20 A 1P AF", "12-2", "Living room + hall receptacles"), ("LT1", "15 A 1P AF", "14-2", "Lights: living/kitchen/halls + alarms"),
           ("LT2", "15 A 1P AF", "14-2", "Lights + fans: beds, baths, closets")]
@@ -49,34 +51,30 @@ def cn(fl, key, no=""):
     return f"C{CN['C'][key]}" if no == "213" else str(CN[PANEL_OF[fl]][key])
 
 
-def ltkey(fl, r):
-    return "LT3" if fl == 6 else "LT2" if r["kind"] in ("bed", "bath", "closet") else "LT1"
-
-
 # Hand-placed items per level, as points about 0.3 ft off the wall inside the room; snap() puts them on the wall face.
 # P panel (x, y, slide of the clear floor box along the wall) · AC point just outside the nearest outside wall · SW (room or group, x, y, type)
-# RX (symbol, x, y, circuit[, room, free angle]) · FIX lights that replace the automatic ones (c = small) · LS alarms (in a bedroom: replaces the automatic one)
+# RX (symbol, x, y, circuit[, room, free angle]): water heater and service receptacles in the mechanical closets, odd walls · FIX lights that replace the automatic ones (c = small) · LS alarms (in a bedroom: replaces the automatic one)
 # KN keynote positions (x, y[, leader to x, y])
 X = {3: dict(P=(21.75, 12.5, .55), AC=(31.0, 14.5),
              SW=[("101", 1.4, 18.0, "S3"), ("101", 12.3, 13.42, "S3"), ("102", 15.8, 15.4, "2S"), ("103", 12.4, 12.5, "S"), ("112", 7.4, 10.0, "S"), ("104", 22.8, 13.4, "S"), ("111", 25.8, 15.6, "S"),
                  ("105", 18.45, 9.3, "2S"), ("106", 16.4, 9.0, "2S"), ("107", 16.5, 9.9, "S3"), ("107", 23.9, 10.15, "S3"), ("108", 26.6, 12.5, "S"), ("109", 20.4, 12.5, "S"), ("110", 27.0, 3.9, "S")],
-             RX=[("X", 16.7, 14.5, "FUR"), ("D", 20.5, 15.3, "WH"), ("G", 20.4, 13.4, "WH"), ("G", 19.7, 26.5, "SA1")],
+             RX=[("D", 20.5, 15.3, "WH"), ("G", 20.4, 13.4, "WH")],
              FIX={"109": [("c", 18.37, 14.3)], "108": [("C", 28.4, 7.6)], "106": [("F", 14.2, 5.2)], "105": [("F", 20.9, 7.2)], "107": [("C", 15.9, 11.2), ("C", 22.3, 11.2)], "110": [("c", 27.7, 3.14)]},
-             LS=[("SC", 24.5, 11.5)], KN=[(21.75, 13.95), (14.9, 14.3, 16.3, 14.3), (33.3, 16.3), (15.9, 19.9, 18.6, 20.9)]),
+             LS=[("SC", 24.5, 11.5)], KN=[(21.75, 13.95), (14.9, 14.3, 16.3, 14.3), (33.3, 16.3), (15.9, 19.9)]),
      4: dict(P=(16.2, 13.9, -.25), AC=(16.4, 28.1),
              SW=[("201", 34.3, 9.65, "S3"), ("201", 21.7, 11.15, "S3"), ("202", 20.1, 17.8, "2S"), ("203", 14.85, 18.4, "S"), ("204", 10.1, 12.3, "S"), ("211", 10.1, 3.5, "S"), ("205", 12.0, 17.0, "2S"),
                  ("206", 14.0, 8.2, "2S"), ("207", 16.55, 12.6, "S"), ("210", 19.2, 17.1, "S3"), ("210", 15.4, 17.1, "S3"), ("208", 19.2, 18.0, "S"), ("209", 22.55, 12.8, "S"), ("213", 29.3, 21.35, "S3")],
-             RX=[("X", 15.7, 19.2, "FUR"), ("D", 18.6, 21.0, "WH"), ("G", 19.25, 20.45, "WH"), ("R", 27.5, 21.35, "LIV", "213"), ("R", 32.4, 11.5, "LIV", "", True)],
+             RX=[("D", 18.6, 21.0, "WH"), ("G", 19.25, 20.45, "WH"), ("R", 27.5, 21.35, "LIV", "213"), ("R", 32.4, 11.5, "LIV", "", True)],
              FIX={"205": [("F", 9.0, 15.3)], "206": [("F", 15.1, 6.8)], "207": [("C", 13.8, 10.3)], "210": [("C", 13.9, 15.5)], "208": [("c", 17.5, 18.1)], "209": [("C", 19.55, 12.6)],
                   "213": [("C", 29.0, 25.0), ("C", 18.9, 25.9)]},
              LS=[("SC", 18.2, 15.2), ("SC", 15.6, 11.3), ("SD", 26.4, 25.9)],
-             KN=[(15.2, 12.6, 16.2, 13.5), (13.2, 21.6, 15.5, 20.8), (14.2, 28.8), (27.6, 15.9, 28.9, 16.3), (23.0, 22.3), (32.2, 18.2)]),
+             KN=[(15.2, 12.6, 16.2, 13.5), (13.2, 21.6, 15.5, 20.8), (14.2, 28.8), (27.3, 16.0), (23.0, 22.3)]),
      5: dict(P=(23.25, 14.3, .39), AC=(17.9, -.5),
              SW=[("301", 11.6, 12.8, "S"), ("311", 15.0, 4.2, "S"), ("302", 6.9, 13.72, "2S"), ("308", 9.55, 17.6, "S"), ("303", 23.25, 12.4, "S"), ("309", 18.6, 4.55, "S"), ("304", 24.15, 18.5, "S"),
                  ("305", 16.15, 17.78, "2S"), ("306", 10.6, 16.87, "S3"), ("306", 23.25, 18.3, "S3"), ("ST1", 17.2, 18.9, "S3"), ("ST2", 23.25, 19.3, "S3"), ("307", 15.5, 13.72, "S")],
-             RX=[("X", 15.9, 11.7, "FUR"), ("D", 19.95, 10.8, "WH"), ("G", 17.7, 10.65, "WH")],
+             RX=[("D", 19.95, 10.8, "WH"), ("G", 17.7, 10.65, "WH")],
              FIX={"306": [("C", 13.5, 15.3), ("C", 18.2, 15.6)], "ST1": [("C", 18.4, 18.5)], "ST2": [("C", 21.9, 19.3)], "307": [("c", 17.72, 12.4)], "308": [("C", 8.82, 17.2)], "309": [("c", 16.8, 5.1)]},
-             LS=[("SC", 20.2, 16.5)], KN=[(22.0, 14.7), (14.4, 11.6, 15.7, 11.6), (15.7, -1.6), (5.6, 21.65, 2.5, 21.65), (17.0, 8.0)]),
+             LS=[("SC", 20.2, 16.5)], KN=[(22.0, 14.7), (14.4, 11.6, 15.7, 11.6), (15.7, -1.6), (5.6, 21.65), (17.0, 8.0), (28.7, 25.4, 27.6, 25.4)]),
      6: dict(SW=[("401", 16.0, 13.5, "S"), ("406", 13.75, 12.8, "S"), ("403", 9.9, 16.5, "2S"), ("402", 20.65, 16.7, "S"), ("407", 24.2, 20.1, "S"), ("404", 22.5, 8.4, "2S"), ("405", 17.45, 16.2, "S3")],
              RX=[("R", 13.2, 6.7, "R401"), ("R", 20.8, 4.0, "R402")], FIX={"403": [("F", 13.5, 17.8)], "404": [("F", 19.6, 8.95)], "405": [("C", 18.6, 15.2), ("C", 18.6, 22.3)]},
              LS=[("SC", 19.3, 14.0), ("SD", 8.2, 13.9)], KN=[(15.2, 7.5, 17.3, 8.9), (23.3, 9.6), (5.0, 13.6), (2.0, 9.4)])}
@@ -107,7 +105,7 @@ def gaps(fl, m=0.3):
 
 @lru_cache(None)
 def fxboxes(fl):
-    return unary_union([box(*f[1:5]).buffer(.12) for f in b.LV[fl]["fx"] if len(f) >= 5 and not isinstance(f[3], str)])
+    return unary_union([box(*f[1:5]).buffer(.12) for f in b.LV[fl]["fx"] if len(f) >= 5 and not isinstance(f[3], str) and f[0] != "xequip"])      # xequip is being removed
 
 
 def snap(fl, x, y, free=False):
@@ -154,7 +152,7 @@ def place(run, spacing=12.0):
 
 def fit(fl, at, half, offs):
     """Slide outlet positions along the wall, inside the width of the appliance, until none sits in a door or window opening."""
-    for k in (1, .67):
+    for k in (1, .67, .56):
         for sh in sorted(np.arange(-1.5, 1.51, .05), key=abs):
             o = [v * k + sh for v in offs]
             if all(abs(v) <= half - .25 and not gaps(fl).contains(Point(at(v))) for v in o): return o
@@ -212,26 +210,29 @@ def tag(a, x, y, t, col=PW):
     a.text(x, y, t, fontsize=3.5, color=col, ha="center", va="center", fontweight="bold", zorder=14, path_effects=HALO)
 
 
-def leg(a, p, q, rad=.22):
+def leg(a, p, q, rad=.22, away=None):
+    """Dashed switch leg. away = a point (the room name) the curve should bend away from."""
+    if away:
+        m = ((p[0] + q[0]) / 2, (p[1] + q[1]) / 2); d = (rad * (q[1] - p[1]), -rad * (q[0] - p[0]))
+        rad = rad if math.dist((m[0] + d[0], m[1] + d[1]), away) >= math.dist((m[0] - d[0], m[1] - d[1]), away) else -rad
     a.add_patch(FancyArrowPatch(p, q, connectionstyle=f"arc3,rad={rad}", arrowstyle="-", color=LT, lw=.45, ls=(0, (2.4, 1.8)), zorder=10, shrinkA=2.5, shrinkB=2.5))
 
 
-LEG = [("R", "Duplex receptacle, tamper-resistant.\nBlue number beside it = circuit"), ("G", "GFCI receptacle, 20 A"), ("D", "Dedicated receptacle: one appliance"), ("Q", "30 A 240 V dryer receptacle"),
-       ("X", "Disconnect / switch at equipment\n(J in the box = junction box)"), ("P", "New panel flush in the wall; dashed\nbox = 30 x 36 in. clear floor"),
-       ("S", "Switch. S3 = 3-way pair,\n2S = two switches in one box"), ("C", "Ceiling light, LED. Small = closet\nor mechanical, enclosed"), ("RL", "Recessed LED light"),
-       ("V", "Vanity light over the basin"), ("F", "Bath exhaust fan with light"), ("leg", "Switch leg: switch to its lights"), ("uc", "Under-cabinet LED strip"),
-       ("SD", "Smoke alarm, hardwired, interconnected"), ("SC", "Smoke + CO alarm, hardwired")]
+LEG = [("R", "Duplex receptacle (number = circuit)"), ("G", "GFCI receptacle, 20 A"), ("D", "Dedicated receptacle, one appliance"), ("Q", "240 V receptacle: dryer 30 A, range 50 A"),
+       ("X", "Disconnect (D) or junction box (J)"), ("P", "New panel; dashed = 30 x 36 in. clear"), ("S", "Switch; S3 = 3-way pair; 2S = two in a box"),
+       ("C", "Ceiling light; small = closet (enclosed)"), ("RL", "Recessed LED light"), ("V", "Vanity light over the basin"), ("F", "Bath exhaust fan with light"),
+       ("leg", "Switch leg: switch to its lights"), ("uc", "Under-cabinet LED strip"), ("SD", "Smoke alarm, hardwired, interconnected"), ("SC", "Smoke + CO alarm, hardwired")]
 
 
-def legend(bg, x, y, items=LEG, fs=5.6):
+def legend(bg, x, y, items=LEG, fs=5.6, rh=.215):
     for k, txt in items:
         if k == "leg": leg(bg, (x, y - .03), (x + .36, y - .03), .35)
         elif k == "uc": bg.plot([x, x + .34], [y, y], color=LT, lw=1.3)
-        elif k in ("C", "RL", "F", "SD", "SC"): sym(bg, k, x + .17, y, s=.25)
+        elif k in ("C", "RL", "F", "SD", "SC", "P"): sym(bg, k, x + .17, y + (.045 if k == "P" else 0), s=.25)
         else: sym(bg, k, x + .17, y - .08, (0, 1), .25, "S3" if k == "S" else 1.2)
         for i, ln in enumerate(txt.split("\n")):
             bg.text(x + .47, y - i * .13, ln, fontsize=fs, color=INK, va="center")
-        y -= .215 + .13 * txt.count("\n")
+        y -= rh + .13 * txt.count("\n")
     return y
 
 
@@ -239,7 +240,7 @@ def legend(bg, x, y, items=LEG, fs=5.6):
 def kitchen_row(fl, r):
     """Three recessed lights over the aisle: 1 ft in front of the longest run of cabinets and appliances, kept off the run on the return wall."""
     x0, y0, x1, y1 = r["rects"][0]
-    bs = [(f[1:5], back(fl, f[1:5], r)[1]) for f in b.LV[fl]["fx"] if f[0] in ("fridge", "range", "base", "sinkbase") and room_at(fl, (f[1] + f[3]) / 2, (f[2] + f[4]) / 2) is r]
+    bs = [(f[1:5], back(fl, f[1:5], r)[1]) for f in b.LV[fl]["fx"] if f[0] in ("fridge", "range", "base", "sinkbase", "dw") and room_at(fl, (f[1] + f[3]) / 2, (f[2] + f[4]) / 2) is r]
     tot = {}
     for q, n in bs: tot[n] = tot.get(n, 0) + (q[3] - q[1] if n[0] else q[2] - q[0])
     n = max(tot, key=tot.get); a = 1 if n[0] else 0; own = [q for q, m in bs if m == n]
@@ -281,34 +282,47 @@ def devices(fl):
         fx = x_["FIX"].get(r["no"], auto_lights(fl, r))
         if fx: lights[r["no"]] = list(fx)
     lights.update({k: list(v) for k, v in x_["FIX"].items() if k not in lights})
-    sa = 0; tubs = unary_union([box(*q[1:5]) for q in L["fx"] if q[0] == "tub"])
+    tubs = unary_union([box(*q[1:5]) for q in L["fx"] if q[0] == "tub"]); cab, dws, cnt = {}, [], []
     for f in L["fx"]:      # outlets that follow the fixtures and appliances
         k = f[0]
-        if k not in ("fridge", "range", "base", "sinkbase", "washer", "dryer", "van"): continue
+        if k not in ("fridge", "range", "base", "sinkbase", "dw", "washer", "dryer", "van", "furnace"): continue
         bx = f[1:5]; r = room_at(fl, (bx[0] + bx[2]) / 2, (bx[1] + bx[3]) / 2); (px, py), n, half = back(fl, bx, r); t = (-n[1], n[0])
-        at = lambda s: (px + t[0] * s, py + t[1] * s)  # noqa: E731
-        if k == "range":
-            o = fit(fl, at, half, [-.42, .42]); D += [("D", *at(o[0]), n, cn(fl, "RNG"), -1), ("D", *at(o[1]), n, cn(fl, "MW"), 1)]
+        at = lambda s, px=px, py=py, t=t: (px + t[0] * s, py + t[1] * s)  # noqa: E731
+        if k == "range":      # electric: 50 A 240 V receptacle; gas: 120 V receptacle. Hood / microwave outlet beside it on plan (in the cabinet above)
+            o = fit(fl, at, half, [-.42, .42]); D += [("Q" if b.RANGE_FUEL.get(fl) == "electric" else "D", *at(o[0]), n, cn(fl, "RNG"), -1), ("D", *at(o[1]), n, cn(fl, "MW"), 1)]
         elif k in ("fridge", "washer", "dryer"):
             D.append(("Q" if k == "dryer" else "D", *at(fit(fl, at, half, [0])[0]), n, cn(fl, {"fridge": "REF", "washer": "LAU", "dryer": "DRY"}[k]), None))
+        elif k == "furnace": D.append(("X", *at(0), n, "", None))
         elif k == "van":
             e = max((-half, half), key=lambda s: tubs.distance(Point(at(s))))
             D += [("G", *at(e), n, cn(fl, "B" + r["no"]), None), ("V", px, py, n, "", half * 1.4)]; lights[r["no"]].append(("V", px + n[0] * .15, py + n[1] * .15))
-        if k in ("base", "sinkbase"): strips.append((at(-half + .1), at(half - .1), n))
-        if k == "base" and half >= .5:      # counter: no point more than 2 ft from a receptacle, alternating the two small-appliance circuits
-            m = math.ceil(half / 2)
+        else:
+            a = px * t[0] + py * t[1]; cab.setdefault((n, round(px * n[0] + py * n[1], 1)), []).append((a - half, a + half, k))
+            if k == "dw": dws.append((at, t, n))
+    for (n, w), segs in cab.items():      # counters: each run of base cabinet, dishwasher and sink base along a wall; no point more than 2 ft from a GFCI, none behind the bowl
+        t = (-n[1], n[0]); segs.sort(); runs = [[segs[0]]]; P = lambda v, n=n, w=w, t=t: (n[0] * w + t[0] * v, n[1] * w + t[1] * v)  # noqa: E731
+        for q in segs[1:]: runs[-1].append(q) if q[0] - runs[-1][-1][1] < .2 else runs.append([q])
+        for g in runs:
+            a0, a1 = g[0][0], g[-1][1]; m = math.ceil((a1 - a0) / 4 - 1e-6); strips.append((P(a0 + .1), P(a1 - .1), n))
             for i in range(m):
-                sa += 1; D.append(("G", *at(-half + (i + .5) * 2 * half / m), n, cn(fl, "SA1" if sa % 2 else "SA2"), None))
+                v = a0 + (i + .5) * (a1 - a0) / m
+                for s0, s1, k in g:
+                    lo, hi = .8 * s0 + .2 * s1 - .3, .2 * s0 + .8 * s1 + .3
+                    if k == "sinkbase" and lo < v < hi: v = min((lo, hi), key=lambda q: (not a0 + .29 <= q <= a1 - .29, abs(q - v)))
+                if not gaps(fl).contains(Point(P(v))): cnt.append(P(v)); D.append(("G", *P(v), n, cn(fl, "SA2" if len(cnt) % 2 == 0 else "SA1"), None))
+    for at, t, n in dws:      # dishwasher outlet: kept clear of the counter receptacles on plan; in fact it goes in the sink cabinet
+        q = next((at(s) for s in (0, -.55, .55, -.8, .8) if all(math.dist(at(s), c) >= .62 for c in cnt)), at(0)); g = min(cnt, key=lambda c: math.dist(c, q), default=q)
+        D.append(("D", *q, n, cn(fl, "DW"), -1 if (g[0] - q[0]) * t[0] + (g[1] - q[1]) * t[1] > 0 else 1))
     for e in x_["RX"]:
         p, n = snap(fl, e[1], e[2], len(e) > 5); D.append((e[0], *p, n, "" if e[3] in ("FUR", "WH") else cn(fl, e[3], e[4] if len(e) > 4 else ""), None))
-    first = {}
+    first = {}; lab = {r["no"]: r["lab"] for r in L["rooms"] if r["kind"] != "closet"}
     for tgt, x, y, typ in x_["SW"]:      # switches, each tied to the nearest light of its room; lights of a room chained together
         p, n = snap(fl, x, y); D.append(("S", *p, n, "", typ)); c = (p[0] + n[0] * .32, p[1] + n[1] * .32); first.setdefault(tgt, c)
-        q = min(lights[tgt], key=lambda v: math.dist(c, v[1:3])); legs.append((c, q[1:3]))
+        q = min(lights[tgt], key=lambda v: math.dist(c, v[1:3])); legs.append((c, q[1:3], lab.get(tgt)))
     for tgt, fx in lights.items():
         todo = list(fx); cur = min(todo, key=lambda v: math.dist(first.get(tgt, v[1:3]), v[1:3])); todo.remove(cur)
         while todo:
-            nxt = min(todo, key=lambda v: math.dist(cur[1:3], v[1:3])); legs.append((cur[1:3], nxt[1:3])); todo.remove(nxt); cur = nxt
+            nxt = min(todo, key=lambda v: math.dist(cur[1:3], v[1:3])); legs.append((cur[1:3], nxt[1:3], lab.get(tgt))); todo.remove(nxt); cur = nxt
         D += [(k, x, y, (0, 1), "", None) for k, x, y in fx if k != "V"]
     for r in L["rooms"]:      # smoke alarm in every bedroom, part-way from the middle of the room to the door switch
         if r["kind"] == "bed" and not any(box(*q).contains(Point(e[1:3])) for q in r["rects"] for e in x_["LS"]):
@@ -319,22 +333,27 @@ def devices(fl):
 
 
 def keynotes(fl):
-    p = PANEL_OF[fl]; f = FLAT[p]; c = CN[p]
+    p = PANEL_OF[fl]; f = FLAT[p]; c = CN[p]; kn = list(X[fl]["KN"])
     if fl == 6:
         t = ["Circuits from panel C (main floor) come up in the old chimney chase beside the stack. Firestop at the floor.",
              "Bath B switches are outside the door: no wall inside is clear of the tub.",
              "Keep lights and alarms on the flat 7'-8\" ceiling. Any light in the slope: IC-rated, airtight.",
              "Knee walls: check there is depth for a box before cutting in; if not, use a surface box."]
     else:
+        rg = next(q for q in b.LV[fl]["fx"] if q[0] == "range"); (px, py), n, _h = back(fl, rg[1:5], room_at(fl, rg[1], rg[2])); d = rg[3] - rg[1] if n[0] else rg[4] - rg[2]
+        kn[3] = kn[3] + (px + n[0] * d, py + n[1] * d)      # leader to the front of the range, wherever the model puts it
         t = [f"Panel {p}, {f['amps']} A, flush in the hall wall. Keep the dashed 30 x 36 in. floor clear. Feeder from existing meter: route and size by electrician."
              + {3: " This wall is not in the scan (see A-101): confirm it first.", 4: " Two doors swing across the clear floor: workable, but confirm with the inspector.", 5: ""}[fl],
              f"Mechanical closet: furnace switch D (ckt {c['FUR']}); water heater receptacle and GFCI service receptacle (ckt {c['WH']}); light and switch.",
-             f"AC condenser outside (place by HVAC): ckt {c['AC']}, 30 A 240 V, weatherproof disconnect at the unit." + (" Run down the outside wall." if fl == 5 else ""),
-             f"Range wall: gas range receptacle (ckt {c['RNG']}); hood / microwave receptacle in the cabinet above (ckt {c['MW']}). Under-cabinet strip on the kitchen switch."]
-        if fl == 4: t += [f"Stair hall 213 is the upper flat's: fed from panel C (tags C{CN['C']['LT1']}, C{CN['C']['LIV']}). Entry door is not on the plan: add a 3-way switch at it.",
-                          "Counter in front of an opening: put the counter receptacle below the sill, or use a listed pop-up."]
-        if fl == 5: t += ["Attic circuits rise in the old chimney chase. Firestop at the floor."]
-    return list(zip(X[fl]["KN"], t))
+             f"New cooling (none today; optional): AC condenser outside, placed by HVAC. Ckt {c['AC']}, 30 A 240 V, weatherproof disconnect at the unit."
+             + (" Run down the outside wall." if fl == 5 else ""),
+             f"Range wall: {'50 A 240 V range receptacle' if b.RANGE_FUEL[fl] == 'electric' else 'gas range, 120 V receptacle'} (ckt {c['RNG']}); hood / microwave outlet in the cabinet "
+             f"above ({c['MW']}); dishwasher outlet in the sink cabinet ({c['DW']}). Under-cabinet strip on the kitchen switch."
+             + (" The range is partly in front of the wall opening (A-102 note 8): a hood needs solid wall there: verify." if fl == 4 else "")]
+        if fl == 4: t += [f"Stair hall 213 is the upper flat's: fed from panel C (tags C{CN['C']['LT1']}, C{CN['C']['LIV']}). Entry door is not on the plan: add a 3-way switch at it."]
+        if fl == 5: t += ["Attic circuits rise in the old chimney chase. Firestop at the floor.",
+                          "Existing furnace and water heater (dashed) move to closet 307: remove their old wiring. Room 304 is wired as a bedroom."]
+    return list(zip(kn, t))
 
 
 def sheet_notes(fl):
@@ -353,17 +372,18 @@ def level(pdf, number, fl):
     D, lights, legs, strips = devices(fl)
     for a0, a1, n in strips:
         ax.plot([a0[0] + n[0] * .1, a1[0] + n[0] * .1], [a0[1] + n[1] * .1, a1[1] + n[1] * .1], color=LT, lw=1.3, zorder=11, solid_capstyle="butt")
-    for a0, a1 in legs: leg(ax, a0, a1)
+    for a0, a1, away in legs: leg(ax, a0, a1, away=away)
+    used = [(x + n[0] * .32, y + n[1] * .32) for k, x, y, n, t, arg in D if k in ("R", "G", "D", "Q", "X", "S")]      # symbol centres, then tags as they are placed
+    names = [(r["lab"], 1.3, .55) for r in L["rooms"] if r["kind"] != "closet"] + [(((f[1] + f[3]) / 2, (f[2] + f[4]) / 2), .5, .3) for f in L["fx"] if f[0] in ("fridge", "dw", "washer", "dryer")]
     for k, x, y, n, t, arg in D:
         sym(ax, k, x, y, n, 1.0, arg)
-        if t:      # circuit number: in front of the symbol; beside it for appliance outlets or where the room name is in the way
-            q = (x + n[0] * .86, y + n[1] * .86)
-            if k in ("D", "Q") or any(abs(q[0] - r["lab"][0]) < 1.3 and abs(q[1] - r["lab"][1]) < .55 for r in L["rooms"] if r["kind"] != "closet"):
-                q = (x + n[0] * .3 - n[1] * .58 * (arg or 1), y + n[1] * .3 + n[0] * .58 * (arg or 1))
-            tag(ax, *q, t)
+        if t:      # circuit number: in front of the symbol, or beside it (appliance outlets first try beside), wherever nothing else is
+            c = (x + n[0] * .3, y + n[1] * .3); sd = [(c[0] - n[1] * .58 * v, c[1] + n[0] * .58 * v) for v in ((arg or 1), -(arg or 1))]; fr = (x + n[0] * .86, y + n[1] * .86)
+            free = lambda q: all(math.dist(q, u) > .45 for u in used if math.dist(u, c) > .1) and not any(abs(q[0] - m[0]) < w and abs(q[1] - m[1]) < h for m, w, h in names)  # noqa: E731
+            q = next((q for q in (sd + [fr] if k in ("D", "Q") else [fr] + sd) if free(q)), fr); used.append(q); tag(ax, *q, t)
     for r in L["rooms"]:      # lighting circuit number at one light per room
         if r["no"] in lights:
-            k, x, y = lights[r["no"]][0]; tag(ax, x + .52, y - .42, cn(fl, ltkey(fl, r), r["no"]), LT)
+            k, x, y = lights[r["no"]][0]; tag(ax, x + .52, y - .42, cn(fl, "LT3" if fl == 6 else "LT2" if r["kind"] in ("bed", "bath", "closet") else "LT1", r["no"]), LT)
     if "P" in x_:
         (px, py), n = snap(fl, *x_["P"][:2]); t = (abs(n[1]), abs(n[0])); s = x_["P"][2]; sym(ax, "P", px, py, n)
         c = [(px + t[0] * (e + s) + n[0] * d, py + t[1] * (e + s) + n[1] * d) for e, d in ((-1.25, 0), (1.25, 0), (1.25, 3), (-1.25, 3))]
@@ -377,7 +397,7 @@ def level(pdf, number, fl):
         (qx, qy), m = snap(fl, *x_["AC"])
         ax.annotate("", xy=(qx + m[0] * 1.7, qy + m[1] * 1.7), xytext=(qx - m[0] * .5, qy - m[1] * .5), arrowprops=dict(arrowstyle="-|>", color=PW, lw=.9), zorder=12)
         sym(ax, "X", qx + m[0] * .05, qy + m[1] * .05, m)
-        ax.text(qx + m[0] * 2.0 + (0 if m[0] else 1.3), qy + m[1] * 2.0 + (.75 if m[0] else 0), f"AC condenser outside\nckt {cn(fl, 'AC')} · 30 A 240 V", fontsize=3.6, color=PW,
+        ax.text(qx + m[0] * 2.0 + (0 if m[0] else 1.3), qy + m[1] * 2.0 + (.75 if m[0] else 0), f"New AC condenser outside\n(optional) ckt {cn(fl, 'AC')} · 30 A 240 V", fontsize=3.6, color=PW,
                 ha="left" if m[0] > 0 else "center", va="center", zorder=14, linespacing=1.2)
     kn = keynotes(fl)
     for i, (q, _t) in enumerate(kn):
@@ -397,45 +417,62 @@ def level(pdf, number, fl):
 GEN = ["Receptacles in bedrooms, living rooms and halls: no point along a wall is more than 6 ft from one, and every wall 2 ft or longer has one. Placed from the room "
        "sizes, then moved off door openings. All 15 and 20 A receptacles tamper-resistant. 16 in. to centre above the floor; counters 44 in.",
        "AFCI (AF) on every 120 V circuit to living rooms, bedrooms, halls, closets, kitchens and laundries. GFCI (GF) at baths, kitchen counters, laundry, within 6 ft "
-       "of a sink, service receptacles and outdoors. DF = one breaker doing both. The 2020 code also asks for GFCI on the dryer and on outdoor equipment: confirm locally.",
-       "Kitchens: two 20 A small-appliance circuits; no point of counter more than 2 ft from a GFCI receptacle. Where a window sits over the counter put the receptacle "
-       "below the sill or beside it. Own circuits for the refrigerator, the gas range (120 V) and the hood / microwave. No dishwasher or disposal is shown: add circuits if fitted.",
+       "of a sink, service receptacles and outdoors. DF = one breaker doing both. The 2020 code also asks for GFCI on the dryer, the dishwasher, a range receptacle "
+       "within 6 ft of a sink and outdoor equipment: confirm locally.",
+       "Kitchens: two 20 A small-appliance circuits. Counter receptacles follow the cabinet run (base cabinets, dishwasher, sink base): no point of counter more than "
+       "2 ft from a GFCI receptacle, none behind the bowl; where a window is over the counter, below the sill or beside it. Own circuits for the refrigerator, the "
+       "range, the hood / microwave (there are no hoods today) and the dishwasher (15 A, receptacle in the sink cabinet). No disposal is shown.",
+       "Ranges: electric in the lower and middle flats: 50 A 240 V 4-wire receptacle (14-50R). Gas in the upper flat: 120 V receptacle. If a range changes fuel, "
+       "change its circuit and re-run the load.",
        "Baths: one 20 A GFCI receptacle at each vanity, within 3 ft of the basin, one circuit per bath. Fan/light and vanity light on the lighting circuit. No switch or "
        "receptacle inside the tub or shower space.",
        "Laundry: 20 A washer receptacle; 30 A 240 V 4-wire dryer receptacle (dryers are electric).",
        "Mechanical closets (109, 208, 307): furnace on its own circuit with a switch at the unit; 120 V receptacle for the power-vent gas water heater; GFCI service "
-       "receptacle; light and switch. The walls and ceiling are fire-rated board: seal every box and cable hole to keep the rating.",
-       "AC condensers are outside and not drawn: 30 A 240 V circuit and a weatherproof disconnect within sight of each unit; size the breaker and wire to the nameplate. "
-       "One weatherproof GFCI receptacle within 25 ft of each unit and at each flat's grade-level entry (may be the same one).",
+       "receptacle; light and switch. The walls and ceiling are fire-rated board: seal every box and cable hole. The upper flat's furnace and water heater stand today "
+       "in room 304 and move to closet 307: remove their old wiring; room 304 is wired as a bedroom.",
+       "Cooling: there is no central cooling today. The condenser circuits are for new cooling and are optional if the owner keeps window units. Condensers are outside "
+       "and not drawn: 30 A 240 V circuit and a weatherproof disconnect within sight of each unit, sized to the nameplate. One weatherproof GFCI receptacle within 25 ft "
+       "of each unit and at each flat's grade-level entry (may be the same one).",
        "Lighting is LED. Recessed lights under a roof or insulation: IC-rated and airtight. Closet lights: enclosed LED, 12 in. clear of shelves (6 in. if recessed). "
        "S3 = 3-way pair at both ends of stairs and long halls. Switches 48 in. up, on the latch side of the door: existing door swings are not known, so check each one.",
        "Alarms: hardwired with battery back-up, interconnected within each flat. Smoke alarm in every bedroom, outside each sleeping area and on each level; combined "
-       "smoke + CO outside the bedrooms on every level (gas appliances). Where the plan allows keep them 3 ft from bath doors and supply registers and 10 ft from the range.",
-       "Panels: one per flat, flush in a hall wall beside the mechanical closet, not in a closet or bath, 30 in. wide x 36 in. deep x 6 ft 6 in. high clear in front. "
-       "Feeder from existing meter: route and size by electrician. Service size, grounding and bonding (water and gas pipe) to be checked and corrected by the electrician.",
+       "smoke + CO outside the bedrooms on every level (gas appliances). Where the plan allows keep them 3 ft from bath doors and supply registers and 10 ft from the "
+       "range. The inspection found smoke alarms and GFCIs missing or miswired in places: this layout replaces them all.",
+       "Service and panels: overhead drop to existing 100 A 120/240 V panels (General Electric and Murray). An existing panel may be reused only if the electrician "
+       "finds it sound (bus, breakers, grounding, space for AFCI and GFCI breakers); otherwise new. The schedules above are the target either way. The upper flat, "
+       "4 bedrooms after the work, is the one that needs the 125 A panel. Each panel: flush in a hall wall beside the mechanical closet, not in a closet or bath, 30 in. "
+       "wide x 36 in. deep x 6 ft 6 in. high clear in front. Feeder from existing meter: route and size by electrician. Grounding and bonding to be checked and corrected.",
        "Upper flat: one panel (C) on the main floor serves the main floor, the attic and stair hall 213 on the middle-flat level. Attic circuits rise in the old chimney "
        "chase next to the 3 in. stack; firestop at each floor. No circuit of one flat may serve another flat.",
-       "Existing wiring is unknown. These sheets show the target layout for each whole flat. Existing devices that are grounded, sound and in the right place may be "
-       "reused. Rooms 106, 206, 403, 404, 109, 208, 307 and all new closets are all-new wiring. Old ungrounded or knob-and-tube wiring found in opened walls is replaced.",
-       "Circuit numbers are schedule references: the electrician assigns the panel spaces. Wire sizes are copper NM-B with ground (12-2 = two 12 AWG + ground). "
-       "Device positions are good to about 6 in.; set the final positions on site."]
-N001 = [("Basis of design", ["Design intent only, to be confirmed by", "the licensed electrician and the", "inspector. Not a permit drawing.", "Layout guide: NEC 2020 dwelling rules,",
-                             "as adopted locally.", "One panel per flat, 120/240 V 1-phase:", "A lower 100 A, B middle 100 A,", "C upper flat + attic 125 A.",
-                             "Gas ranges, furnaces and water heaters.", "Electric dryers. One outdoor AC", "condenser per flat."]),
-        ("Assumed: confirm", ["Each flat has, or will get, its own", "meter. The service can carry three", "panels of this size.", "AC, furnace and water heater sizes", "(see the mechanical sheets)."]),
-        ("Not known: verify on site", ["Where the meters, service and existing", "panels are, and their size.", "Existing wiring type and condition.", "Joist direction; what is below the",
-                                       "lower flat. Feeder and cable routes", "are therefore not drawn."])]
+       "Existing wiring: the inspection (9 Oct 2026) reports open grounds, loose and painted receptacles and open splices. These sheets show the target layout for each "
+       "whole flat. Existing devices that are grounded, sound and in the right place may be reused; every open splice is boxed or removed. Rooms 106, 206, 403, 404, 109, "
+       "208, 307 and all new closets are all-new wiring. Ungrounded or knob-and-tube wiring found in opened walls is replaced, not extended.",
+       "Circuit numbers are schedule references: the electrician assigns the panel spaces. A blue number by a receptacle and an orange number by one light in each room "
+       "is the circuit in that flat's panel; tags C.. on E-102 are panel C. Breakers: AF arc-fault, GF ground-fault, DF both, 1P / 2P poles. Wire is copper NM-B with "
+       "ground (12-2 = two 12 AWG + ground). Device positions are good to about 6 in.: set them on site."]
+N001 = [("Basis of design", ["Design intent only, to be confirmed by", "the licensed electrician and inspector.", "Layout guide: NEC 2020 dwelling rules,", "as adopted locally. One panel per flat,",
+                             "120/240 V 1-phase: A lower 100 A,", "B middle 100 A, C upper + attic 125 A.", "Electric ranges in A and B, gas in C.", "Gas furnaces and water heaters, electric",
+                             "dryers, a dishwasher in every kitchen."]),
+        ("Existing (inspection 9 Oct 2026)", ["Overhead service drop. 100 A 120/240 V", "panels (General Electric, Murray).", "Open grounds, loose and painted", "receptacles, open splices. Smoke alarms",
+                                              "and GFCIs missing or miswired in places:", "the target layout replaces all of these.", "No central cooling: window units."]),
+        ("Panels and cooling", ["An existing 100 A panel may be reused", "only if the electrician finds it sound.", "The upper flat, 4 bedrooms after the", "work, is the one that needs 125 A.",
+                                "Condenser circuits are for new cooling:", "leave them out if the owner keeps", "window units."]),
+        ("Not known: verify on site", ["Meter and panel locations, service size,", "wiring type in the walls, joist direction,", "what is below the lower flat. Feeder and",
+                                       "cable routes are therefore not drawn."])]
 
 
 def loads():
-    rows = [["Load, VA (standard method)", "A lower", "B middle", "C upper"]]; f = [FLAT[k] for k in "ABC"]; lt = [3 * q["sf"] for q in f]; sub = [v + 4500 for v in lt]
-    dem = [3000 + .35 * (v - 3000) for v in sub]; ac = [240 * q["ac"] for q in f]; tot = [d + 5000 + 1200 + 1500 + 500 + a * 1.25 for d, a in zip(dem, ac)]
-    fm = lambda v: [f"{x:,.0f}" for x in v]  # noqa: E731
-    rows += [["Floor area, sf (about)"] + fm([q["sf"] for q in f]), ["General lighting and receptacles, 3 VA/sf"] + fm(lt), ["Two small-appliance circuits, 1,500 each"] + ["3,000"] * 3,
-             ["Laundry circuit"] + ["1,500"] * 3, ["After demand: first 3,000 at 100%, rest 35%"] + fm(dem), ["Electric dryer"] + ["5,000"] * 3, ["Furnace blower (assumed 1/2 hp)"] + ["1,200"] * 3,
-             ["Hood / microwave"] + ["1,500"] * 3, ["Water heater vent + range ignition"] + ["500"] * 3, [f"AC condenser (assumed {f[0]['ac']} A; C {f[2]['ac']} A at 240 V)"] + fm(ac),
-             ["25% of the largest motor (AC)"] + fm([a * .25 for a in ac]), ["Total"] + fm(tot), ["Amps at 240 V"] + [f"{v / 240:.0f} A" for v in tot], ["Panel"] + [f"{q['amps']} A" for q in f]]
-    return rows
+    """Feeder load of each flat by the optional method (NEC 220.82), plus the standard-method amps for comparison."""
+    f = [FLAT[k] for k in "ABC"]; lt = [3 * q["sf"] for q in f]; rng = [12000 if b.RANGE_FUEL[q["lv"]] == "electric" else 0 for q in f]; ac = [240 * q["ac"] for q in f]
+    gen = [a + 4500 + 5000 + r + 1200 + 1500 + 1700 for a, r in zip(lt, rng)]; dem = [10000 + .4 * (g - 10000) for g in gen]; tot = [d + a for d, a in zip(dem, ac)]
+    std = [(3000 + .35 * (a + 1500) + 5000 + (8000 if r else 0) + .75 * 4400 + 1.25 * c) / 240 for a, r, c in zip(lt, rng, ac)]
+    fm = lambda v: [f"{x:,.0f}" if x else "gas" for x in v]  # noqa: E731
+    rows = [["Load, VA (optional method, NEC 220.82)", "A lower", "B middle", "C upper"], ["Floor area, sf (about)"] + fm([q["sf"] for q in f]),
+            ["General lighting and receptacles, 3 VA/sf"] + fm(lt), ["Two small-appliance circuits + laundry circuit"] + ["4,500"] * 3, ["Electric dryer"] + ["5,000"] * 3,
+            ["Range (electric: 12 kW nameplate assumed)"] + fm(rng), ["Dishwasher"] + ["1,200"] * 3, ["Hood / microwave"] + ["1,500"] * 3, ["Furnace blower + water heater vent"] + ["1,700"] * 3,
+            ["Sum"] + fm(gen), ["First 10,000 at 100%, the rest at 40%"] + fm(dem), [f"New AC condenser at 100% (assumed {f[0]['ac']} A; C {f[2]['ac']} A)"] + fm(ac), ["Total"] + fm(tot),
+            ["Amps at 240 V"] + [f"{v / 240:.0f} A" for v in tot], ["Amps without the new cooling"] + [f"{v / 240:.0f} A" for v in dem], ["Panel"] + [f"{q['amps']} A" for q in f]]
+    return rows, std
 
 
 def notes_sheet(pdf):
@@ -444,19 +481,16 @@ def notes_sheet(pdf):
     for i, k in enumerate("ABC"):
         f = FLAT[k]; x = .5 + i * 4.22
         bg.text(x, 9.9, f"PANEL {k} · {f['name'].upper()} · {f['amps']} A", fontsize=7, fontweight="bold", color=PW, va="center")
-        bg.text(x, 9.74, f"120/240 V 1-phase, main breaker, {f['sp']} spaces or more. Flush in the hall by room {f['mech']}.", fontsize=5.2, color=GREY, va="center")
-        table(bg, x, 9.62, [.3, .8, .42, 2.53], [["Ckt", "Breaker", "Wire", "Serves"]] + [[j + 1, c[1], c[2], c[3]] for j, c in enumerate(CK[k])], fs=5.3, rh=.158)
-    y0 = 9.62 - .158 * (len(CK["C"]) + 1) - .3
+        bg.text(x, 9.74, f"Target schedule. 120/240 V 1-phase, main breaker, 30 spaces or more. Flush in the hall by room {f['mech']}.", fontsize=5.2, color=GREY, va="center")
+        table(bg, x, 9.62, [.3, .8, .42, 2.53], [["Ckt", "Breaker", "Wire", "Serves"]] + [[j + 1, c[1], c[2], c[3]] for j, c in enumerate(CK[k])], fs=5.3, rh=.15)
+    y0 = 9.62 - .15 * (len(CK["C"]) + 1) - .28; rows, std = loads()
     bg.text(.5, y0, "LOAD SUMMARY", fontsize=7, fontweight="bold", color=INK, va="center")
-    y = table(bg, .5, y0 - .14, [2.3, .58, .58, .59], loads(), fs=5.3, rh=.15) - .13
-    for ln in ["Nameplate figures are assumed: redo with the real units. Gas ranges assumed;", "an electric range or electric heat changes the totals. Lights are LED; the",
-               "3 VA/sf figure is the code allowance, not the real lighting load."]:
-        bg.text(.5, y, ln, fontsize=5.2, color=GREY, va="center"); y -= .125
-    b.text_block(bg, .5, y - .15, "Abbreviations and tags", [
-        "AF arc-fault breaker · GF ground-fault breaker or device · DF both in one breaker", "1P / 2P one-pole / two-pole breaker · TR tamper-resistant · WP weatherproof",
-        "12-2 = two 12 AWG copper conductors + ground; 10-3 = three 10 AWG + ground", "S3 3-way switch pair · SD smoke alarm · CO carbon monoxide alarm", "",
-        "A blue number by a receptacle, and an orange number by one light in each room,", "is the circuit in that flat's panel. Tags C.. on E-102 are panel C (upper flat).",
-        "Receptacles and lights are on separate circuits, so a tripped receptacle circuit", f"does not put the room in the dark. Alarms: circuit {CN['A']['LT1']} in panels A and B, {CN['C']['LT1']} in panel C."], fs=5.3, lh=.128)
+    y = table(bg, .5, y0 - .14, [2.3, .58, .58, .59], rows, fs=5.3, rh=.145) - .12
+    for ln in ["Nameplates are assumed: redo with the real units. With electric range, dryer and new", "cooling together, panels A and B sit near their 100 A limit; by the standard method",
+               f"(Article 220 Part III) they come to about {std[0]:.0f} A. The electrician confirms 100 A or goes", f"to 125 A. Panel C: {len(CK['C'])} circuits, and room for an electric range later."]:
+        bg.text(.5, y, ln, fontsize=5.2, color=GREY, va="center"); y -= .122
+    bg.text(.5, y - .13, "SYMBOLS (same on E-101 to E-104)", fontsize=7, fontweight="bold", color=INK, va="center")
+    legend(bg, .5, y - .36, LEG[:8], 5.3, .195); legend(bg, 2.6, y - .36, LEG[8:], 5.3, .195)
     bg.text(4.72, y0, "GENERAL NOTES", fontsize=7, fontweight="bold", color=INK, va="center")
     x, y = 4.72, y0 - .24
     for i, t in enumerate(GEN):
@@ -465,8 +499,6 @@ def notes_sheet(pdf):
         bg.text(x, y, f"{i + 1}", fontsize=5.5, color=PW, fontweight="bold", va="center")
         for j, ln in enumerate(ls): bg.text(x + .2, y - j * .128, ln, fontsize=5.3, color=INK, va="center")
         y -= .128 * len(ls) + .075
-    bg.text(x, y - .12, "SYMBOLS (same on E-101 to E-104)", fontsize=7, fontweight="bold", color=INK, va="center")
-    legend(bg, x, y - .38, LEG[:8], 5.3); legend(bg, x + 2.12, y - .38, LEG[8:], 5.3)
     b.save(fig, "E-001", pdf)
 
 
