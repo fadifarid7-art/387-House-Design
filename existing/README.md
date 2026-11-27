@@ -6,7 +6,7 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
 - `drawings/390-Forest_441-Baird_Scan-Fixes.pdf`: 11 sheets. EX-001 is the fix log; red tags (F) are
   fixes made, amber tags (U) are items that still need a look on site.
 - `drawings/390-Forest_8-Bed-7-Bath_Proposed.pdf`: 6 sheets (PR-001, PR-101 to PR-105). Each level of 390 Forest as
-  checked against the 3D scan (walls, stairs, chimney, doors, windows) beside the proposed layout: 8 bedrooms and 7 baths: the lower and
+  checked against the 3D scan (walls, stairs, chimney, doors, windows) beside the proposed layout: 8 bedrooms and 7 baths (issue 3: tubs in every bath, king beds, closets, mechanical rooms drawn): the lower and
   middle flats gain a second bath; the upper flat gains a fourth bedroom and a private bath for each attic bedroom. Layout only; structure and
   plumbing design come later.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
