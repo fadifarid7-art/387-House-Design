@@ -60,14 +60,15 @@ def closet(p, s, fl, room, IN, feed, G0, gsz, gt, ct, tp):
     """Symbols every mechanical closet gets: cold entry + flat shutoff, heater shutoff, expansion tank, T&P, pan (levels 4, 5), gas entry.
     gt, ct, tp: where the gas, cold water and T&P notes sit on the enlarged plan."""
     wh = fxs(fl, "wh")[0][1:]; pan = fl != 3
-    s("in", IN[0], IN[1], "C"); s("in", G0[0], G0[1], "G"); s("valve", feed[0][0], feed[0][1], "C", feed[0][2]); s("valve", feed[1][0], feed[1][1], "C", feed[1][2]); s("et", feed[2][0], feed[2][1])
+    s("in", IN[0], IN[1], "C"); s("in", G0[0], G0[1], "G"); s("valve", feed[0][0], feed[0][1], "C", feed[0][2][0]); s("valve", feed[1][0], feed[1][1], "C", feed[1][2][0]); s("et", feed[2][0], feed[2][1])
     p("P", "pd", (wh[0] - 0.45, wh[1] - 0.8), (wh[0] - 0.62, wh[1] - 1.1 if pan else rm(fl, room)[1] + 0.12))
     s("tag", tp[0], tp[1], "T&P to pan" if pan else "T&P to 6\" above floor", "P", "i", tp[2], tp[3])
     if pan: s("pan", wh[0], wh[1])
     s("lead", IN[0], IN[1], ct[0], ct[1], "3/4\" CW in from existing\nservice: route unknown", "C", "i", "left")
     s("lead", G0[0], G0[1], gt[0], gt[1], gsz + "\" gas in from the flat's\nmeter: route unknown, verify", "G", "i", "left")
-    for (x, y, o), t in zip(feed[:2], ("flat SOV", "SOV")):
-        s("tag", x + (0 if o == "h" else 0.2), y + (0.2 if o == "h" else 0), t, "C", "i", "center" if o == "h" else "left", "bottom" if o == "h" else "center")
+    for (x, y, o), t in zip(feed[:2], ("flat SOV", "SOV")):           # tag side: h above, hb below, v right, vl left of the valve
+        dx, dy, ha, va = {"h": (0, 0.2, "center", "bottom"), "hb": (0, -0.2, "center", "top"), "v": (0.2, 0, "left", "center"), "vl": (-0.2, 0, "right", "center")}[o]
+        s("tag", x + dx, y + dy, t, "C", "i", ha, va)
     s("tag", feed[2][0] + feed[2][2], feed[2][1] + feed[2][3], "ET", "C", "i")
 
 
@@ -98,7 +99,7 @@ def plan3():
     p("G", "1/2", G0, X(mid(fu)[0]), Y(fu[4] - 0.3)); p("G", "1/2", G0, Y(wh[1] - 0.5), X(wh[0] - 0.77)); p("G", "1/2", G0, Y(MC[3] + 0.17), X(xr), Y(mid(rg)[1]), X(rg[1] + 0.9))
     s("gv", mid(fu)[0] + 0.42, G0[1], "h"); s("gv", G0[0], wh[1] + 0.3, "v"); s("gv", rg[1] - 0.3, mid(rg)[1], "h")
     closet(p, s, 3, "109", IN, (((IN[0] + xc) / 2, IN[1], "h"), (xc - 0.35, wh[1] + 0.25, "h"), (wh[0] + 0.25, wh[1] + 0.25, 0, -0.3)), G0, "3/4",
-           (MC[0] - 0.4, MC[3] + 1.2), (fu[3] + 0.3, MC[3] + 0.75), (wh[0] - 0.75, MC[1] + 0.1, "right", "bottom"))
+           (MC[0] - 0.4, MC[3] + 0.7), (fu[3] + 0.3, MC[3] + 0.75), (wh[0] - 0.75, MC[1] + 0.1, "right", "bottom"))
     T = lambda x, y, t, c, w="", ha="center", va="center", rot=0: s("tag", x, y, t, c, w, ha, va, rot)
     T(xm - 0.12, (f2[1] + SY) / 2 - 0.55, "3\"", "D", "m", "right"); T(xm - 0.12, (TD[1] + f2[1]) / 2 + 0.3, "2\"", "D", "m", "right"); T(l2[0] - 0.1, l2[1] + 0.42, "1-1/2\"", "D", "m")
     T(TD[0] - 0.25, TD[1], "tub trap 1-1/2\"", "D", "m", "right"); T(f2[0] - 0.3, f2[1] - 0.75, "WC 3\"", "D", "m", "right")
@@ -112,7 +113,7 @@ def plan3():
     T(TV1[0] + 0.3, (TV1[1] + yc) / 2 + 0.3, "1/2\" to tub valve\n(end assumed: verify)", "C", "m", "left"); T(xh - 0.15, (MC[3] + ys) / 2 + 2.6, "1/2\" H+C\nto kitchen sink", "C", "m", "right")
     T(xr - 0.15, (MC[3] + mid(rg)[1]) / 2, "1/2\" G to range\n65,000 Btu/h, shutoff\nbehind range", "G", "m", "right"); T(B1[0] + 0.12, TV[1] + 0.95, "AP", "K", "m", "left", "bottom")
     s("lead", MC[0] + 0.3, MC[3] - 0.1, MC[0] - 0.4, MC[3] + 1.3, "Mechanical closet 109: see enlarged plan.\n3/4\" CW and 3/4\" gas arrive here:\nroutes from service and meter unknown", "K", "m", "right")
-    T(mid(fu)[0] + 0.42, G0[1] - 0.2, "GV+DL", "G", "i", "center", "top"); T(G0[0] - 0.15, wh[1] + 0.3, "GV+DL", "G", "i", "right"); T(xr - 0.12, MC[3] + 0.6, "1/2\" G to range", "G", "i", "right")
+    T(mid(fu)[0] + 0.42, G0[1] - 0.2, "GV+DL", "G", "i", "center", "top"); T(G0[0] - 0.15, wh[1] + 0.3, "GV+DL", "G", "i", "right"); T(xr - 0.12, MC[3] + 1.3, "1/2\" G to range", "G", "i", "right")
     T(xh - 0.12, MC[3] + 1.3, "1/2\" H+C to\nkitchen sink", "C", "i", "right"); T(xh - 0.9, yh + 0.12, "3/4\" H", "H", "i", "center", "bottom"); T(xh - 0.9, yc - 0.12, "3/4\" C", "C", "i", "center", "top")
     return P, S
 
@@ -127,7 +128,7 @@ def plan4():
     s("vup", l2[0], yl - 0.06); s("vr", *VR0); s("stk", *S0); s("co", xm, f2[1])
     # water
     wh, fu, rg, wa, sk = fxs(4, "wh")[0][1:], fxs(4, "furnace")[0], fxs(4, "range")[0], fxs(4, "washer")[0], fxs(4, "sinkbase")[0]
-    xh, xc, yci, ykh = MC[2] - 0.47, MC[2] - 0.22, wh[1] + 1.2, wh[1] + 0.75; ykc = ykh + 0.25; IN = (wh[0] - 0.75, yci)
+    xh, xc, yci, ykh = MC[2] - 0.47, MC[2] - 0.22, wh[1] + 1.2, wh[1] + 0.55; ykc = ykh + 0.25; IN = (wh[0] - 0.75, yci)
     yct, yht, xc2, xh2, yce, yhe = PS[1] + 1.01, PS[1] + 1.26, HL[2] - 0.33, HL[2] - 0.58, HL[1] + 0.21, HL[1] + 0.43; xtv = S0[0] + 0.7; xac, xah = v2[3] + 0.65, v2[3] + 0.42
     xbc, xbh, xr, ybc, ybh = PS[0] + 0.33, PS[0] + 0.58, v1[3] + 0.35, B1[3] - 1.56, B1[3] - 1.31
     p("C", "3/4", IN, X(xc), Y(yct), X(xc2), Y(yce)); p("C", "3/4", (wh[0] + 0.25, yci), Y(wh[1])); p("C", "1/2", (xc, ykc), X(mid(sk)[0] - 0.15)); p("C", "1/2", (xc, yct), Y(wa[2] + 0.15))
@@ -144,7 +145,7 @@ def plan4():
     G0 = ((fu[3] + wh[0] - 0.92) / 2, MC[3] - 0.54)
     p("G", "1/2", G0, X(mid(fu)[0]), Y(fu[4] - 0.3)); p("G", "1/2", G0, Y(wh[1]), X(wh[0] - 0.92)); p("G", "1/2", G0, Y(MC[3] - 0.24), X(MC[2] + 0.17), Y(KT[3] - 0.17), X(rg[3] - 0.26), Y(rg[4] - 0.3))
     s("gv", mid(fu)[0] + 0.5, G0[1], "h"); s("gv", G0[0], wh[1] + 0.7, "v"); s("gv", rg[3] - 0.26, rg[4] + 0.5, "v")
-    closet(p, s, 4, "208", IN, ((IN[0] + 0.5, yci, "h"), (wh[0] + 0.25, wh[1] + 0.85, "v"), (wh[0] + 0.25, wh[1] + 0.4, -0.32, 0)), G0, "3/4",
+    closet(p, s, 4, "208", IN, ((IN[0] + 0.5, yci, "h"), (wh[0] + 0.25, wh[1] + 0.88, "vl"), (wh[0] + 0.25, wh[1] + 0.22, -0.32, 0)), G0, "3/4",
            (MC[0] - 0.5, MC[3] + 0.75), (IN[0] - 0.1, MC[3] + 0.75), (wh[0] - 0.75, wh[1] - 1.22, "right", "top"))
     T = lambda x, y, t, c, w="", ha="center", va="center", rot=0: s("tag", x, y, t, c, w, ha, va, rot)
     T((f2[0] + xm) / 2 + 0.1, f2[1] - 0.3, "3\"", "D", "m", "center", "top"); T(xm + 0.15, (f2[1] + TD[1]) / 2, "3\"", "D", "m", "left"); T(l2[0] + 0.75, f2[1] - 0.2, "2\" wet vent", "D", "m", "left", "top")
@@ -181,7 +182,7 @@ def plan5():
     G0 = (xg, LR[3] - 0.2); xk = KT[0] + 0.42
     p("G", "3/4", G0, X(xk), Y(rg[2] + 0.5)); p("G", "1/2", (mid(fu)[0], G0[1]), Y(fu[4] - 0.5)); p("G", "1/2", G0, Y(wh[1] - 0.55), X(wh[0] - 0.74))
     s("gv", mid(fu)[0], G0[1] - 0.28, "v"); s("gv", xg, wh[1] - 0.15, "v"); s("gv", xk, rg[2] - 0.5, "v")
-    closet(p, s, 5, "307", IN, ((xcm, IN[1] - 0.38, "v"), (xcm + 0.28, wh[1], "h"), (wh[0] - 0.55, wh[1], 0, -0.3)), G0, "1",
+    closet(p, s, 5, "307", IN, ((xcm, IN[1] - 0.38, "v"), (xcm + 0.28, wh[1], "hb"), (wh[0] - 0.55, wh[1], 0.12, 0.3)), G0, "1",
            (MC[0] - 0.3, MC[3] + 1.95), (xcm + 0.1, MC[3] + 1.95), (wh[0] - 0.2, wh[1] - 0.55, "center", "center"))
     T = lambda x, y, t, c, w="", ha="center", va="center", rot=0: s("tag", x, y, t, c, w, ha, va, rot)
     s("lead", xd, (yA + TV1[1]) / 2 - 0.6, B1[0] + 2.6, yA + 2.0, "3\" from attic bath A, in the\nceiling framing or a soffit,\nto the existing stack", "D", "m", "center")
@@ -337,7 +338,9 @@ def level(pdf, number, fl):
         bg.text(10.6, top, f"MECHANICAL CLOSET {MECH[fl]}", fontsize=7, fontweight="bold", color=INK, va="center"); bg.text(13.2, top, "1/2 in. = 1 ft", fontsize=5.4, color=GREY, va="center", ha="right")
         ix = b.sx.axes(fig, 10.55, top - 0.15 - h, (cx - 2.7, cx + 2.7), (y0, y1), 2.0); b.draw_base(ix, fl, "trade"); pipes(ix, P, True)
         for r in S: sym(ix, r, 1.0, True)
-        for t in ix.texts: t.set_clip_on(True)
+        for t in ix.texts:
+            t.set_clip_on(True)
+            if hasattr(t, "set_annotation_clip"): t.set_annotation_clip(True)
         bg.add_patch(Rectangle((10.55, top - 0.15 - h), 2.7, h, fill=False, ec=INK, lw=0.6))
         ax.add_patch(Rectangle((cx - 2.7, y0), 5.4, y1 - y0, fill=False, ec=GREY, lw=0.5, ls=(0, (4, 2)), zorder=11))
     b.save(fig, number, pdf)
