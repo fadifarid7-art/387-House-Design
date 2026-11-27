@@ -57,6 +57,21 @@ def cover(pdf):
         "Furniture (queen beds 5'-0\" x 6'-8\", desks, couches) is drawn to show that it fits; it is not part of the work."], fs=6.4, lh=0.165)
     bg.text(8.9, 9.45, "SHEET INDEX", fontsize=6.6, fontweight="bold", color=INK, va="center")
     table(bg, 8.9, 9.3, [0.7, 3.5], [["Sheet", "Title"]] + [[a, t] for a, t in INDEX], fs=5.9, rh=0.185)
+    b.text_block(bg, 8.9, 5.05, "Open items the trade checks raised", [
+        "1  Lower flat bedrooms need an escape window or outside door (A-101).",
+        "2  Panels: 125 A is recommended in all three flats (E-001).",
+        "3  Panel A: the lower hall is about 2'-10\" deep; 36 in. clear is needed.",
+        "   Measure it or use the deeper west end of the hall (E-101).",
+        "4  Lower flat ceilings are too low for a soffit: ducts in joist space (M-101).",
+        "5  Attic: only the two duct risers fit in the old chimney shaft beside",
+        "   bath B's tub; furnace and heater vents go out the east wall (M-103).",
+        "6  Middle flat dryer vent is about 29 ft of a 35 ft limit (M-102).",
+        "7  Middle bath 2 toilet drain crosses joists on its way to stack S1: fur",
+        "   the lower flat ceiling there or shift the toilet (P-102).",
+        "8  Upper kitchen drain runs 14 ft to stack S2: 3 1/2 in. of fall (P-103).",
+        "9  Stacks S2 to S4 offset 2 to 6 in. between floors: set out on site (P-001).",
+        "10 Lower bath 2 tub valve has no access from behind: use a valve",
+        "   serviced from the front (P-101)."], fs=5.9, lh=0.15)
     b.save(fig, "G-001", pdf)
 
 
