@@ -34,14 +34,16 @@ def cover(pdf):
         "6  New in every flat: gas furnace with cooling and ducts to every room, gas water heater, electrical panel and wiring to current rules,",
         "   water, drain and gas piping for the new baths and equipment. Existing kitchens and the three existing baths stay where they are."], fs=6.4, lh=0.165)
     y = b.text_block(bg, 0.6, y - 0.05, "Basis of design: assumptions the builder must confirm", [
-        "A  Natural gas is available and each flat has, or will have, its own gas meter and its own electric meter. Meter and service locations are not known.",
-        "B  Heating and cooling: one ducted gas furnace with cooling coil per flat, in that flat's mechanical closet. What heats the house today is not known.",
-        "C  Joist direction, bearing walls and what is below the lower flat (basement, cellar or crawl space) are not known. Any wall to be cut is treated as",
+        "A  Natural gas is on site. Each flat is taken to have its own gas and electric meter. Meter and service locations are not on the scan.",
+        "B  Existing (inspection report, 9 Oct 2026): three gas forced-air furnaces with ducts (made 1996, 1997, 2019), three 40 gal gas water heaters (2017, 2022,",
+        "   2022), 100 A panels, overhead service, no central cooling. Reuse the 2019 furnace and the water heaters if sound; replace the two old furnaces.",
+        "   The upper flat's furnace and water heater stand in Room B today and move to closet 307. Find the other two flats' equipment before pricing.",
+        "C  Foundation is stone with a crawl space under part of the house (its access door was stuck). Joist direction and bearing walls are not known. Any wall to be cut is treated as",
         "   bearing until shown otherwise: shore it and size the header.",
         "D  The lower flat's position under the other floors is good to about 12 in. Set out the drain stack on site from the floors above.",
         "E  Walls with an amber edge were missed by the scan and are drawn in to close the outline.",
         "F  The lower flat's living room and kitchen floor is 1'-5\" lower than the rest of that flat. Ceilings there are 6'-10\" to 7'-6\".",
-        "G  Lower flat bedroom 1 shows no window in the scan. A bedroom needs an escape window: check before work starts.",
+        "G  Lower flat: bedroom 2 has only a small high basement window and bedroom 1 shows none in the scan. Bedrooms need an escape window or door: resolve first.",
         "H  Bedroom windows must open at least 5.7 sf clear, 24 in. high and 20 in. wide, sill no more than 44 in. up. Sizes were not readable in the scan.",
         "I  Fire separation between the flats (walls, floors, and around the new stack and ducts) is to be kept or restored: 5/8 in. type X board, firestop every penetration."], fs=6.4, lh=0.165)
     b.text_block(bg, 0.6, y - 0.05, "General notes", [
@@ -80,15 +82,15 @@ def schedules(pdf):
     yd = table(bg, 0.6, y - 0.25, [0.45, 2.1, 1.5, 2.3], d, fs=5.6, rh=0.17)
     bg.text(7.0, y, "KITCHENS: CABINETS AND APPLIANCES (existing positions kept)", fontsize=9, fontweight="bold", color=INK, va="center")
     k = [["Flat", "Item", "Size allowed on plan", "Notes"],
-         ["Lower", "Refrigerator", "36 in. wide x 30 in. deep space", "ceiling here is 6'-10\": check the unit's height"],
-         ["Lower", "Gas range", "30 in.", "recirculating hood; range is on an inside wall"],
-         ["Lower", "Base cabinets + sink", "18 in. base + 36 in. sink base, 25 in. top", "one straight run 10'-5\" long"],
+         ["Lower", "Refrigerator", "33 in. wide x 30 in. deep space", "ceiling here is 6'-10\": check the unit's height"],
+         ["Lower", "Electric range", "30 in.", "new recirculating hood; range is on an inside wall"],
+         ["Lower", "Sink base + dishwasher", "36 in. sink base, 24 in. dishwasher, 25 in. top", "one straight run 10'-5\": sink, DW, range, refrigerator"],
          ["Middle", "Refrigerator", "36 in. wide x 30 in. deep space", "end of the long run"],
-         ["Middle", "Gas range", "30 in.", "on the outside wall: hood ducted out"],
-         ["Middle", "Base cabinets + sink", "L-shape: 8'-2\" + 3'-6\" of base, 36 in. sink base", "opening behind the counter treated as a window"],
+         ["Middle", "Electric range", "30 in.", "on the outside wall: new hood ducted out"],
+         ["Middle", "Base cabinets, sink, dishwasher", "L-shape: 4'-0\" base, 24 in. DW, 36 in. sink base in the corner", "sink is under the window on the outside wall"],
          ["Upper", "Refrigerator", "30 in. wide x 30 in. deep space (36 in. does not fit)", "beside the window"],
          ["Upper", "Gas range", "30 in.", "on the outside wall: hood ducted out"],
-         ["Upper", "Base cabinets + sink", "L-shape: 7'-2\" + 5'-8\" of base, 36 in. sink base", "kitchen is 7'-2\" wide: 5 ft clear in front"],
+         ["Upper", "Base cabinets, sink, dishwasher", "L-shape: 36 in. sink base, 24 in. DW, 6 ft of base", "kitchen is 7'-2\" wide: 5 ft clear in front"],
          ["All", "Washer and dryer", "27 in. wide each, side by side", "existing positions; dryers electric"],
          ["All", "Wall cabinets", "12 in. deep, 30 in. high over the base runs", "18 in. above the counter; hood over range"]]
     table(bg, 7.0, y - 0.25, [0.6, 1.3, 2.5, 1.9], k, fs=5.4, rh=0.17)

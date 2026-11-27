@@ -32,8 +32,8 @@ def circuits(k):
     c = [("SA1", "20 A 1P DF", "12-2", "Kitchen counter receptacles A"), ("SA2", "20 A 1P DF", "12-2", "Kitchen counter B + wall recepts"), ("REF", "20 A 1P AF", "12-2", "Refrigerator"),
          ("RNG", "20 A 1P AF", "12-2", "Gas range, 120 V receptacle"), ("MW", "20 A 1P AF", "12-2", "Range hood / microwave")]
     c += [("B" + n, "20 A 1P GF", "12-2", f"{nm}: vanity receptacle") for n, nm in f["baths"]]
-    c += [("LAU", "20 A 1P DF", "12-2", "Laundry: washer receptacle"), ("DRY", "30 A 2P GF", "10-3", "Dryer, 240 V receptacle (14-30R)"), ("FUR", "15 A 1P", "14-2", "Gas furnace, switch at the unit"),
-          ("WH", "20 A 1P", "12-2", "Water heater vent + service recepts"), ("AC", "30 A 2P", "10-2", "AC condenser, disconnect at unit")]
+    c += [("LAU", "20 A 1P DF", "12-2", "Laundry: washer receptacle"), ("DRY", "30 A 2P GF", "10-3", "Dryer, 240 V receptacle (14-30R)"), ("FUR", "15 A 1P AF", "14-2", "Gas furnace, switch at the unit"),
+          ("WH", "20 A 1P AF", "12-2", "Water heater vent + service recepts"), ("AC", "30 A 2P", "10-2", "AC condenser, disconnect at unit")]
     c += [("R" + n, "15 A 1P AF", "14-2", f"{nm}: receptacles") for n, nm in f["beds"]]
     c += [("LIV", "20 A 1P AF", "12-2", "Living room + hall receptacles"), ("LT1", "15 A 1P AF", "14-2", "Lights: living/kitchen/halls + alarms"),
           ("LT2", "15 A 1P AF", "14-2", "Lights + fans: beds, baths, closets")]
@@ -53,31 +53,33 @@ def ltkey(fl, r):
     return "LT3" if fl == 6 else "LT2" if r["kind"] in ("bed", "bath", "closet") else "LT1"
 
 
-KIT = {3: ("v", 16.9, 17.6, 25.4), 4: ("h", 17.5, 21.6, 28.0), 5: ("v", 3.9, 15.2, 23.2)}      # recessed row over the kitchen aisle: axis, line, from, to
 # Hand-placed items per level, as points about 0.3 ft off the wall inside the room; snap() puts them on the wall face.
-# P panel (x, y, slide of the clear floor box) · AC point outside the nearest outside wall · SW (room or group, x, y, type) · RX (symbol, x, y, circuit[, room])
-# FIX lights that replace the automatic ones (c = small) · LS alarms outside the bedrooms · KN keynote positions
-X = {3: dict(P=(21.75, 12.5, 0.0), AC=(31.0, 14.5),
-             SW=[("101", 1.4, 18.0, "S3"), ("101", 12.3, 13.42, "S3"), ("102", 16.9, 16.6, "2S"), ("103", 12.4, 12.5, "S"), ("112", 7.4, 10.0, "S"), ("104", 22.8, 13.4, "S"), ("111", 25.8, 15.6, "S"),
-                 ("105", 18.45, 9.3, "2S"), ("106", 16.4, 9.0, "2S"), ("107", 16.5, 9.9, "S3"), ("107", 22.6, 10.15, "S3"), ("108", 26.6, 12.5, "S"), ("109", 20.4, 12.5, "S"), ("110", 27.0, 3.9, "S")],
+# P panel (x, y, slide of the clear floor box along the wall) · AC point just outside the nearest outside wall · SW (room or group, x, y, type)
+# RX (symbol, x, y, circuit[, room, free angle]) · FIX lights that replace the automatic ones (c = small) · LS alarms (in a bedroom: replaces the automatic one)
+# KN keynote positions (x, y[, leader to x, y])
+X = {3: dict(P=(21.75, 12.5, .55), AC=(31.0, 14.5),
+             SW=[("101", 1.4, 18.0, "S3"), ("101", 12.3, 13.42, "S3"), ("102", 15.8, 15.4, "2S"), ("103", 12.4, 12.5, "S"), ("112", 7.4, 10.0, "S"), ("104", 22.8, 13.4, "S"), ("111", 25.8, 15.6, "S"),
+                 ("105", 18.45, 9.3, "2S"), ("106", 16.4, 9.0, "2S"), ("107", 16.5, 9.9, "S3"), ("107", 23.9, 10.15, "S3"), ("108", 26.6, 12.5, "S"), ("109", 20.4, 12.5, "S"), ("110", 27.0, 3.9, "S")],
              RX=[("X", 16.7, 14.5, "FUR"), ("D", 20.5, 15.3, "WH"), ("G", 20.4, 13.4, "WH"), ("G", 19.7, 26.5, "SA1")],
              FIX={"109": [("c", 18.37, 14.3)], "108": [("C", 28.4, 7.6)], "106": [("F", 14.2, 5.2)], "105": [("F", 20.9, 7.2)], "107": [("C", 15.9, 11.2), ("C", 22.3, 11.2)], "110": [("c", 27.7, 3.14)]},
-             LS=[("SC", 24.0, 11.3)], KN=[(21.75, 10.6), (18.4, 16.9), (33.3, 16.3), (19.6, 19.0)]),
-     4: dict(P=(16.2, 13.9, -0.25), AC=(16.4, 28.1),
-             SW=[("201", 34.3, 9.65, "S3"), ("201", 21.0, 11.15, "S3"), ("202", 20.1, 17.8, "2S"), ("203", 14.85, 18.4, "S"), ("204", 10.1, 12.3, "S"), ("211", 10.1, 3.5, "S"), ("205", 12.0, 17.0, "2S"),
-                 ("206", 14.0, 8.2, "2S"), ("207", 16.55, 12.6, "S"), ("210", 19.2, 17.1, "S3"), ("210", 15.4, 17.1, "S3"), ("208", 19.2, 18.0, "S"), ("209", 22.55, 12.8, "S"), ("213", 25.3, 21.35, "S3")],
-             RX=[("X", 15.7, 19.2, "FUR"), ("D", 18.6, 21.0, "WH"), ("G", 19.25, 20.7, "WH"), ("R", 27.5, 21.35, "LIV", "213")],
+             LS=[("SC", 24.5, 11.5)], KN=[(21.75, 13.95), (14.9, 14.3, 16.3, 14.3), (33.3, 16.3), (15.9, 19.9, 18.6, 20.9)]),
+     4: dict(P=(16.2, 13.9, -.25), AC=(16.4, 28.1),
+             SW=[("201", 34.3, 9.65, "S3"), ("201", 21.7, 11.15, "S3"), ("202", 20.1, 17.8, "2S"), ("203", 14.85, 18.4, "S"), ("204", 10.1, 12.3, "S"), ("211", 10.1, 3.5, "S"), ("205", 12.0, 17.0, "2S"),
+                 ("206", 14.0, 8.2, "2S"), ("207", 16.55, 12.6, "S"), ("210", 19.2, 17.1, "S3"), ("210", 15.4, 17.1, "S3"), ("208", 19.2, 18.0, "S"), ("209", 22.55, 12.8, "S"), ("213", 29.3, 21.35, "S3")],
+             RX=[("X", 15.7, 19.2, "FUR"), ("D", 18.6, 21.0, "WH"), ("G", 19.25, 20.45, "WH"), ("R", 27.5, 21.35, "LIV", "213"), ("R", 32.4, 11.5, "LIV", "", True)],
              FIX={"205": [("F", 9.0, 15.3)], "206": [("F", 15.1, 6.8)], "207": [("C", 13.8, 10.3)], "210": [("C", 13.9, 15.5)], "208": [("c", 17.5, 18.1)], "209": [("C", 19.55, 12.6)],
-                  "213": [("C", 28.0, 25.2), ("C", 18.9, 25.9)]},
-             LS=[("SC", 17.6, 15.6), ("SC", 15.6, 11.4), ("SD", 29.6, 22.4)], KN=[(16.0, 14.6), (16.4, 20.9), (14.2, 28.8), (29.9, 14.0)]),
-     5: dict(P=(23.25, 14.3, 0.39), AC=(17.9, -0.5),
+                  "213": [("C", 29.0, 25.0), ("C", 18.9, 25.9)]},
+             LS=[("SC", 18.2, 15.2), ("SC", 15.6, 11.3), ("SD", 26.4, 25.9)],
+             KN=[(15.2, 12.6, 16.2, 13.5), (13.2, 21.6, 15.5, 20.8), (14.2, 28.8), (27.6, 15.9, 28.9, 16.3), (23.0, 22.3), (32.2, 18.2)]),
+     5: dict(P=(23.25, 14.3, .39), AC=(17.9, -.5),
              SW=[("301", 11.6, 12.8, "S"), ("311", 15.0, 4.2, "S"), ("302", 6.9, 13.72, "2S"), ("308", 9.55, 17.6, "S"), ("303", 23.25, 12.4, "S"), ("309", 18.6, 4.55, "S"), ("304", 24.15, 18.5, "S"),
-                 ("305", 16.15, 17.78, "2S"), ("306", 11.1, 13.72, "S3"), ("306", 23.25, 18.3, "S3"), ("ST1", 17.2, 18.9, "S3"), ("ST2", 23.25, 19.3, "S3"), ("307", 15.5, 13.72, "S")],
-             RX=[("X", 15.9, 11.7, "FUR"), ("D", 19.4, 10.65, "WH"), ("G", 17.7, 10.65, "WH")],
+                 ("305", 16.15, 17.78, "2S"), ("306", 10.6, 16.87, "S3"), ("306", 23.25, 18.3, "S3"), ("ST1", 17.2, 18.9, "S3"), ("ST2", 23.25, 19.3, "S3"), ("307", 15.5, 13.72, "S")],
+             RX=[("X", 15.9, 11.7, "FUR"), ("D", 19.95, 10.8, "WH"), ("G", 17.7, 10.65, "WH")],
              FIX={"306": [("C", 13.5, 15.3), ("C", 18.2, 15.6)], "ST1": [("C", 18.4, 18.5)], "ST2": [("C", 21.9, 19.3)], "307": [("c", 17.72, 12.4)], "308": [("C", 8.82, 17.2)], "309": [("c", 16.8, 5.1)]},
-             LS=[("SC", 20.2, 16.4)], KN=[(22.0, 14.9), (17.0, 11.2), (15.7, -1.6), (3.3, 21.6)]),
+             LS=[("SC", 20.2, 16.5)], KN=[(22.0, 14.7), (14.4, 11.6, 15.7, 11.6), (15.7, -1.6), (5.6, 21.65, 2.5, 21.65), (17.0, 8.0)]),
      6: dict(SW=[("401", 16.0, 13.5, "S"), ("406", 13.75, 12.8, "S"), ("403", 9.9, 16.5, "2S"), ("402", 20.65, 16.7, "S"), ("407", 24.2, 20.1, "S"), ("404", 22.5, 8.4, "2S"), ("405", 17.45, 16.2, "S3")],
-             RX=[], FIX={"403": [("F", 13.5, 17.8)], "404": [("F", 19.6, 8.95)], "405": [("C", 18.6, 15.2), ("C", 18.6, 22.3)]}, LS=[("SC", 19.3, 14.0)], KN=[])}
+             RX=[("R", 13.2, 6.7, "R401"), ("R", 20.8, 4.0, "R402")], FIX={"403": [("F", 13.5, 17.8)], "404": [("F", 19.6, 8.95)], "405": [("C", 18.6, 15.2), ("C", 18.6, 22.3)]},
+             LS=[("SC", 19.3, 14.0), ("SD", 8.2, 13.9)], KN=[(15.2, 7.5, 17.3, 8.9), (23.3, 9.6), (5.0, 13.6), (2.0, 9.4)])}
 
 
 # ---------------------------------------------------------------------------------------------- geometry helpers
@@ -98,6 +100,8 @@ def gaps(fl, m=0.3):
             (x0, y0), (x1, y1) = np.min(o["pts"], 0), np.max(o["pts"], 0)
             if max(x1 - x0, y1 - y0) > 1.2:
                 out.append((x0 - m, y0 - .5, x1 + m, y1 + .5) if x1 - x0 > y1 - y0 else (x0 - .5, y0 - m, x1 + .5, y1 + m))
+    if "P" in X[fl]:      # nothing else in the wall at the panel, on either face
+        x, y = X[fl]["P"][:2]; out.append((x - 1.1, y - 1.1, x + 1.1, y + 1.1))
     return unary_union([box(*q) for q in out])
 
 
@@ -106,10 +110,10 @@ def fxboxes(fl):
     return unary_union([box(*f[1:5]).buffer(.12) for f in b.LV[fl]["fx"] if len(f) >= 5 and not isinstance(f[3], str)])
 
 
-def snap(fl, x, y):
-    """Nearest wall face to a point just inside a room: (point on the face, unit normal pointing back into the room)."""
-    p = nearest_points(solid(fl).boundary, Point(x, y))[0]; dx, dy = x - p.x, y - p.y
-    return (p.x, p.y), ((1 if dx > 0 else -1, 0) if abs(dx) > abs(dy) else (0, 1 if dy > 0 else -1))
+def snap(fl, x, y, free=False):
+    """Nearest wall face to a point just inside a room: (point on the face, unit normal pointing back into the room). free = wall at an angle."""
+    p = nearest_points(solid(fl).boundary, Point(x, y))[0]; dx, dy = x - p.x, y - p.y; d = math.hypot(dx, dy)
+    return (p.x, p.y), ((dx / d, dy / d) if free else (1 if dx > 0 else -1, 0) if abs(dx) > abs(dy) else (0, 1 if dy > 0 else -1))
 
 
 def room_at(fl, x, y):
@@ -146,6 +150,15 @@ def place(run, spacing=12.0):
                 j = q; break
         out.append(run[j])
     return out
+
+
+def fit(fl, at, half, offs):
+    """Slide outlet positions along the wall, inside the width of the appliance, until none sits in a door or window opening."""
+    for k in (1, .67):
+        for sh in sorted(np.arange(-1.5, 1.51, .05), key=abs):
+            o = [v * k + sh for v in offs]
+            if all(abs(v) <= half - .25 and not gaps(fl).contains(Point(at(v))) for v in o): return o
+    return offs
 
 
 def back(fl, bx, r):
@@ -223,13 +236,32 @@ def legend(bg, x, y, items=LEG, fs=5.6):
 
 
 # ---------------------------------------------------------------------------------------------- devices of one level
+def kitchen_row(fl, r):
+    """Three recessed lights over the aisle: 1 ft in front of the longest run of cabinets and appliances, kept off the run on the return wall."""
+    x0, y0, x1, y1 = r["rects"][0]
+    bs = [(f[1:5], back(fl, f[1:5], r)[1]) for f in b.LV[fl]["fx"] if f[0] in ("fridge", "range", "base", "sinkbase") and room_at(fl, (f[1] + f[3]) / 2, (f[2] + f[4]) / 2) is r]
+    tot = {}
+    for q, n in bs: tot[n] = tot.get(n, 0) + (q[3] - q[1] if n[0] else q[2] - q[0])
+    n = max(tot, key=tot.get); a = 1 if n[0] else 0; own = [q for q, m in bs if m == n]
+    c = {(1, 0): max(q[2] for q in own) + 1, (-1, 0): min(q[0] for q in own) - 1, (0, 1): max(q[3] for q in own) + 1, (0, -1): min(q[1] for q in own) - 1}[n]
+    lo, hi = min(q[a] for q in own) + 1.2, max(q[a + 2] for q in own) - 1.2; mid = (lo + hi) / 2
+    for q, m in bs:
+        if m != n: lo, hi = (max(lo, q[a + 2] + .8), hi) if q[a + 2] < mid else (lo, min(hi, q[a] - .8))
+    return [("RL", c, v) if n[0] else ("RL", v, c) for v in np.linspace(lo, hi, 3)]
+
+
+def clear(r, x, y):
+    """Move a ceiling item off the room name printed on the base plan."""
+    lx, ly = r["lab"]
+    return (x, ly + (1.0 if y >= ly else -1.0)) if abs(x - lx) < 1.5 and abs(y - ly) < .8 else (x, y)
+
+
 def auto_lights(fl, r):
     x0, y0, x1, y1 = r["rects"][0]; cx, cy, w, h = (x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0; k = r["kind"]
     if k == "bed":
         return [("C", cx, cy)] if fl != 6 else [("C", x0 + w * q, cy) if w > h else ("C", cx, y0 + h * q) for q in (.25, .75)]
     if k == "living": return [("RL", x0 + w * i, y0 + h * j) for i in (.25, .75) for j in (.25, .75)]
-    if k == "kitchen":
-        a, c, lo, hi = KIT[fl]; return [("RL", c, v) if a == "v" else ("RL", v, c) for v in np.linspace(lo, hi, 3)]
+    if k == "kitchen": return kitchen_row(fl, r)
     if k == "bath": return [("F", cx, cy)]
     if k == "closet": return [("c", cx, cy)] if min(w, h) >= 2.0 else []
     if k == "hall":
@@ -255,10 +287,10 @@ def devices(fl):
         if k not in ("fridge", "range", "base", "sinkbase", "washer", "dryer", "van"): continue
         bx = f[1:5]; r = room_at(fl, (bx[0] + bx[2]) / 2, (bx[1] + bx[3]) / 2); (px, py), n, half = back(fl, bx, r); t = (-n[1], n[0])
         at = lambda s: (px + t[0] * s, py + t[1] * s)  # noqa: E731
-        if k == "fridge": D.append(("D", *at(0), n, cn(fl, "REF"), None))
-        elif k == "range": D += [("D", *at(-.42), n, cn(fl, "RNG"), None), ("D", *at(.42), n, cn(fl, "MW"), None)]
-        elif k == "washer": D.append(("D", *at(0), n, cn(fl, "LAU"), None))
-        elif k == "dryer": D.append(("Q", *at(0), n, cn(fl, "DRY"), None))
+        if k == "range":
+            o = fit(fl, at, half, [-.42, .42]); D += [("D", *at(o[0]), n, cn(fl, "RNG"), -1), ("D", *at(o[1]), n, cn(fl, "MW"), 1)]
+        elif k in ("fridge", "washer", "dryer"):
+            D.append(("Q" if k == "dryer" else "D", *at(fit(fl, at, half, [0])[0]), n, cn(fl, {"fridge": "REF", "washer": "LAU", "dryer": "DRY"}[k]), None))
         elif k == "van":
             e = max((-half, half), key=lambda s: tubs.distance(Point(at(s))))
             D += [("G", *at(e), n, cn(fl, "B" + r["no"]), None), ("V", px, py, n, "", half * 1.4)]; lights[r["no"]].append(("V", px + n[0] * .15, py + n[1] * .15))
@@ -268,7 +300,7 @@ def devices(fl):
             for i in range(m):
                 sa += 1; D.append(("G", *at(-half + (i + .5) * 2 * half / m), n, cn(fl, "SA1" if sa % 2 else "SA2"), None))
     for e in x_["RX"]:
-        p, n = snap(fl, e[1], e[2]); D.append((e[0], *p, n, "" if e[3] in ("FUR", "WH") else cn(fl, e[3], e[4] if len(e) > 4 else ""), None))
+        p, n = snap(fl, e[1], e[2], len(e) > 5); D.append((e[0], *p, n, "" if e[3] in ("FUR", "WH") else cn(fl, e[3], e[4] if len(e) > 4 else ""), None))
     first = {}
     for tgt, x, y, typ in x_["SW"]:      # switches, each tied to the nearest light of its room; lights of a room chained together
         p, n = snap(fl, x, y); D.append(("S", *p, n, "", typ)); c = (p[0] + n[0] * .32, p[1] + n[1] * .32); first.setdefault(tgt, c)
@@ -279,9 +311,9 @@ def devices(fl):
             nxt = min(todo, key=lambda v: math.dist(cur[1:3], v[1:3])); legs.append((cur[1:3], nxt[1:3])); todo.remove(nxt); cur = nxt
         D += [(k, x, y, (0, 1), "", None) for k, x, y in fx if k != "V"]
     for r in L["rooms"]:      # smoke alarm in every bedroom, part-way from the middle of the room to the door switch
-        if r["kind"] == "bed":
+        if r["kind"] == "bed" and not any(box(*q).contains(Point(e[1:3])) for q in r["rects"] for e in x_["LS"]):
             x0, y0, x1, y1 = r["rects"][0]; c = ((x0 + x1) / 2, (y0 + y1) / 2); s = first.get(r["no"], c)
-            D.append(("SD", c[0] + .45 * (s[0] - c[0]), c[1] + .45 * (s[1] - c[1]), (0, 1), "", None))
+            D.append(("SD", *clear(r, c[0] + .45 * (s[0] - c[0]), c[1] + .45 * (s[1] - c[1])), (0, 1), "", None))
     D += [(k, x, y, (0, 1), "", None) for k, x, y in x_["LS"]]
     return D, lights, legs, strips
 
@@ -289,28 +321,29 @@ def devices(fl):
 def keynotes(fl):
     p = PANEL_OF[fl]; f = FLAT[p]; c = CN[p]
     if fl == 6:
-        return [((17.0, 7.5), "Circuits from panel C (main floor) come up in the old chimney chase. Firestop at the floor."),
-                ((23.3, 9.6), "Bath B switches are outside the door: no wall inside is clear of the tub."),
-                ((5.0, 13.6), "Keep lights and alarms on the flat 7'-8\" ceiling. Any light in the slope: IC-rated, airtight."),
-                ((2.0, 9.4), "Knee walls: check there is depth for a box before cutting in; if not, use a surface box.")]
-    k = list(zip(X[fl]["KN"], [f"Panel {p}, {f['amps']} A, flush in the hall wall. Keep the dashed 30 x 36 in. floor clear. Feeder from existing meter: route and size by electrician.",
-                               f"Mechanical closet: furnace switch D (ckt {c['FUR']}); water heater receptacle and GFCI service receptacle (ckt {c['WH']}); light and switch.",
-                               f"AC condenser outside (place by HVAC): ckt {c['AC']}, 30 A 240 V, weatherproof disconnect at the unit." + (" Run down the outside wall." if fl == 5 else ""),
-                               f"Range wall: gas range receptacle (ckt {c['RNG']}); hood / microwave receptacle in the cabinet above (ckt {c['MW']}). Under-cabinet strip on the kitchen switch."]))
-    if fl == 3: k += [((22.2, 13.7), "Wall not in the scan (see A-101): confirm it before setting the panel here.")]
-    if fl == 4: k += [((23.0, 22.3), f"Stair hall 213 is the upper flat's: fed from panel C (tags C{CN['C']['LT1']}, C{CN['C']['LIV']}). Entry door is not on the plan: add a 3-way switch at it."),
-                      ((32.2, 18.2), "Counter in front of an opening: put the counter receptacle below the sill, or use a listed pop-up."),
-                      ((18.3, 16.3), "Two doors swing across the panel's clear floor: workable, but verify with the inspector.")]
-    if fl == 5: k += [((17.0, 8.0), "Attic circuits rise in the old chimney chase. Firestop at the floor.")]
-    return k
+        t = ["Circuits from panel C (main floor) come up in the old chimney chase beside the stack. Firestop at the floor.",
+             "Bath B switches are outside the door: no wall inside is clear of the tub.",
+             "Keep lights and alarms on the flat 7'-8\" ceiling. Any light in the slope: IC-rated, airtight.",
+             "Knee walls: check there is depth for a box before cutting in; if not, use a surface box."]
+    else:
+        t = [f"Panel {p}, {f['amps']} A, flush in the hall wall. Keep the dashed 30 x 36 in. floor clear. Feeder from existing meter: route and size by electrician."
+             + {3: " This wall is not in the scan (see A-101): confirm it first.", 4: " Two doors swing across the clear floor: workable, but confirm with the inspector.", 5: ""}[fl],
+             f"Mechanical closet: furnace switch D (ckt {c['FUR']}); water heater receptacle and GFCI service receptacle (ckt {c['WH']}); light and switch.",
+             f"AC condenser outside (place by HVAC): ckt {c['AC']}, 30 A 240 V, weatherproof disconnect at the unit." + (" Run down the outside wall." if fl == 5 else ""),
+             f"Range wall: gas range receptacle (ckt {c['RNG']}); hood / microwave receptacle in the cabinet above (ckt {c['MW']}). Under-cabinet strip on the kitchen switch."]
+        if fl == 4: t += [f"Stair hall 213 is the upper flat's: fed from panel C (tags C{CN['C']['LT1']}, C{CN['C']['LIV']}). Entry door is not on the plan: add a 3-way switch at it.",
+                          "Counter in front of an opening: put the counter receptacle below the sill, or use a listed pop-up."]
+        if fl == 5: t += ["Attic circuits rise in the old chimney chase. Firestop at the floor."]
+    return list(zip(X[fl]["KN"], t))
 
 
 def sheet_notes(fl):
     p = PANEL_OF[fl]; f = FLAT[p]
-    n = [(f"Panel {p} circuits · {f['amps']} A", [f"{i + 1:>2}  {c[1][:4]} {c[1][5:7]}  {c[3]}" for i, c in enumerate(CK[p])]),
-         ("Read with E-001", ["Design intent, to be confirmed by the", "licensed electrician. Existing wiring is", "unknown: sound, grounded devices in the",
-                              "right place may stay; new rooms and", "closets are all-new wiring."])]
-    return n
+    more = {3: [], 4: ["Tags C.. in stair hall 213 are panel C", "(upper flat), not panel B."], 5: ["Panel C also feeds the attic (E-104) and", "stair hall 213 (E-102)."],
+            6: ["No panel up here: the attic is on panel C", "on the main floor (E-103)."]}[fl]
+    return [(f"Panel {p} circuits · {f['amps']} A", [f"{i + 1:>2}  {c[1][:4]} {c[1][5:7]}  {c[3]}" for i, c in enumerate(CK[p])]),
+            ("Read with E-001", more + ["Design intent, to be confirmed by the", "licensed electrician. Existing wiring is", "unknown: sound, grounded devices in the",
+                                        "right place may stay; new rooms and", "closets are all-new wiring."])]
 
 
 def level(pdf, number, fl):
@@ -323,14 +356,23 @@ def level(pdf, number, fl):
     for a0, a1 in legs: leg(ax, a0, a1)
     for k, x, y, n, t, arg in D:
         sym(ax, k, x, y, n, 1.0, arg)
-        if t: tag(ax, x + n[0] * .86, y + n[1] * .86, t)
+        if t:      # circuit number: in front of the symbol; beside it for appliance outlets or where the room name is in the way
+            q = (x + n[0] * .86, y + n[1] * .86)
+            if k in ("D", "Q") or any(abs(q[0] - r["lab"][0]) < 1.3 and abs(q[1] - r["lab"][1]) < .55 for r in L["rooms"] if r["kind"] != "closet"):
+                q = (x + n[0] * .3 - n[1] * .58 * (arg or 1), y + n[1] * .3 + n[0] * .58 * (arg or 1))
+            tag(ax, *q, t)
     for r in L["rooms"]:      # lighting circuit number at one light per room
         if r["no"] in lights:
             k, x, y = lights[r["no"]][0]; tag(ax, x + .52, y - .42, cn(fl, ltkey(fl, r), r["no"]), LT)
     if "P" in x_:
-        (px, py), n = snap(fl, *x_["P"][:2]); t = (-n[1], n[0]); s = x_["P"][2]; sym(ax, "P", px, py, n)
-        ax.add_patch(MPoly([(px + t[0] * (e + s) + n[0] * d, py + t[1] * (e + s) + n[1] * d) for e, d in ((-1.25, 0), (1.25, 0), (1.25, 3), (-1.25, 3))], closed=True, fill=False, ec=PW, lw=.6,
-                           ls=(0, (2.5, 1.8)), zorder=11))
+        (px, py), n = snap(fl, *x_["P"][:2]); t = (abs(n[1]), abs(n[0])); s = x_["P"][2]; sym(ax, "P", px, py, n)
+        c = [(px + t[0] * (e + s) + n[0] * d, py + t[1] * (e + s) + n[1] * d) for e, d in ((-1.25, 0), (1.25, 0), (1.25, 3), (-1.25, 3))]
+        for (x0, y0), (x1, y1) in zip(c, c[1:] + c[:1]):      # 30 x 36 in. clear floor, dashed, broken where a room name sits
+            run = []
+            for q in [(x0 + (x1 - x0) * u, y0 + (y1 - y0) * u) for u in np.linspace(0, 1, 61)] + [None]:
+                if q and not any(abs(q[0] - r["lab"][0]) < .8 and abs(q[1] - r["lab"][1]) < .45 for r in L["rooms"]): run.append(q); continue
+                if len(run) > 1: ax.plot(*zip(*run), color=PW, lw=.6, ls=(0, (2.5, 1.8)), zorder=11)
+                run = []
         ax.text(px + n[0] * .45, py + n[1] * .45, f"PANEL {p}", fontsize=3.8, color=PW, ha="center", va="center", fontweight="bold", zorder=14, path_effects=HALO, rotation=90 if n[0] else 0)
         (qx, qy), m = snap(fl, *x_["AC"])
         ax.annotate("", xy=(qx + m[0] * 1.7, qy + m[1] * 1.7), xytext=(qx - m[0] * .5, qy - m[1] * .5), arrowprops=dict(arrowstyle="-|>", color=PW, lw=.9), zorder=12)
@@ -338,7 +380,9 @@ def level(pdf, number, fl):
         ax.text(qx + m[0] * 2.0 + (0 if m[0] else 1.3), qy + m[1] * 2.0 + (.75 if m[0] else 0), f"AC condenser outside\nckt {cn(fl, 'AC')} · 30 A 240 V", fontsize=3.6, color=PW,
                 ha="left" if m[0] > 0 else "center", va="center", zorder=14, linespacing=1.2)
     kn = keynotes(fl)
-    for i, ((x, y), _t) in enumerate(kn): b.keynote(ax, i + 1, x, y, PW)
+    for i, (q, _t) in enumerate(kn):
+        if len(q) > 2: ax.plot([q[0], q[2]], [q[1], q[3]], color=PW, lw=.5, zorder=19)
+        b.keynote(ax, i + 1, q[0], q[1], PW)
     bg.text(10.6, 9.9, "LEGEND", fontsize=7, fontweight="bold", color=INK, va="center")
     y = legend(bg, 10.6, 9.64) - .1
     bg.text(10.6, y, "KEYNOTES", fontsize=7, fontweight="bold", color=INK, va="center"); y -= .22
@@ -408,8 +452,11 @@ def notes_sheet(pdf):
     for ln in ["Nameplate figures are assumed: redo with the real units. Gas ranges assumed;", "an electric range or electric heat changes the totals. Lights are LED; the",
                "3 VA/sf figure is the code allowance, not the real lighting load."]:
         bg.text(.5, y, ln, fontsize=5.2, color=GREY, va="center"); y -= .125
-    y -= .12; bg.text(.5, y, "SYMBOLS (same on E-101 to E-104)", fontsize=7, fontweight="bold", color=INK, va="center")
-    legend(bg, .5, y - .24, LEG[:8], 5.3); legend(bg, 2.62, y - .24, LEG[8:], 5.3)
+    b.text_block(bg, .5, y - .15, "Abbreviations and tags", [
+        "AF arc-fault breaker · GF ground-fault breaker or device · DF both in one breaker", "1P / 2P one-pole / two-pole breaker · TR tamper-resistant · WP weatherproof",
+        "12-2 = two 12 AWG copper conductors + ground; 10-3 = three 10 AWG + ground", "S3 3-way switch pair · SD smoke alarm · CO carbon monoxide alarm", "",
+        "A blue number by a receptacle, and an orange number by one light in each room,", "is the circuit in that flat's panel. Tags C.. on E-102 are panel C (upper flat).",
+        "Receptacles and lights are on separate circuits, so a tripped receptacle circuit", f"does not put the room in the dark. Alarms: circuit {CN['A']['LT1']} in panels A and B, {CN['C']['LT1']} in panel C."], fs=5.3, lh=.128)
     bg.text(4.72, y0, "GENERAL NOTES", fontsize=7, fontweight="bold", color=INK, va="center")
     x, y = 4.72, y0 - .24
     for i, t in enumerate(GEN):
@@ -418,6 +465,8 @@ def notes_sheet(pdf):
         bg.text(x, y, f"{i + 1}", fontsize=5.5, color=PW, fontweight="bold", va="center")
         for j, ln in enumerate(ls): bg.text(x + .2, y - j * .128, ln, fontsize=5.3, color=INK, va="center")
         y -= .128 * len(ls) + .075
+    bg.text(x, y - .12, "SYMBOLS (same on E-101 to E-104)", fontsize=7, fontweight="bold", color=INK, va="center")
+    legend(bg, x, y - .38, LEG[:8], 5.3); legend(bg, x + 2.12, y - .38, LEG[8:], 5.3)
     b.save(fig, "E-001", pdf)
 
 

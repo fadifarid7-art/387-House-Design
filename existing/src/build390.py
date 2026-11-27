@@ -16,6 +16,15 @@ from common import INK, GREY, LIGHT, PAPER, ftin, table, plt
 FPI = 4.0                      # 1/4 in. = 1 ft
 EXW = "#9aa0a8"; NEWW = "#b3261e"; FIXE = "#b9770e"; FXN = "#1f5fa8"; FXE = "#6b7480"; MECHC = "#6a2c91"; FURN = "#7a5a2a"
 T4, T6 = 0.375, 0.54           # finished thickness of a 2x4 and a 2x6 wall (ft)
+RANGE_FUEL = {3: "electric", 4: "electric", 5: "gas"}     # from the owner's photos and the inspection report
+EXISTING = dict(  # home inspection report, Oasis Home Inspections, 9 Oct 2026, and owner's photos
+    built=1911, type="triplex, 7 bedrooms, 3 baths", foundation="stone; finished lower level plus a crawl space (access door stuck)",
+    heat="three gas forced-air furnaces with ductwork and ceiling registers (made 1996, 1997, 2019); no central cooling; window units",
+    water="three 40 gal gas water heaters (made 2017, 2022, 2022): no pans, no expansion tanks, relief pipes short",
+    power="overhead service; 100 A 120/240 V panels (General Electric, Murray); some ungrounded receptacles, open splices",
+    kitchens="dishwasher in every kitchen; electric ranges in the lower and middle flats, gas range in the upper flat; no range hoods",
+    upper="the upper flat's furnace and water heater stand in the west end of Room B (new bedroom 4): they move to closet 307",
+    attic="rafters cut or separated in places; roof flashing lifted", lower="bedroom 2's only window is a small high basement window")
 STACK = (17.3, 8.9)            # new 3 in. drain stack in the old chimney shaft, same spot on every level
 CHIMNEY = (15.8, 6.2, 18.3, 9.3)
 
@@ -52,7 +61,7 @@ LV = {
                    room("112", "Clo.", "closet", [(1.62, 10.6, 7.6, 12.78)], "", "", (4.6, 11.9), True)],
             fx=[("tub", 12.45, 0.95, 17.45, 3.45, True), ("wc", 17.41, 5.0, "x-", True), ("van", 15.66, 6.4, 17.41, 8.4, True),
                 ("tub", 21.98, 4.5, 24.29, 9.56, False), ("wc", 17.95, 3.7, "x+", False), ("van", 17.95, 6.5, 19.7, 8.5, False),
-                ("fridge", 18.27, 16.4, 20.77, 19.4), ("range", 18.6, 19.65, 20.77, 22.15), ("base", 18.69, 22.15, 20.77, 23.65), ("sinkbase", 18.69, 23.65, 20.77, 26.65),
+                ("fridge", 18.27, 16.4, 20.77, 19.15), ("range", 18.6, 19.15, 20.77, 21.65), ("dw", 18.69, 21.65, 20.77, 23.65), ("sinkbase", 18.69, 23.65, 20.77, 26.65),
                 ("washer", 24.63, 4.9, 27.33, 7.15), ("dryer", 24.63, 7.3, 27.33, 9.55), ("lsink", 27.9, 11.5, 30.25, 12.78),
                 ("furnace", 16.6, 13.3, 18.06, 15.63), ("wh", 19.6, 14.5)],
             furn=[("bed", 4.6, 0.95, "y+"), ("night", 7.2, 0.95, 8.7, 2.45), ("desk", 10.11, 1.3, 12.11, 5.3), ("dresser", 1.62, 7.6, 3.12, 10.2),
@@ -61,7 +70,9 @@ LV = {
             notes=[(1, (14.9, 4.5), "Bath 2: new room. 2x6 wet wall on the bath 1 side."), (2, (12.28, 5.0), "New wall 9 in. inside the old one (old wall out)."),
                    (3, (17.3, 7.6), "Chimney base removed. Patch floor. Stack S in wet wall."), (4, (4.6, 10.43), "New closet front, 4'-7\" bifold."),
                    (5, (18.6, 13.9), "Existing closet becomes the mechanical closet: new solid door, 5/8 in. type X board walls and ceiling."),
-                   (6, (24.6, 12.95), "Frame a 2'-8\" door in the bedroom 2 doorway."), (7, (20.0, 26.94), "Wall not in the scan: verify.")],
+                   (6, (24.6, 12.95), "Frame a 2'-8\" door in the bedroom 2 doorway."), (7, (20.0, 26.94), "Wall not in the scan: verify."),
+                   (8, (27.6, 25.2), "Bedroom 2 has only a small high basement window (photo). It is not an escape window: a bedroom here needs a larger window or an outside door. Decide before work starts."),
+                   (9, (29.6, 22.7), "Door on this wall: closet or outside door? Verify.")],
             dims=[(12.45, 4.3, 17.41, 4.3), (16.9, 0.95, 16.9, 9.28), (1.62, 6.2, 12.11, 6.2), (1.62, 10.6, 1.62, 12.78)]),
     4: dict(name="Middle flat", view=((-2.5, 37.1), (-3, 30)), cut=[],
             stairs=[(20.6, 24.75, 24.6, 27.3, "x-", "UP"), (17.2, 21.5, 19.6, 24.5, "y-", "UP")],
@@ -86,8 +97,8 @@ LV = {
                    room("213", "Stair hall (upper flat)", "stair", [(19.86, 21.06, 31.06, 27.38)], "", "8'-9\"", (26.5, 23.2))],
             fx=[("tub", 16.23, 3.61, 18.73, 8.5, True), ("wc", 14.6, 3.61, "y+", True), ("van", 11.2, 3.61, 13.2, 5.36, True),
                 ("tub", 6.14, 13.64, 8.47, 18.51, False), ("wc", 10.2, 13.64, "y+", False), ("van", 9.36, 16.76, 11.55, 18.51, False),
-                ("fridge", 19.9, 18.22, 22.9, 20.72), ("base", 22.9, 18.64, 26.0, 20.72), ("sinkbase", 26.0, 18.64, 29.0, 20.72), ("base", 29.0, 18.64, 31.06, 20.72),
-                ("base", 28.98, 17.6, 31.06, 18.64), ("range", 28.9, 15.1, 31.06, 17.6),
+                ("fridge", 19.9, 18.22, 22.9, 20.72), ("base", 22.9, 18.64, 26.9, 20.72), ("dw", 26.9, 18.64, 28.9, 20.72), ("sinkbase", 28.98, 17.7, 31.06, 20.72),
+                ("range", 28.9, 15.2, 31.06, 17.7),
                 ("washer", 17.2, 11.8, 19.5, 14.2), ("dryer", 19.6, 11.8, 21.9, 14.2), ("furnace", 15.6, 18.0, 17.06, 20.33), ("wh", 18.5, 19.3)],
             furn=[("bed", 0.05, 6.9, "x+"), ("night", 0.05, 9.5, 1.55, 11.0), ("desk", 1.0, 11.3, 5.0, 13.3), ("dresser", 0.05, 0.54, 1.55, 3.54),
                   ("bed", 3.0, 25.83, "y-"), ("desk", 7.0, 18.85, 11.0, 20.85), ("dresser", 11.5, 24.33, 14.5, 25.83),
@@ -118,16 +129,18 @@ LV = {
                    room("310", "Clo.", "closet", [(23.87, 11.11, 31.35, 13.1)], "", "", (27.6, 12.1), True),
                    room("311", "Coat clo.", "closet", [(15.62, 0.33, 17.97, 3.73)], "", "", (16.8, 2.0))],
             fx=[("tub", 10.18, 24.67, 15.18, 27.17, False), ("van", 10.18, 20.9, 11.93, 22.9, False), ("wc", 16.57, 22.5, "x-", False),
-                ("base", 0.33, 24.78, 3.4, 26.86), ("sinkbase", 3.4, 24.78, 6.4, 26.86), ("base", 6.4, 24.78, 7.46, 26.86), ("base", 0.33, 22.9, 2.41, 24.78),
+                ("base", 0.33, 24.78, 2.41, 26.86), ("dw", 2.41, 24.78, 4.41, 26.86), ("sinkbase", 4.41, 24.78, 7.41, 26.86), ("base", 0.33, 22.9, 2.41, 24.78),
                 ("range", 0.33, 20.4, 2.5, 22.9), ("base", 0.33, 16.1, 2.41, 20.4), ("fridge", 0.33, 13.6, 2.83, 16.1),
-                ("washer", 7.2, 18.2, 9.84, 20.7), ("dryer", 7.2, 20.8, 9.84, 23.3), ("furnace", 15.8, 10.55, 17.26, 12.88), ("wh", 19.1, 11.75)],
+                ("washer", 7.2, 18.2, 9.84, 20.7), ("dryer", 7.2, 20.8, 9.84, 23.3), ("furnace", 15.8, 10.55, 17.26, 12.88), ("wh", 19.1, 11.75),
+                ("xequip", 24.0, 24.2, 27.6, 26.7)],
             furn=[("couch", 0.5, 1.5, 3.5, 8.5, "x-"), ("tv", 13.9, 4.2, 15.28, 9.2), ("ctable", 6.0, 3.3, 8.0, 6.7), ("table", 6.0, 9.4, 11.0, 12.4),
                   ("bed", 31.35, 5.4, "x-"), ("night", 29.85, 8.0, 31.35, 9.5), ("desk", 18.6, 0.33, 22.6, 2.33), ("dresser", 25.5, 0.33, 28.5, 1.83),
                   ("bed", 28.85, 26.86, "y-"), ("desk", 29.35, 15.4, 31.35, 19.4)],
             notes=[(1, (17.0, 7.6), "Chimney removed roof to lower flat. Patch floor, ceiling and roof. Stack S boxed in the closet corner."),
                    (2, (18.14, 7.3), "Wall opened 4'-7\" for closet doors; header over."), (3, (18.0, 10.2), "New mechanical closet: 2x4 walls, 5/8 in. type X board, pair of solid doors to the hall."),
                    (4, (27.6, 10.94), "New 2x4 wall: closet for bedroom 4."), (5, (28.1, 13.27), "Wall opened 5'-0\" for closet doors; header over (wall may be bearing)."),
-                   (6, (23.7, 16.5), "Opening widened from 2'-4\" to 2'-8\"; new door."), (7, (16.8, 3.9), "Closet end wall: build if not there.")],
+                   (6, (23.7, 16.5), "Opening widened from 2'-4\" to 2'-8\"; new door."), (7, (16.8, 3.9), "Closet end wall: build if not there."),
+                   (8, (25.8, 23.6), "This room is the flat's furnace and water heater room today (photo). Move both to closet 307; cap and re-run gas, flue, ducts and water. Patch the dropped ceiling.")],
             dims=[(15.62, 11.0, 20.23, 11.0), (19.7, 10.37, 19.7, 13.1), (23.87, 11.11, 23.87, 13.1), (18.31, 3.2, 31.35, 3.2), (24.4, 13.44, 24.4, 26.86)]),
     6: dict(name="Attic (upper flat)", view=((-3.5, 36.1), (-3, 30)), cut=[(16.55, 13.45, 17.2, 15.45)],
             stairs=[(17.2, 17.0, 20.0, 24.5, "y+", "DN")],
@@ -333,6 +346,10 @@ def draw_base(ax, fl, mode="arch"):
         elif k == "range": s_range(ax, *f[1:5])
         elif k == "fridge": s_box(ax, *f[1:5], "REF")
         elif k == "base": s_box(ax, *f[1:5], "", FXE, "#f1f2f4")
+        elif k == "dw": s_box(ax, *f[1:5], "DW", FXE, "#f1f2f4")
+        elif k == "xequip":
+            ax.add_patch(Rectangle((f[1], f[2]), f[3] - f[1], f[4] - f[2], fill=False, ec=NEWW if arch else "#8a9099", lw=0.6, ls=(0, (2, 1.6)), zorder=6))
+            ax.text((f[1] + f[3]) / 2, (f[2] + f[4]) / 2, "existing furnace +\nwater heater: move", fontsize=3.2, color=NEWW if arch else "#8a9099", ha="center", va="center", zorder=6.1, linespacing=1.1)
         elif k == "sinkbase":
             s_box(ax, *f[1:5], "", FXE, "#f1f2f4"); x0, y0, x1, y1 = f[1:5]
             ax.add_patch(Rectangle((x0 + 0.25 * (x1 - x0), y0 + 0.2 * (y1 - y0)), 0.5 * (x1 - x0), 0.6 * (y1 - y0), fc="#eef4fb", ec=FXE, lw=0.5, zorder=6.2))
