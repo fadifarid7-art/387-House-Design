@@ -517,7 +517,7 @@ def panel_box(f):
 
 
 # ---------------------------------------------------------------------------------------------- base plan
-def draw_base(ax, fl, mode="arch"):
+def draw_base(ax, fl, mode="arch", labels=True):
     """mode 'arch': full construction plan (new walls red, removals dashed, furniture, sizes). mode 'trade': quiet grey background for a trade overlay."""
     L = LV[fl]; g = geom(fl); arch = mode == "arch"
     for r in g["rooms"]:
@@ -652,11 +652,11 @@ def draw_base(ax, fl, mode="arch"):
                 ax.text(x, y - 0.25, r["no"] + ((" · " + r["size"]) if (r["size"] and r.get("plansize", True)) else ""), fontsize=3.7, color=col, ha="center", va="center", zorder=12, gid="room", bbox=dict(fc="white", ec="none", pad=0.3))
                 if r["ceil"]:
                     ax.text(x, y - 0.9, "clg " + r["ceil"], fontsize=3.4, color=GREY, ha="center", va="center", zorder=12, gid="room", bbox=dict(fc="white", ec="none", pad=0.25))
-        elif r["kind"] != "closet":
+        elif r["kind"] != "closet" and labels:
             ax.text(x, y, f"{r['name']}\n{r['no']}", fontsize=3.4, color="#9097a0", ha="center", va="center", zorder=2, linespacing=1.15)
 
 
-def bsheet(number, title, fl, notes, legend=None, sub=None):
+def bsheet(number, title, fl, notes, legend=None, sub=None, view=None):
     """One level at 1/4 in. = 1 ft. Returns fig, bg (inch coordinates), ax (feet). A strip 2.6 in. wide is free at x 10.55 to 13.15 in. for legends and schedules."""
     sx.KIND[:] = ["BUILDER SET", "8 BEDROOMS · 7 BATHS · 3 FLATS"]
     sx.LEGEND[:] = ["Scale 1/4 in. = 1 ft on 11 x 17 · north as shown"]
@@ -665,7 +665,7 @@ def bsheet(number, title, fl, notes, legend=None, sub=None):
     fig, bg = sheet(number, title, "390 Forest Ave", sub or f"Rear building · {LV[fl]['name'].lower()}" if fl else (sub or "Rear building"), notes)
     if not fl:
         return fig, bg, None
-    vx, vy = LV[fl]["view"]
+    vx, vy = view or LV[fl]["view"]
     ax = sx.axes(fig, 0.45, 1.25, vx, vy, FPI)
     sx.north(ax, vx[0] + 2.0, vy[1] - 1.9, de.FX["north_in_building_frame"], 1.1)
     bg.text(0.5, 10.25, title.upper(), fontsize=10, fontweight="bold", color=INK, va="center")

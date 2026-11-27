@@ -43,6 +43,14 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   The chimney shaft is at the same coordinates on the middle flat, the upper flat and the attic (frames agree to about 1 in.): `CHIMNEY`
   and `STACK` in `src/build390.py` hold that position, and the upper flat's chase (rev 5) was moved onto it.
   Lesson for `scan_survey.py`: take wall faces from slices at 5 ft and higher; lower slices pick up furniture and mesh fill.
+- `drawings/390-Forest_Electrical_Rev1.pdf`: the electrical set for the agreed floor plans (`src/b390_e.py`, `src/b390_eq.py`): E-001 notes and
+  legend, E-002 load calculations (NEC 220 standard and 220.82 optional per flat, 220.84 for the building; every value with its arithmetic),
+  E-003 lighting calculations (lumen method, every room; the fixtures counted are the ones drawn), E-004 service entrance elevation, riser,
+  feeder route, grounding and a check of the old service cable, E-005 panel schedules, E-101 to E-104 power and lighting plans.
+  Design basis: electric ranges and dryers, gas furnaces and water heaters, central air (1.5 / 2 / 3 ton). Result: a 125 A panel and feeder
+  per flat; building service 200 A calculated, so the old cable (typically 4/0 Al, 180 A) is replaced; 3-position meter stack with 125 A
+  meter-mains at the existing place (east wall, north end). Receptacles are placed by the NEC spacing rules from the plan model; kitchen
+  counter receptacles alternate over 3 or 4 circuits. The HVAC and plumbing sheets in the builder set predate the floor-plan review.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the
