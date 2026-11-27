@@ -426,8 +426,10 @@ def loads_sheet(pdf):
         lines = [f"System {k}: heat loss {s['H']:,.0f} Btu/h; furnace {s['furn'] / 1000:.0f}k in x 96 % = {s['furn'] * .96 / 1000:.1f}k out.",
                  f"  {s['furn'] * .96 / s['H']:.1f} x the load: smallest furnace made; 2-stage or modulating.",
                  f"Cooling {s['Cs']:,.0f} sensible + {s['lat']:,.0f} latent = {s['Ct']:,.0f} Btu/h ({s['Ct'] / 12000:.2f} ton).",
-                 f"  {s['tons']:g} ton {'(smallest ducted size; variable speed turns down)' if s['tons'] > s['tons_calc'] else ''}".rstrip(),
-                 f"Blower {s['cfm']} CFM = 400 CFM per ton; rooms get it in proportion", "  to the larger of their heat and cool shares (Manual D)."]
+                 (f"  {s['tons']:g} ton variable speed: the design load is {s['Ct'] / (s['tons'] * 12000) * 100:.0f} % of it; sized up for 105 F (below)." if s['tons'] > s['tons_min'] else
+                  f"  {s['tons']:g} ton {'(smallest ducted size; variable speed turns down)' if s['tons'] > s['tons_calc'] else ''}".rstrip()),
+                 f"Blower {s['cfm']} CFM = {s['cfm'] / s['tons']:.0f} CFM per ton{' (the most the 14 x 8 trunk takes)' if s['cfm'] < 400 * s['tons'] else ''}; rooms get it",
+                 "  in proportion to the larger of their heat and cool shares (Manual D)."]
         for ln in lines: bg.text(x0, yy, ln, fontsize=5.0, color=INK, va="center"); yy -= .13
         yy -= .1
     yy -= .05
@@ -438,7 +440,18 @@ def loads_sheet(pdf):
         bg.text(x0, yy, f"{rw[0]}: {rw[1]} x U {rw[2]} -> heat {rw[3]:,.0f}, cool {rw[4]:,.0f}", fontsize=4.9, color=INK, va="center"); yy -= .125
     bg.text(x0, yy, f"Air (infiltration + ventilation share): heat {x['inf_h'] + x['vent_h']:,.0f}, cool {x['inf_c'] + x['vent_c']:,.0f}", fontsize=4.9, color=INK, va="center"); yy -= .125
     bg.text(x0, yy, f"Inside: person 230 + lights + computer = {x['int']:,.0f}", fontsize=4.9, color=INK, va="center"); yy -= .125
-    bg.text(x0, yy, f"Totals: heat {x['H']:,.0f} Btu/h, cool {x['C']:,.0f} Btu/h -> {x['cfm']} CFM", fontsize=5.0, color=INK, va="center", fontweight="bold")
+    bg.text(x0, yy, f"Totals: heat {x['H']:,.0f} Btu/h, cool {x['C']:,.0f} Btu/h -> {x['cfm']} CFM", fontsize=5.0, color=INK, va="center", fontweight="bold"); yy -= .3
+    E = mq.EXTREME
+    bg.text(x0, yy, f"CHECK AT LAST YEAR'S EXTREMES ({E['t_out_h']} F AND {E['t_out_c']} F)", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .13
+    rows = [["System", f"Heat loss at {E['t_out_h']} F", "Furnace out", f"Cool load at {E['t_out_c']} F", f"AC at {E['t_out_c']} F (est.)", "Result"]]
+    for k, s in SYS.items():
+        X = s["ext"]; cap = mq.CAP_105 * s["tons"] * 12000
+        rows.append([k, f"{X['H']:,.0f}", f"{s['furn'] * .96:,.0f}", f"{X['Ct']:,.0f}", f"{cap:,.0f}", "holds 75 F" if cap >= X["Ct"] else f"{cap / X['Ct'] * 100:.0f} %: +2 F at peak"])
+    yy = table(bg, x0, yy, [.4, .78, .6, .78, .72, .86], rows, fs=4.8, rh=.14) - .1
+    for t in ["Same model with the outdoor temperatures moved: walls and roof +18 F, moisture 40 grains. Manual J sizes to the 1 % values",
+              "(9 F / 87 F, exceeded a few days a year); sizing to the record would make units that short-cycle and leave the air damp.",
+              f"So: variable-speed condensers, checked to give at least 90 % at {E['t_out_c']} F at full speed ({mq.CAP_105:.0%} of rating assumed)."]:
+        bg.text(x0, yy, t, fontsize=4.9, color=INK, va="center"); yy -= .125
     bad = b.clarity(fig, None, None, bg); print("M-002 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
     b.save(fig, "M-002", pdf)
 

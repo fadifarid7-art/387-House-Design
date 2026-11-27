@@ -21,6 +21,12 @@ import b390_eq as q  # noqa: E402
 # ---------------------------------------------------------------------------------------------- design conditions (confirm with Manual J Table 1A)
 DES = dict(t_out_h=9, t_in_h=70, t_out_c=87, t_in_c=75, gr=30, zone="5A", place="Morgantown WV (Hart Field)")
 DTH = DES["t_in_h"] - DES["t_out_h"]; DTC = DES["t_out_c"] - DES["t_in_c"]
+# The owner's reported extremes last year. Manual J sizes to the 1 % / 99 % design values above (sizing to records oversizes); the equipment is
+# then checked against these: furnaces must carry the heat loss at -15 F, and the variable-speed condensers at full speed must give at least
+# 90 % of the 105 F load (indoor drifts a degree or two at the peak, no more).
+EXTREME = dict(t_out_h=-15, t_out_c=105, gr=40)
+CAP_105 = 0.92            # condenser output at 105 F outdoor as a share of its rating at 95 F (typical; check the unit's extended performance table)
+MAX_CFM = 700             # 14 x 8 in. trunk at 900 fpm, the most the duct takes
 # ---------------------------------------------------------------------------------------------- envelope after the gut (assumed: insulated while the walls are open)
 U = dict(wall=0.070,       # 2x4 wall, R-15 high-density batts or dense-pack cellulose, siding and sheathing: effective about R-14
          stone=0.065,      # lower flat stone foundation wall with a new 2x4 wall inside it, R-15
@@ -159,9 +165,8 @@ def internal(fl, r):
     return s
 
 
-@lru_cache(None)
-def system(k):
-    """All loads of one flat (system): rooms, infiltration, ventilation, totals, equipment, room airflow."""
+def _loads(k):
+    """Room and system loads of one flat at the current design conditions."""
     S = SYSTEMS[k]; rl = []
     for fl, only in S["levels"].items():
         for r in rooms(fl):
@@ -182,11 +187,33 @@ def system(k):
     npeople = beds + 1
     lat = 0.68 * (inf_c + vent) * DES["gr"] + PEOPLE_L * npeople
     H = sum(x["H"] for x in rl); Cs = sum(x["C"] for x in rl); Ct = Cs + lat
+    return dict(rl=rl, vol=vol, inf_h=inf_h, inf_c=inf_c, vent=vent, lat=lat, H=H, Cs=Cs, Ct=Ct, npeople=npeople)
+
+
+def extreme(k):
+    """Loads of one flat at the reported extremes (-15 F, 105 F): same model, outdoor temperatures and wall/roof CLTDs moved up."""
+    global DTH, DTC
+    save = (dict(DES), DTH, DTC, dict(CLTD))
+    try:
+        DES.update(EXTREME); DTH = DES["t_in_h"] - DES["t_out_h"]; DTC = DES["t_out_c"] - DES["t_in_c"]
+        for kk in CLTD: CLTD[kk] += EXTREME["t_out_c"] - save[0]["t_out_c"]
+        return _loads(k)
+    finally:
+        DES.clear(); DES.update(save[0]); DTH, DTC = save[1], save[2]; CLTD.clear(); CLTD.update(save[3])
+
+
+@lru_cache(None)
+def system(k):
+    """All loads of one flat (system): rooms, infiltration, ventilation, totals, equipment, room airflow."""
+    D = _loads(k); X = extreme(k)
+    rl, vol, inf_h, inf_c, vent, lat, H, Cs, Ct, npeople = (D[x] for x in ("rl", "vol", "inf_h", "inf_c", "vent", "lat", "H", "Cs", "Ct", "npeople"))
     # equipment (Manual S: cooling 90 to 115 % of the total load; furnace output at least the heat loss)
     tons_calc = next(t for t in (1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0) if t * 12000 >= Ct * 0.95)
-    tons = max(1.5, tons_calc)                                    # 1.5 ton is the smallest ducted split commonly made: variable speed so it turns down
-    furn = next(fz for fz in (40000, 60000, 80000) if fz * .96 >= H)
-    cfm = int(round(400 * tons / 25) * 25)
+    tons_min = max(1.5, tons_calc)                                # 1.5 ton is the smallest ducted split commonly made: variable speed so it turns down
+    tons = tons_min
+    while CAP_105 * tons * 12000 < 0.9 * X["Ct"]: tons += 0.5     # the reported 105 F: variable speed covers it at full speed, turns down on normal days
+    furn = next(fz for fz in (40000, 60000, 80000) if fz * .96 >= max(H, X["H"]))
+    cfm = int(round(min(400 * tons, MAX_CFM) / 25) * 25)
     for (fs, ns), (fh, nh) in MERGE.items():
         xs = next((x for x in rl if x["fl"] == fs and x["r"]["no"] == ns), None); xh = next((x for x in rl if x["fl"] == fh and x["r"]["no"] == nh), None)
         if xs and xh: xs["via"] = nh; xh["plus"] = xs
@@ -199,8 +226,8 @@ def system(k):
     tot = sum(x["cfm_raw"] for x in served)
     for x in served:
         x["cfm"] = max(30, int(round(cfm * x["cfm_raw"] / tot / 5) * 5))
-    return dict(k=k, rooms=rl, served=served, vol=vol, inf_h=inf_h, inf_c=inf_c, vent=vent, lat=lat, H=H, Cs=Cs, Ct=Ct, tons=tons, tons_calc=tons_calc, furn=furn, cfm=cfm,
-                shr=Cs / Ct, npeople=npeople)
+    return dict(k=k, rooms=rl, served=served, vol=vol, inf_h=inf_h, inf_c=inf_c, vent=vent, lat=lat, H=H, Cs=Cs, Ct=Ct, tons=tons, tons_calc=tons_calc, tons_min=tons_min,
+                furn=furn, cfm=cfm, shr=Cs / Ct, npeople=npeople, ext=X)
 
 
 # ---------------------------------------------------------------------------------------------- sizing helpers

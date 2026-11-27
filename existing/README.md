@@ -57,7 +57,8 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   exhaust duct and vent on a 3 in. grid through its joist space (square to the walls; not across another flat, the trunk, the chase, a stair
   opening or a panel's dedicated space; caps 3 ft from windows, doors and property lines, none on the west wall); `src/b390_m.py` draws M-001
   notes, equipment and per-fan exhaust schedules, M-002 loads, M-003 air distribution, the condenser airflow check under the rear deck and the
-  chase, M-101 to M-104 duct plans. Result: three 1.5 ton systems with 40,000 Btu/h two-stage furnaces, 600 CFM, 14 x 8 in. trunks; the attic
+  chase, M-101 to M-104 duct plans. Result: variable-speed air conditioners, 1.5 ton lower and middle, 2 ton upper (sized up so it still gives 93 % at the owner's
+  reported 105 F; M-002 checks every flat at -15 F and 105 F), 40,000 Btu/h two-stage furnaces (enough at -15 F), 600 / 600 / 700 CFM, 14 x 8 in. trunks; the attic
   is fed from the upper flat's main-floor trunk in the attic floor; middle flat dryer is a ventless heat-pump type. Line sets are NOT final:
   they wait for the size of the walled area under the rear deck.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
