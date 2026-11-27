@@ -85,7 +85,7 @@ LV = {
             bifolds=[("204", "h", 15.64, 0.75, 5.1, 1, "4'-4\" bifold", "Closet, bedroom 1")],
             rooms=[room("201", "Living room", "living", [(19.07, 0.54, 34.59, 11.4), (22.17, 11.4, 31.06, 13.64)], "15'-6\" x 10'-10\" + dining", "8'-8\"", (29.0, 8.6)),
                    room("202", "Kitchen", "kitchen", [(19.86, 13.64, 31.06, 20.72)], "11'-2\" x 7'-1\"", "7'-4\"", (25.5, 16.6)),
-                   room("203", "Bedroom 1", "bed", [(0.05, 18.85, 15.11, 25.83), (0.05, 15.81, 5.8, 18.85)], "15'-0\" x 7'-0\" + 5'-9\" x 3'-0\"", "7'-8\"", (10.6, 23.6)),
+                   room("203", "Bedroom 1", "bed", [(0.05, 18.85, 15.11, 25.83), (0.05, 15.81, 5.8, 18.85), (12.62, 17.7, 15.11, 18.85)], "15'-0\" x 7'-0\" + 5'-9\" x 3'-0\"", "7'-8\"", (10.6, 23.6)),
                    room("204", "Bedroom 2", "bed", [(0.05, 0.54, 10.42, 13.3)], "10'-4\" x 12'-9\"", "8'-8\"", (6.8, 2.2)),
                    room("205", "Bath 1", "bath", [(6.14, 13.64, 12.28, 18.51)], "6'-2\" x 4'-10\"", "7'-4\"", (10.3, 16.2)),
                    room("206", "Bath 2", "bath", [(10.76, 3.61, 18.73, 8.5)], "8'-0\" x 4'-11\"", "8'-0\"", (13.4, 7.1), True),
@@ -364,7 +364,7 @@ def draw_base(ax, fl, mode="arch"):
         elif k == "dw": s_box(ax, *f[1:5], "DW", FXE, "#f1f2f4")
         elif k == "xequip":
             ax.add_patch(Rectangle((f[1], f[2]), f[3] - f[1], f[4] - f[2], fill=False, ec=NEWW if arch else "#8a9099", lw=0.6, ls=(0, (2, 1.6)), zorder=6))
-            ax.text((f[1] + f[3]) / 2, (f[2] + f[4]) / 2, "existing furnace +\nwater heater: move", fontsize=3.2, color=NEWW if arch else "#8a9099", ha="center", va="center", zorder=6.1, linespacing=1.1)
+            ax.text((f[1] + f[3]) / 2, (f[2] + f[4]) / 2, "furnace + water heater\nhere today: remove", fontsize=3.2, color=NEWW if arch else "#8a9099", ha="center", va="center", zorder=6.1, linespacing=1.1)
         elif k == "sinkbase":
             s_box(ax, *f[1:5], "", FXE, "#f1f2f4"); x0, y0, x1, y1 = f[1:5]
             ax.add_patch(Rectangle((x0 + 0.25 * (x1 - x0), y0 + 0.2 * (y1 - y0)), 0.5 * (x1 - x0), 0.6 * (y1 - y0), fc="#eef4fb", ec=FXE, lw=0.5, zorder=6.2))
