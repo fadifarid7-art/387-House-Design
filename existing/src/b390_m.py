@@ -210,7 +210,7 @@ def lay5():
     return dict(
         trunk=[([(px, F[3]), (px, yt)], 840), ([(px, yt), (xw, yt)], 460), ([(px, yt), (xe, yt)], 380)],
         main=[([(xw, yt), (xw, yl), (x1, yl)], 240), ([(xe, yt), (x4, yt)], 220)], pipe=[([(F[2], fb[1]), fb], 50)],
-        br=[("301", [(x1, yl), (x1, LIV[1] + 1.9)], 120, (2.0, 0)), ("301", [(x1, yl), (LIV[0] + 2.0, yl)], 120, (0.4, 0.8)), ("302", [(xw, yt), (KIT[2] - 3.0, yt)], 120, (0.3, -0.8)),
+        br=[("301", [(x1, yl), (x1, LIV[1] + 1.9)], 120, (-2.0, 0)), ("301", [(x1, yl), (LIV[0] + 2.0, yl)], 120, (0.4, 0.8)), ("302", [(xw, yt), (KIT[2] - 3.0, yt)], 120, (0.3, -0.8)),
             ("305", [(mid(db)[0], yt), (mid(db)[0], BA1[1] + 1.7)], 50, (0, 0.75)), ("303", [(x3, yt), (x3, mid(w3)[1]), (B3[2] - 3.0, mid(w3)[1])], 160, (0, 0.8)),
             ("304", [(x4, yt), (x4, mid(we)[1])], 120, (-1.9, 0))],
         up=[(fa[0], yt, "UP 5 in. to attic bath A\nfloor register, 50 cfm", (0.2, -1.05)), (fb[0], fb[1], "UP 5 in. to attic bath B\nfloor register, 50 cfm", (-0.3, -1.4)),
@@ -233,7 +233,7 @@ def lay6():
     xs, xr, ye = mid(SR)[0], mid(RT)[0], PK[1] - 1.6; x1 = (BY1[2] + PK[0]) / 2
     ck = LineString([(xs + 0.6, ye), (BY2[0], ye)]).intersection(b.geom(fl)["walls"]); ck = min(getattr(ck, "geoms", [ck]), key=lambda q: q.bounds[0]).bounds   # bay 2 west side wall
     cut = b.LV[fl]["cut"][0]; yd = mid(cut)[1]; w3, _a3, b3 = nd(fl, "403"); va, tb = fxin(fl, "van", BAa), fxin(fl, "tub", BAb)
-    ea, eb = (va[2] + 0.45, BAa[1] + 1.4), (BAb[2] - 1.35, tb[3] + 0.7)
+    ea, eb = (va[2] + 0.45, BAa[1] + 1.4), (BAb[0] + 2.9, tb[3] + 0.6)
     return dict(
         trunk=[], main=[([(xs, ye), (x1, ye)], 210)],
         br=[("401", [(x1, ye), (x1, PK[1] + 0.2)], 105, (0, 0.85), False, " knee wall"), ("401", [(x1, ye), (BY1[2] + 0.17, ye)], 105, (-1.6, 0), True, " bay side"),
@@ -347,7 +347,107 @@ def plan(pdf, number, fl):
     b.save(fig, number, pdf)
 
 
-SHEETS = [("M-101", "Lower flat: HVAC plan", lambda pdf: plan(pdf, "M-101", 3)), ("M-102", "Middle flat: HVAC plan", lambda pdf: plan(pdf, "M-102", 4)),
+# ------------------------------------------------------------------------------------------ M-001 notes, legend, schedule, air balance
+TXT = [[("Basis of design: assumptions to confirm", [
+    "Owner's brief: central ducted air with vents, and gas heat. One system per flat.",
+    "Each flat: 96 % sealed-combustion (two-pipe PVC) upflow gas furnace with a cased cooling coil in the flat's mechanical closet (109, 208, 307) and an outdoor condenser. "
+    "Condensers are outside and not drawn: the line-set LS is shown to the nearest outside wall.",
+    "Rule-of-thumb sizes: lower flat about 790 sf: 40,000 Btu/h, 1.5 ton. Middle flat about 870 sf: 40,000 Btu/h, 2 ton. Upper flat (main floor + attic, about 1,450 sf): 60,000 Btu/h, 3 ton; "
+    "its one furnace on the main floor also serves the attic through risers in the old chimney shaft.",
+    "Air: about 1 cfm per sf and 400 cfm per ton; 50 cfm minimum in a bath, 80 to 100 in a bedroom.",
+    "A Manual J load calculation, Manual S equipment selection and Manual D duct design by the HVAC contractor govern over every size on these sheets.",
+    "Design intent, to be confirmed by the licensed trade. Not a code approval: work to the mechanical and fuel gas codes adopted in West Virginia and to the makers' instructions."])],
+    [("What is there today (inspection, 9 Oct 2026)", [
+        "Three gas forced-air furnaces, one per flat, made 1996, 1997 and 2019, with ductwork and ceiling registers in dropped ceilings. No central cooling (window units).",
+        "So the layout drawn is the TARGET. Reuse existing trunks and branches where they are sound and match it; seal the joints, repair the holes and rust the report notes, then re-balance.",
+        "Replace the 1996 and 1997 furnaces. Keep the 2019 furnace if it is sound and suits the load. Which furnace serves which flat: verify.",
+        "The cooling coil and the outdoor condenser are new and optional: price them as an alternate.",
+        "Every new room needs a new branch: baths 106, 206, 403, 404 and the re-planned bedrooms. New closets get one only if Manual J asks for it.",
+        "Upper flat: the furnace and water heater stand today in the west end of room 304. They move to closet 307, where the new trunk starts.",
+        "Old flues (probably metal; the chimney is coming out): remove and patch. New equipment vents in PVC."])],
+    [("Ducts, registers and return", [
+        "Supply: sheet-metal trunk from the furnace plenum along the hall, round branches with a balancing damper each, one register per room near the outside wall or window, two in rooms over about 180 sf.",
+        "Route: in a joist bay where the joists allow, otherwise in a soffit; keep 6'-8\" clear. Joist direction is not known on any level.",
+        "Return: one central filter grille per flat at the mechanical closet (about 2 cfm per sq in.), ducted to the furnace. Bedrooms: transfer grille over the door. Baths: 3/4 in. door undercut. Seal the closet.",
+        "Seal all joints with mastic. Insulate ducts outside the heated space (attic eaves, crawl space) to R-8."]),
+     ("Main risk: low ceilings", [
+         "Lower flat ceilings are 6'-10\" to 7'-6\" and dropped, with the existing ducts above them. No soffit is possible below 7'-0\": ducts there stay in the joist space.",
+         "Middle flat passage and hall are 7'-4\" and 7'-0\"; the upper flat hall is 7'-5\".",
+         "The foundation is stone with a crawl space under part of the house (access door stuck): open it and check it as a duct route for the lower flat."])],
+    [("Exhaust and equipment venting", [
+        "Bath fan, 80 cfm, in every bath, 4 in. duct to a wall cap; attic baths through the roof.",
+        "Range hoods: none today; all three kitchens get one. Ducted where the range backs on an outside wall, otherwise recirculating (see schedule).",
+        "Dryers: 4 in. rigid metal vent to the nearest outside wall; 35 ft maximum less 5 ft per 90-degree elbow.",
+        "Furnace intake + flue and the power-vent water heater flue: PVC to an outside wall, sloped back; caps 12 in. above grade or snow and 4 ft from doors and windows beside them. "
+        "The 2017 to 2022 water heaters are probably natural-draft and cannot vent in PVC: see the P sheets.",
+        "Condensate: 3/4 in. PVC with a trap to a trapped standpipe at the stack or laundry; pump where it cannot fall."]),
+     ("Not known: verify on site", [
+         "Joist direction and depth; what the dropped ceilings hide; size, route and condition of the existing ducts.",
+         "Gas meter and pipe sizes; electrical capacity for condensers (100 A panels today).",
+         "Grade at the lower flat wall caps; attic rafters (cut in places); what is below the lower flat; condenser positions."])]]
+KEYS = [("sup", "Supply trunk or duct, size in inches"), ("reg", "Supply register: cfm, round neck, grille"), ("ret", "RA return grille or duct; TG transfer grille"), ("exh", "Exhaust duct: bath, dryer, hood"),
+        ("EF", "Bath fan 80 cfm; R = roof jack"), ("pvc", "PVC intake + flue pipes, line-set LS"), ("cd", "CD condensate drain, 3/4 in., trapped"), ("UP", "Branch up to an attic floor register"),
+        ("T", "Thermostat, 5 ft above the floor"), ("SR", "SR / RR supply and return riser to attic")]
+
+
+def key(bg, x, y, kind, s):
+    if kind in ("sup", "exh", "ret"):
+        bg.add_patch(Rectangle((x, y - 0.055), 0.34, 0.11, fc={"sup": SUPF, "exh": EXHF, "ret": "white"}[kind], ec=EXH if kind == "exh" else SUP, lw=0.7, hatch="//////" if kind == "ret" else None))
+    elif kind == "reg":
+        bg.add_patch(Rectangle((x + 0.04, y - 0.06), 0.26, 0.12, fc="white", ec=SUP, lw=0.8)); bg.plot([x + .04, x + .3, x + .3, x + .04], [y - .06, y + .06, y - .06, y + .06], color=SUP, lw=0.5)
+    elif kind in ("pvc", "cd"):
+        bg.plot([x, x + 0.34], [y, y], color=PVC, lw=1.0, ls=(0, (5, 1.5, 1, 1.5)) if kind == "pvc" else (0, (1, 1.2)))
+    else:
+        col = EXH if kind == "EF" else INK if kind == "T" else SUP
+        bg.add_patch(plt.Circle((x + 0.17, y), 0.09, fc="white", ec=col, lw=0.8)); bg.text(x + 0.17, y, kind, fontsize=3.8, ha="center", va="center", fontweight="bold", color=col)
+    bg.text(x + 0.45, y, s, fontsize=5.4, color=INK, va="center")
+
+
+def m001(pdf):
+    import textwrap
+    fig, bg, _ = b.bsheet("M-001", "HVAC notes, legend, equipment schedule, air balance", 0, [
+        ("Sheets", ["M-001  Notes, legend, schedule, air balance", "M-101  Lower flat", "M-102  Middle flat", "M-103  Upper flat, main floor", "M-104  Attic (upper flat)"]),
+        ("Read with", ["A sheets: walls, doors, closets, chase.", "P sheets: water heaters, condensate, gas.", "E sheets: furnace and condenser circuits."]),
+        ("Existing (inspection report)", textwrap.wrap(b.EXISTING["heat"].capitalize() + ". Foundation: " + b.EXISTING["foundation"] + ".", 44)), ST], sub="Rear building · all levels")
+    bg.text(0.5, 10.25, "HVAC: NOTES, LEGEND, EQUIPMENT SCHEDULE, AIR BALANCE", fontsize=10, fontweight="bold", color=INK, va="center")
+    for i, col in enumerate(TXT):
+        y = 9.93
+        for head, items in col:
+            y = b.text_block(bg, 0.5 + i * 3.16, y, head, [ln for t in items for ln in textwrap.wrap("- " + t, 66, subsequent_indent="  ")], fs=5.3, lh=0.127) - 0.04
+    bg.text(0.5, 5.6, "AIR BALANCE (from the registers drawn on M-101 to M-104)", fontsize=7, fontweight="bold", color=INK, va="center")
+    ret = {3: "20x20 filter grille, low, closet 109 wall", 4: "20x25 filter grille, passage ceiling", 5: "30x20 hall ceiling + attic 24x10, 14x8"}
+    dvl = {3: "11 ft", 4: "19 ft", 5: "8 ft"}
+    for i, (name, fls, sf, ton, mbh) in enumerate(FLATS):
+        rows, tot, nb = [[name, "sf", "cfm", "Registers"]], 0, 0
+        for fl in fls:
+            D = LAY[fl](); regs = D["br"] + D.get("fr", []); nb += len(D.get("ef", []))
+            for no in dict.fromkeys(q[0] for q in regs):
+                cs = [q[2] for q in regs if q[0] == no]; tot += sum(cs)
+                rows.append([f"{no} {rname(fl, no)}", f"{area(fl, no):.0f}", sum(cs), f"{len(cs)} x {cs[0]} cfm, {rnd(cs[0])} in., {grl(cs[0])}"])
+        fl = fls[0]; hd = "ducted, 6 in." if hood(fl, (0, 0))[1] else "recirculating"
+        rows += [["Supply total", f"{sf:,}", tot, f"target {ton:g} ton x 400 = {ton * 400:.0f} cfm"], ["Return", "", tot, ret[fl]], ["Bath fans", "", f"{nb} x 80", "4 in. duct each, to outside"],
+                 ["Range hood", "", "", f"{hd} ({b.RANGE_FUEL[fl]} range)"], ["Dryer vent", "", "", f"4 in. rigid, about {dvl[fl]} + 2 elbows"]]
+        table(bg, 0.5 + i * 4.22, 5.42, [1.42, 0.4, 0.48, 1.8], rows, fs=5.2, rh=0.155)
+    bg.text(0.5, 2.98, "EQUIPMENT SCHEDULE (sizes to be confirmed by Manual J and S)", fontsize=7, fontweight="bold", color=INK, va="center")
+    eq = [["Tag", "Serves", "Equipment", "Size", "Venting / notes"]]
+    for k, (name, fls, sf, ton, mbh) in enumerate(FLATS):
+        eq.append([f"F-{k + 1}, CC-{k + 1}, CU-{k + 1}", f"{name.split(' (')[0]}, closet {('109', '208', '307')[k]}", "Gas furnace 96 %, sealed combustion, upflow; cased coil; outdoor condenser",
+                   f"{mbh},000 Btu/h; {ton:g} ton; {ton * 400:.0f} cfm", ("2 in. PVC intake + flue out E wall", "2 in. PVC intake + flue out N wall", "2 in. PVC intake + flue out S wall")[k]])
+    eq += [["EF (7)", "Baths 105, 106, 205, 206, 305, 403, 404", "Ceiling bath fan with damper, quiet, timer or humidity control", "80 cfm each", "4 in. duct, wall cap; attic: roof jack"],
+           ["RH (3)", "Kitchens 102, 202, 302", "Range hood, new (none today): 102 recirculating; 202, 302 ducted", "30 in., under 400 cfm", "6 in. duct, wall cap with damper"],
+           ["DV (3)", "Dryers in 108, 209, 308", "4 in. rigid metal dryer vent, cap with damper, no screen", "11 / 19 / 8 ft + 2 elbows", "35 ft max. less 5 ft per elbow"],
+           ["T (3)", "Halls 107, 207, 306", "Programmable heat / cool thermostat, one per flat", "", "5 ft up, away from registers"]]
+    table(bg, 0.5, 2.82, [1.3, 2.3, 4.15, 2.15, 2.7], eq, fs=5.2, rh=0.17)
+    bg.text(0.5, 1.5, "LEGEND", fontsize=7, fontweight="bold", color=INK, va="center")
+    for i, (k, t) in enumerate(KEYS):
+        key(bg, 0.5 + (i % 5) * 2.52, 1.25 - (i // 5) * 0.22, k, t)
+    bg.text(0.5, 0.72, "Duct sizes used, at about 0.08 in. w.c. per 100 ft. Round: 5 in. 60 cfm, 6 in. 110, 7 in. 160, 8 in. 220, 9 in. 290.  Trunk 8 in. deep: 8x8 210 cfm, 10x8 310, 12x8 410, 14x8 510, 16x8 620, 18x8 710, 22x8 910.",
+            fontsize=5.3, color=INK, va="center")
+    b.save(fig, "M-001", pdf)
+
+
+SHEETS = [("M-001", "HVAC notes, legend, equipment schedule, air balance", m001),
+          ("M-101", "Lower flat: HVAC plan", lambda pdf: plan(pdf, "M-101", 3)), ("M-102", "Middle flat: HVAC plan", lambda pdf: plan(pdf, "M-102", 4)),
           ("M-103", "Upper flat main floor: HVAC plan", lambda pdf: plan(pdf, "M-103", 5)), ("M-104", "Attic: HVAC plan", lambda pdf: plan(pdf, "M-104", 6))]
 
 if __name__ == "__main__":
