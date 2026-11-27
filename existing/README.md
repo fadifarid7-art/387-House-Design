@@ -59,7 +59,7 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   lines; then routes every branch, return, exhaust duct and vent on a 3 in. grid through its joist space, square to the walls, without crossing the
   trunk, another duct, the chase, a stair opening, another flat or a panel's space. `src/b390_m.py` draws M-001 notes, equipment and per-fan exhaust
   schedules, M-002 loads (with the extremes check), M-003 the register-by-register schedule, condenser airflow under the rear deck and the chase,
-  M-501 construction details and 3D views of each flat's ducts, M-101 to M-104 plans with every duct drawn to scale and sized.
+  M-201 the condenser bay under the rear deck (side-discharge units: positions, spacing, clear height, airflow check), M-501 construction details and 3D views of each flat's ducts, M-101 to M-104 plans with every duct drawn to scale and sized.
   Result: variable-speed air conditioners, 1.5 ton lower and middle, 2 ton upper; 40,000 Btu/h two-stage furnaces; 14 x 8 in. trunks; the attic
   is fed from the upper flat's main-floor trunk in the attic floor; every dryer is vented (middle flat: 30 ft equivalent to the west wall with
   long-radius elbows). Upper flat: two zones on its one furnace and one condenser (main floor

@@ -14,7 +14,7 @@ INDEX = [("G-001", "Cover: scope, basis of design, sheet index"),
          ("E-101", "Lower flat: power and lighting"), ("E-102", "Middle flat: power and lighting"),
          ("E-103", "Upper flat main floor: power and lighting"), ("E-104", "Attic: power and lighting"),
          ("M-001", "Mechanical notes, equipment and exhaust schedules"), ("M-002", "Heating and cooling loads"),
-         ("M-003", "Air distribution, outdoor units, venting"), ("M-501", "Mechanical details and 3D views"), ("M-101", "Lower flat: HVAC"), ("M-102", "Middle flat: HVAC"), ("M-103", "Upper flat main floor: HVAC"), ("M-104", "Attic: HVAC"),
+         ("M-003", "Air distribution, outdoor units, venting"), ("M-201", "Condenser bay under the rear deck"), ("M-501", "Mechanical details and 3D views"), ("M-101", "Lower flat: HVAC"), ("M-102", "Middle flat: HVAC"), ("M-103", "Upper flat main floor: HVAC"), ("M-104", "Attic: HVAC"),
          ("P-001", "Plumbing and gas notes, fixture schedule, risers"), ("P-101", "Lower flat: plumbing and gas"), ("P-102", "Middle flat: plumbing and gas"),
          ("P-103", "Upper flat main floor: plumbing and gas"), ("P-104", "Attic: plumbing and gas")]
 

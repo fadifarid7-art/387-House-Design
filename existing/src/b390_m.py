@@ -415,7 +415,7 @@ def notes_sheet(pdf):
         rows += [[f"F-{k}", q.FLATS[k]["name"].split(" (")[0], "Gas furnace, condensing 96 % AFUE, direct vent, " + ("modulating" if k in mq.ZONES else "2-stage or modulating") + ", upflow",
                   f"{s['furn'] / 1000:.0f}k Btu/h in, {s['furn'] * .96 / 1000:.1f}k out", f"{s['cfm']} CFM cool", "120 V, 15 A circuit, about 7 A", loc],
                  [f"CC-{k}", "", "Cased cooling coil on top of F-" + k + ", R-454B or R-32 per the condenser", f"{s['tons']:g} ton", "", "", "on F-" + k],
-                 [f"AC-{k}", "", "Air conditioner, variable speed (inverter), 15.2 SEER2 or better", f"{s['tons']:g} ton", "", f"240 V, MCA {mca:g} A, MOCP {mocp} A", "under rear deck: TBD"]]
+                 [f"AC-{k}", "", "Air conditioner, side-discharge (front fan) inverter, 15.2 SEER2 or better", f"{s['tons']:g} ton", "", f"240 V, MCA {mca:g} A, MOCP {mocp} A", "rear deck bay, M-201"]]
     rows += [["EWH-1", "Upper flat stair hall 213", "Electric wall heater with built-in thermostat", "1,000 W", "", "240 V, 4.2 A, panel C", "stair hall 213 wall"],
              ["ZP-C", "Upper flat", "Zone panel, 2 zones, communicating with F-C and AC-C (same maker); F-C modulating", "2 zones", "300 CFM min.", "24 V from F-C", "on F-C"],
              ["MD-1..3", "Upper flat", "Motorized dampers, NORMALLY OPEN (fail open): MD-1 14 x 8 trunk (zone 1); MD-2, MD-3 8 in. round (zone 2)", "", "", "24 V from ZP-C", "mech. 307 ceiling"],
@@ -516,8 +516,7 @@ def loads_sheet(pdf):
 def dist_sheet(pdf):
     notes = [("Air distribution", ["Room CFM from M-002. Registers sized", "for about 500 fpm; branches at about", "0.08 in. per 100 ft. Jump ducts at", "400 fpm or less. Filter returns at",
                                    "300 fpm or less through the filter."]),
-             ("Outdoor units", ["Five condensers in the walled area under", "the rear deck (3 for 390, 2 for 441).", "The airflow check below shows the deck", "must have an open grate over them.",
-                                "Line sets and final layout pending the", "area's size: NOT FINALIZED."])]
+             ("Outdoor units", ["Side-discharge condensers in the bay under", "the rear deck: sheet M-201. Line sets", "wait for the bay's place along the wall:", "NOT FINALIZED."])]
     fig, bg, _ = b.bsheet("M-003", "Air distribution, outdoor units and venting", 0, notes, sub="Rear building · all flats")
     bg.text(.5, 10.25, "AIR DISTRIBUTION SCHEDULE, OUTDOOR UNITS AND VENTING", fontsize=9.5, fontweight="bold", color=INK, va="center")
     y = 9.98; wid = [.42, 1.25, .36, .45, .78, .48, .92, .4]
@@ -547,22 +546,12 @@ def dist_sheet(pdf):
     rows = [["Flat", "Floor sf", "Bedrooms", "Required CFM", "Provided by"]] + [[k, f"{q.AREA[k]:,}", f"{q.FLATS[k]['beds']}", f"{0.03 * q.AREA[k]:.0f} + {7.5 * (q.FLATS[k]['beds'] + 1):.1f} = {SYS[k]['vent']:.0f}",
                                                                               f"{q.FLATS[k]['baths']} bath fans on continuous low, {SYS[k]['vent'] / q.FLATS[k]['baths']:.0f} CFM each"] for k in SYS]
     table(bg, .5, y, [.35, .55, .55, 1.3, 2.4], rows, fs=4.8, rh=.14)
-    # outdoor units: airflow check
+    # outdoor units: see M-201
     x0 = 6.0; yy = 9.98
-    bg.text(x0, yy, "OUTDOOR UNITS UNDER THE REAR DECK: AIRFLOW CHECK", fontsize=6.2, fontweight="bold", color=INK, va="center"); yy -= .14
-    units = [(f"390 AC-{k}", SYS[k]["tons"]) for k in SYS] + [("441 A (not designed yet)", 2.0), ("441 B (not designed yet)", 2.0)]
-    rows = [["Unit", "Ton", "Fan CFM (900/ton)", "Heat out Btu/h (15k/ton)", "Air leaves at"]]
-    for n, t in units: rows.append([n, f"{t:g}", f"{900 * t:,.0f}", f"{15000 * t:,.0f}", f"+{15000 / (1.08 * 900):.0f} F"])
-    tc = sum(900 * t for _n, t in units); th = sum(15000 * t for _n, t in units)
-    rows.append(["Total", f"{sum(t for _n, t in units):g}", f"{tc:,.0f}", f"{th:,.0f}", ""])
-    yy = table(bg, x0, yy, [1.35, .35, .9, 1.2, .65], rows, fs=4.8, rh=.14) - .12
-    chk = [f"Fresh-air opening needed: {tc:,.0f} / 300 fpm = {tc / 300:.0f} sf free (lattice is about half open).",
-           f"Closed U with a solid deck: staying within 3 F of outdoor air needs {th:,.0f} / (1.08 x 3) = {th / 3.24:,.0f} CFM",
-           f"of exchange through one opening: about 5 x the fans. Not possible: the units would overheat.",
-           f"With an open grate over the units: hot air leaves straight up. Grate free area >= {tc:,.0f} / 500 fpm = {tc / 500:.0f} sf",
-           f"(about {tc / 500 / .7:.0f} sf of 70 % open grating, about 4 x 4 ft over each unit). Open end stays open.",
-           "Units: 12 in. from walls, 12-24 in. apart, 3 ft service aisle, 3 ft from dryer and furnace vents."]
-    for t in chk: bg.text(x0, yy, t, fontsize=5.0, color=INK, va="center"); yy -= .13
+    bg.text(x0, yy, "OUTDOOR UNITS", fontsize=6.2, fontweight="bold", color=INK, va="center"); yy -= .16
+    for t in ["Side-discharge (front fan) inverter condensers in a bay dug out under the rebuilt rear deck: positions, spacing,",
+              "clear height 6'-6\", the 5'-0\" keep-clear zone and the airflow check are on M-201. 441 Dallas's two units: same spacing."]:
+        bg.text(x0, yy, t, fontsize=5.0, color=INK, va="center"); yy -= .13
     yy -= .08
     bg.text(x0, yy, TBD, fontsize=5.0, color=LS, va="center", fontweight="bold"); yy -= .22
     rows = [["Line set", "Liquid", "Suction (insulated)", "Route", "Length"]] + [[f"LS-{k}", mq.LINESET[SYS[k]['tons']][0], mq.LINESET[SYS[k]['tons']][1], "coil, chase, lower flat ceiling, out to the deck", "TBD"] for k in SYS]
@@ -727,8 +716,161 @@ def iso(bg, k, fls, cx, y0):
     bg.text(cx, y0 - .17, "thick purple: trunk · thin purple: branch down to a wall register (box) · blue dashed: return", fontsize=4.4, color=GREY, ha="center", va="center")
 
 
+# ---------------------------------------------------------------------------------------------- M-201: the condenser bay under the rear deck
+BAY = dict(W=3.5, H=40 / 12, D=1.5, pad=.25, rear=1.0, gap=2.0, end=1.5, disc=3.0, front=5.0, clear=6.5)   # ft: unit envelope, clearances
+UNIT_FAN = {1.5: 1800, 2.0: 2100, 2.5: 2400}                       # side-discharge inverter units: fan CFM, typical (check the unit bought)
+UNIT_HEAT = {1.5: 23000, 2.0: 30000, 2.5: 37000}                    # heat thrown out at full load, Btu/h (cooling + compressor)
+
+
+def bay_units():
+    return [(f"AC-{k}", k, SYS[k]["tons"]) for k in SYS]
+
+
+def cond_sheet(pdf):
+    B = BAY; U = bay_units(); n = len(U)
+    L = B["end"] + n * B["W"] + (n - 1) * B["gap"] + B["disc"]; Dp = B["rear"] + B["D"] + B["front"]
+    notes = [("This sheet", ["Where the three condensers go under the", "rebuilt rear deck, how far apart, and how", "they breathe. Sizes are the minimum: a", "bigger bay is fine, a smaller one is not."]),
+             ("Units", ["Side-discharge (front fan) inverter", "condensers only: they blow out the", "front, so the deck over them is fine.", "Top-discharge units need 5 ft clear", "above and do not fit here."]),
+             ("Confirm", ["Where the bay sits along the wall, clear", "of the lower flat's entrance and its", "landing; the deck's new framing height."])]
+    fig, bg, _ = b.bsheet("M-201", "Condenser bay under the rear deck", 0, notes, sub="Rear building · outside, south wall")
+    bg.text(.5, 10.25, "CONDENSER BAY UNDER THE REAR DECK: POSITIONS, SPACING AND AIRFLOW", fontsize=9.5, fontweight="bold", color=INK, va="center")
+    sc = .33
+    # ---------------- plan
+    x0, y0 = 1.6, 5.85; T = lambda u, v: (x0 + u * sc, y0 + v * sc)
+    bg.text(.5, 9.95, "1  PLAN", fontsize=6.4, fontweight="bold", color=INK, va="center")
+    def R(u0, v0, u1, v1, **kw):
+        (a_, b_), (c_, d_) = T(u0, v0), T(u1, v1); bg.add_patch(Rectangle((min(a_, c_), min(b_, d_)), abs(c_ - a_), abs(d_ - b_), **kw))
+    R(-1.0, -1.0, L + 1.0, 0, fc="#c9ced4", ec="#4a4f57", lw=.5)                                   # house wall (lower flat, south)
+    x_, y_ = T(L / 2, -.5); bg.text(x_, y_, "HOUSE WALL (lower flat, south side)", fontsize=4.8, color=INK, ha="center", va="center", fontweight="bold")
+    R(-1.0, 0, 0, Dp, fc="#e1e4e8", ec="#4a4f57", lw=.5); R(L, 0, L + 1.0, Dp, fc="#e1e4e8", ec="#4a4f57", lw=.5)   # side walls of the dug-out U
+    R(0, B["rear"] + B["D"], L, Dp, fc="#eef7ee", ec="#5b8c5b", lw=.5, ls=(0, (3, 2)))            # keep-clear zone in front of the fans
+    x_, y_ = T(L / 2, Dp - .7); bg.text(x_, y_, f"KEEP CLEAR {B['front']:.0f}'-0\": hot air out. No lattice, posts, bikes or storage.", fontsize=4.6, color="#2e6b2e", ha="center", va="center")
+    x_, y_ = T(L / 2, Dp + .55); bg.text(x_, y_, "OPEN SIDE: stays fully open to the yard", fontsize=5.0, color=INK, ha="center", va="center", fontweight="bold")
+    xs = []
+    u = B["end"]
+    for tag, k, t in U:
+        R(u, B["rear"], u + B["W"], B["rear"] + B["D"], fc="white", ec=SUP, lw=.9)
+        fx, fy = T(u + B["W"] * .55, B["rear"] + B["D"]); bg.add_patch(Circle((fx, fy), .45 * sc * 1.0, fc="white", ec=SUP, lw=.6))
+        cx, cy = T(u + B["W"] / 2, B["rear"] + B["D"] / 2); bg.text(cx, cy, f"{tag}  {t:g} ton", fontsize=4.8, color=SUP, ha="center", va="center", fontweight="bold")
+        for k_ in (.3, .55, .8):                                                                   # hot air out the front
+            a_ = T(u + B["W"] * k_, B["rear"] + B["D"] + .15); b_ = T(u + B["W"] * k_, B["rear"] + B["D"] + 2.6)
+            bg.annotate("", xy=b_, xytext=a_, arrowprops=dict(arrowstyle="-|>,head_length=0.3,head_width=0.15", color="#c2570c", lw=.7))
+        a_ = T(u - .7, B["rear"] + B["D"] + 1.6); b_ = T(u - .7, B["rear"] - .4)                  # fresh air in round the end, to the coil at the back
+        bg.annotate("", xy=b_, xytext=a_, arrowprops=dict(arrowstyle="-|>,head_length=0.3,head_width=0.15", color=RET, lw=.7))
+        R(u + B["W"] - .5, 0, u + B["W"] - .2, B["rear"] * .9, fc="#fbe3e1", ec=LS, lw=.5)          # line set cover up the wall
+        xs.append(u); u += B["W"] + B["gap"]
+    du = L - B["disc"]
+    R(du, 0, L, 3.0, fc="none", ec=INK, lw=.5, ls=(0, (2, 1.5)))                                # working space at the disconnects
+    for i in range(n):
+        R(du + .5 + i * .75, 0, du + .5 + i * .75 + .45, .25, fc="#3a3f47", ec=INK, lw=.4)
+    R(du + 2.55, 0, du + 2.85, .2, fc="white", ec=INK, lw=.5)
+    x_, y_ = T(du + B["disc"] / 2, 1.75); bg.text(x_, y_, "Disconnects D-A, D-B, D-C\nGFCI receptacle, light\nworking space 3'-0\" x 3'-0\"", fontsize=4.2, color=INK, ha="center", va="center", linespacing=1.15)
+    # dimension strings
+    def dimh(u0, u1, v, txt):
+        (a_, yy), (c_, _) = T(u0, v), T(u1, v); bg.plot([a_, c_], [yy, yy], color=INK, lw=.4)
+        for xx in (a_, c_): bg.plot([xx, xx], [yy - .04, yy + .04], color=INK, lw=.4)
+        bg.text((a_ + c_) / 2, yy + .07, txt, fontsize=4.4, color=INK, ha="center", va="center")
+    def dimv(v0, v1, u, txt):
+        (xx, a_), (_, c_) = T(u, v0), T(u, v1); bg.plot([xx, xx], [a_, c_], color=INK, lw=.4)
+        for yy in (a_, c_): bg.plot([xx - .04, xx + .04], [yy, yy], color=INK, lw=.4)
+        bg.text(xx - .06, (a_ + c_) / 2, txt, fontsize=4.4, color=INK, ha="right", va="center")
+    ft = lambda v: f"{int(v)}'-{round((v - int(v)) * 12)}\""
+    vv = Dp + 1.25; parts = [(0, B["end"])] + sum([[(x, x + B["W"])] + ([(x + B["W"], x + B["W"] + B["gap"])] if i < n - 1 else []) for i, x in enumerate(xs)], []) + [(du, L)]
+    for a_, c_ in parts: dimh(a_, c_, vv, ft(c_ - a_))
+    dimh(0, L, vv + .85, ft(L) + " minimum inside length")
+    dimv(0, B["rear"], -1.4, ft(B["rear"])); dimv(B["rear"], B["rear"] + B["D"], -1.4, ft(B["D"])); dimv(B["rear"] + B["D"], Dp, -1.4, ft(B["front"]))
+    (xx_, a_), (_, c_) = T(L + 1.6, 0), T(L + 1.6, Dp); bg.plot([xx_, xx_], [a_, c_], color=INK, lw=.4)
+    for yy_ in (a_, c_): bg.plot([xx_ - .04, xx_ + .04], [yy_, yy_], color=INK, lw=.4)
+    bg.text(xx_ + .06, (a_ + c_) / 2, ft(Dp) + "\nminimum\ndepth", fontsize=4.4, color=INK, ha="left", va="center")
+    # ---------------- front elevation
+    x0, y0 = 1.6, 1.0; T2 = lambda u, z: (x0 + u * sc, y0 + z * sc)
+    bg.text(.5, 4.2, "2  ELEVATION, LOOKING AT THE HOUSE WALL FROM THE OPEN SIDE", fontsize=6.4, fontweight="bold", color=INK, va="center")
+    def R2(u0, z0, u1, z1, **kw):
+        (a_, b_), (c_, d_) = T2(u0, z0), T2(u1, z1); bg.add_patch(Rectangle((a_, b_), c_ - a_, d_ - b_, **kw))
+    R2(-1, 0, L + 1, 7.5, fc="#f1f2f4", ec="#9aa1a9", lw=.4)                                        # house wall behind
+    R2(-1, -.35, L + 1, 0, fc="#d8d2c4", ec="#8a7f68", lw=.4)                                        # gravel
+    R2(-1, B["clear"], L + 1, B["clear"] + .8, fc="#f1e7d6", ec="#8a6a3a", lw=.5)                    # deck framing
+    R2(-1, B["clear"] + .8, L + 1, B["clear"] + 1.0, fc="#d9c7a7", ec="#8a6a3a", lw=.4)
+    x_, y_ = T2(L / 2, B["clear"] + .4); bg.text(x_, y_, "NEW DECK FRAMING: underside at least 6'-6\" above the gravel over the whole bay", fontsize=4.6, color=INK, ha="center", va="center")
+    for tag, k, t in U:
+        pass
+    for x_u, (tag, k, t) in zip(xs, U):
+        R2(x_u - .1, 0, x_u + B["W"] + .1, B["pad"], fc="#bfc4ca", ec="#6b7480", lw=.4)
+        R2(x_u, B["pad"], x_u + B["W"], B["pad"] + B["H"], fc="white", ec=SUP, lw=.9)
+        fx, fz = T2(x_u + B["W"] * .55, B["pad"] + B["H"] * .52); bg.add_patch(Circle((fx, fz), 1.15 * sc, fc="white", ec=SUP, lw=.6))
+        for ang in range(0, 180, 30):
+            r_ = 1.15 * sc; bg.plot([fx - r_ * math.cos(math.radians(ang)), fx + r_ * math.cos(math.radians(ang))], [fz - r_ * math.sin(math.radians(ang)), fz + r_ * math.sin(math.radians(ang))], color=SUP, lw=.25)
+        cx, cz = T2(x_u + B["W"] * .5, B["pad"] + B["H"] + .3); bg.text(cx, cz, tag, fontsize=4.8, color=SUP, ha="center", va="center", fontweight="bold")
+        R2(x_u + B["W"] - .45, B["pad"] + B["H"], x_u + B["W"] - .15, B["clear"] - .2, fc="#fbe3e1", ec=LS, lw=.5)
+    for i in range(n): R2(du + .5 + i * .75, 4.0, du + .5 + i * .75 + .45, 5.0, fc="#3a3f47", ec=INK, lw=.4)
+    R2(du + 2.55, 2.0, du + 2.85, 2.45, fc="white", ec=INK, lw=.5)
+    def dimz(z0, z1, u, txt, ha="right"):
+        (xx, a_), (_, c_) = T2(u, z0), T2(u, z1); bg.plot([xx, xx], [a_, c_], color=INK, lw=.4)
+        for yy in (a_, c_): bg.plot([xx - .04, xx + .04], [yy, yy], color=INK, lw=.4)
+        bg.text(xx + (-.06 if ha == "right" else .06), (a_ + c_) / 2, txt, fontsize=4.4, color=INK, ha=ha, va="center")
+    dimz(0, B["clear"], -1.5, "6'-6\" min.\nclear height")
+    dimz(B["pad"] + B["H"], B["clear"], xs[0] + 1.0, "2'-10\" over\nthe units", ha="left")
+    dimz(0, B["pad"] + B["H"], xs[0] - .5, "3'-7\"")
+    x_, y_ = T2(du + B["disc"] / 2, 5.5); bg.text(x_, y_, "D-A  D-B  D-C", fontsize=4.2, color=INK, ha="center", va="center")
+    x_, y_ = T2(xs[1] + B["W"] - .1, B["clear"] - .65); bg.text(x_ + .06, y_, "line set cover up the wall\nto its sleeve", fontsize=4.2, color=LS, ha="left", va="center", linespacing=1.1)
+    # ---------------- section
+    x0, y0 = 9.75, 6.1; T3 = lambda v, z: (x0 + v * .3, y0 + z * .3)
+    bg.text(9.3, 9.95, "3  SECTION THROUGH ONE UNIT: HOW IT BREATHES", fontsize=6.4, fontweight="bold", color=INK, va="center")
+    def R3(v0, z0, v1, z1, **kw):
+        (a_, b_), (c_, d_) = T3(v0, z0), T3(v1, z1); bg.add_patch(Rectangle((a_, b_), c_ - a_, d_ - b_, **kw))
+    R3(-1.0, -.35, 0, 9.0, fc="#c9ced4", ec="#4a4f57", lw=.5)
+    R3(0, -.35, Dp + 1.5, 0, fc="#d8d2c4", ec="#8a7f68", lw=.4)
+    R3(0, B["clear"], Dp + .6, B["clear"] + .8, fc="#f1e7d6", ec="#8a6a3a", lw=.5); R3(0, B["clear"] + .8, Dp + .6, B["clear"] + 1.0, fc="#d9c7a7", ec="#8a6a3a", lw=.4)
+    R3(B["rear"] - .05, 0, B["rear"] + B["D"] + .05, B["pad"], fc="#bfc4ca", ec="#6b7480", lw=.4)
+    R3(B["rear"], B["pad"], B["rear"] + B["D"], B["pad"] + B["H"], fc="white", ec=SUP, lw=.9)
+    R3(B["rear"], B["pad"] + .3, B["rear"] + .15, B["pad"] + B["H"] - .3, fc="#d7e6f5", ec=RET, lw=.4)     # coil at the back
+    def arr(p, q_, col, lw=.8):
+        bg.annotate("", xy=T3(*q_), xytext=T3(*p), arrowprops=dict(arrowstyle="-|>,head_length=0.35,head_width=0.18", color=col, lw=lw))
+    arr((Dp + 1.2, 5.3), (B["rear"] + B["D"] + .3, 5.3), RET); arr((B["rear"] + B["D"] + .1, 5.3), (B["rear"] * .5, 5.0), RET); arr((B["rear"] * .5, 4.6), (B["rear"] * .5, 2.4), RET)
+    arr((B["rear"] + B["D"] + .1, 2.0), (Dp + 1.3, 2.0), "#c2570c", 1.1)
+    def lab(v, z, t, col=INK, ha="left"):
+        x_, y_ = T3(v, z); bg.text(x_, y_, t, fontsize=4.5, color=col, ha=ha, va="center", linespacing=1.15)
+    lab(Dp - .9, 5.75, "fresh air in, over the units", RET); lab(Dp - .9, 1.55, f"hot air out the front (+12 F)", "#c2570c")
+    lab(.15, 7.05, "deck: solid boards fine over side-discharge units")
+    lab(B["rear"] + B["D"] + .2, B["pad"] + B["H"] + .25, "2'-10\" min.")
+    lab(-.95, -.9, "gravel 4 in. on fabric, sloped 1/4 in. per ft away\nfrom the house to a drain at the open side", GREY)
+    lab(.05, B["pad"] + B["H"] / 2, "coil", RET)
+    lab(Dp + .7, 8.2, "OPEN SIDE", INK)
+    (xa, za), (_, zb) = T3(Dp + .9, 0), T3(Dp + .9, B["clear"]); bg.plot([xa, xa], [za, zb], color=INK, lw=.4); bg.text(xa + .05, (za + zb) / 2, "6'-6\"\nmin.", fontsize=4.4, color=INK, va="center")
+    # ---------------- airflow check and rules
+    xx = 9.0; yy = 5.0
+    bg.text(xx, yy, "4  AIRFLOW CHECK: MORE THAN ENOUGH BREATHING AIR", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .16
+    rows = [["Unit", "Flat", "Ton", "Fan CFM (typ.)", "Heat out Btu/h", "Air out at"]]
+    tc = th = 0
+    for tag, k, t in U:
+        cfm = UNIT_FAN[t]; ht = UNIT_HEAT[t]; tc += cfm; th += ht
+        rows.append([tag, q.FLATS[k]["name"].split(" (")[0], f"{t:g}", f"{cfm:,}", f"{ht:,}", f"+{ht / (1.08 * cfm):.0f} F"])
+    rows.append(["Total", "", f"{sum(t for _a, _b, t in U):g}", f"{tc:,}", f"{th:,}", ""])
+    yy = table(bg, xx, yy, [.55, .95, .35, .6, .85, .6], rows, fs=4.8, rh=.14) - .12
+    area = L * B["clear"]
+    for t in [f"Open side {ft(L)} x 6'-6\" = {area:.0f} sf. Air goes out and comes back in through it,",
+              f"half each way: {tc:,} CFM / {area / 2:.0f} sf = {tc / (area / 2):.0f} fpm, a light breeze. Needed at 300 fpm:",
+              f"{tc * 2 / 300:.0f} sf; the bay has {area / (tc * 2 / 300):.1f} x that. If a fifth of the hot air came back in, the coils",
+              f"would see about +{.2 * th / (1.08 * tc):.1f} F: under 3 % capacity. Units 2'-0\" apart are fed from the ends and top."]:
+        bg.text(xx, yy, t, fontsize=4.9, color=INK, va="center"); yy -= .13
+    yy -= .12
+    bg.text(xx, yy, "5  RULES FOR THE BAY", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .16
+    rules = ["Side-discharge (front fan) inverter units, up to 42 x 40 x 18 in. each; 3 in. pads on the gravel; strap for wind if the maker says.",
+             "Clear height 6'-6\" from gravel to the deck framing over the whole bay (working space at the disconnects); posts at the corners only.",
+             "12 in. from the house wall, 2'-0\" between units, 5'-0\" kept clear in front of every fan; the open side never closed in.",
+             "Disconnects within sight of each unit, 3'-0\" x 3'-0\" clear in front; GFCI weatherproof receptacle and a light in the bay (E sheets).",
+             "No dryer, bath or hood caps and no furnace vents into the bay; drain the pit so the pads never stand in water.",
+             "Line sets in a cover up the wall to one sealed sleeve per unit, then through the lower flat ceiling to the chase: NOT FINALIZED.",
+             "441 Dallas's two units: same spacing; in this same bay only if it is 11'-0\" longer."]
+    for i, t in enumerate(rules):
+        for j_, ln in enumerate(b.wrap(t, 86)): bg.text(xx + (.15 if j_ else 0), yy - j_ * .12, (f"{i + 1}  " if not j_ else "") + ln, fontsize=4.9, color=INK, va="center")
+        yy -= .12 * len(b.wrap(t, 86)) + .03
+    bad = b.clarity(fig, None, None, bg); print("M-201 text clashes:", len(bad)); [print("   ", m_) for m_ in bad[:10]]
+    b.save(fig, "M-201", pdf)
+
+
 SHEETS = [("M-001", "Mechanical notes and schedules", notes_sheet), ("M-002", "Heating and cooling loads", loads_sheet),
-          ("M-003", "Air distribution, outdoor units and venting", dist_sheet), ("M-501", "Mechanical details and 3D views", details_sheet)] + [
+          ("M-003", "Air distribution, outdoor units and venting", dist_sheet), ("M-201", "Condenser bay under the rear deck", cond_sheet), ("M-501", "Mechanical details and 3D views", details_sheet)] + [
           (n, t, (lambda fl_, n_: (lambda pdf: plan_sheet(pdf, n_, fl_)))(fl, n)) for n, t, fl in
           (("M-101", "Lower flat: HVAC plan", 3), ("M-102", "Middle flat: HVAC plan", 4), ("M-103", "Upper flat main floor: HVAC plan", 5), ("M-104", "Attic: HVAC plan", 6))]
 
