@@ -14,7 +14,7 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   `src/make_build390.py` from the plan model in `src/build390.py` and the trade modules `src/b390_*.py`. It supersedes the
   earlier before/after and proposed sets.
 - `drawings/390-Forest_A-101_Lower-flat_Rev6.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev6.pdf`,
-  `drawings/390-Forest_A-103_Upper-flat_Rev3.pdf`: the lower flat, middle flat and upper flat main floor plans as they stand in the
+  `drawings/390-Forest_A-103_Upper-flat_Rev4.pdf`: the lower flat, middle flat and upper flat main floor plans as they stand in the
   floor-by-floor review (newer than the A-101 to A-103 inside the builder set; the attic follows, and the trade sheets are redrawn once the
   four floor plans are agreed). Every floor-plan sheet is checked when it is built (`clarity()` in `src/build390.py`): no label may sit on
   another label, a fixture, furniture, a door swing, a wall, the dashed outline of a removed wall or a dimension line, and nothing may run
@@ -25,7 +25,9 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   are 7 to 12 in. thick). Inside width is 26'-10" on both sides of the flat and the outside walls are straight, as the aerial photo shows.
   Lower flat checked the same way: its phone-scan plan agrees with the 3D scan to about 4 in. in every room checked, so A-101 was left as
   drawn.
-  Upper flat main floor (rev 3): the whole floor is drawn from the 3D scan. Found: hall 3'-4" wide, bath 5'-7" x 9'-4", Room B (bedroom 4)
+  Upper flat main floor: the whole floor is drawn from the 3D scan (rev 3). Rev 4 (owner's request): the centre wall between the kitchen and
+  the living room comes out for an open plan (new beam and posts, to be engineered), the panel moves to the living room wall, and the coat
+  closet joins bedroom 3's closet. Found: hall 3'-4" wide, bath 5'-7" x 9'-4", Room B (bedroom 4)
   7'-1" x 13'-4", a thick wall between the bath and the stairs, a closed box in the kitchen corner that sits over the boxed-out section in
   the middle flat's bedroom 1 (most likely a drain stack or old flue), and the real stairs: the stair from the entrance arrives heading
   south, and the attic stair is 5 risers, a landing 3'-7" up, then 8 risers passing back over the stair down.
