@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 *.tmp
+
+# scratch test PDFs written by the sheet modules
+existing/drawings/_test_*.pdf
+existing/drawings/_a_test.pdf
