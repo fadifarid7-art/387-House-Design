@@ -1,461 +1,519 @@
-"""390 Forest Ave builder set: HVAC sheets M-001 and M-101 to M-104 (gut renovation: all HVAC is new).
-One gas furnace + cooling coil + outdoor condenser per flat, sheet-metal supply trunk with round branches to a register per
-room, one central filter return, bath / range / dryer exhaust and PVC equipment venting. Positions are read from build390.LV
-(rooms, fixtures, doors) and the scan geometry; sizes are rule of thumb. Design intent only: Manual J/S/D by the HVAC
-contractor governs. Compass: x runs north, y runs west, so on the sheets north is to the right and west is up."""
+"""390 Forest Ave builder set: mechanical (HVAC). Sheets M-001 (notes, equipment and fan schedules), M-002 (heating and cooling loads),
+M-003 (air distribution schedule, outdoor units, venting) and M-101 to M-104 (duct plans). Gut renovation: all HVAC is new.
+
+One direct-vent gas furnace with a cased cooling coil and an outdoor condenser per flat. Supply trunk in the ceiling framing, round
+branches to a register per room, one central filter return per flat (plus an attic return for the upper flat), jump ducts from the
+bedrooms, bath fans for exhaust and continuous ventilation, dryer and range-hood exhaust, PVC venting up the old chimney chase.
+Loads and airflows: b390_mq.py. Line sets to the condensers are NOT final: the condensers' place under the rear deck is pending."""
+import math
 import os
 import sys
+from functools import lru_cache
+
+import numpy as np
+from matplotlib.patches import Circle, FancyArrowPatch, Polygon as MPoly, Rectangle
+from matplotlib.patheffects import withStroke
+from shapely.geometry import LineString, Point, Polygon, box
+from shapely.ops import nearest_points, unary_union
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import numpy as np  # noqa: E402
-from matplotlib.patches import Rectangle  # noqa: E402
-from shapely.geometry import LineString, Point, Polygon, box  # noqa: E402
-from shapely.ops import unary_union  # noqa: E402
-
 import build390 as b  # noqa: E402
-from common import INK, GREY, table, plt  # noqa: E402
+import b390_eq as q  # noqa: E402
+import b390_mq as mq  # noqa: E402
+import b390_e as e  # noqa: E402
+import b390_mr as mr  # noqa: E402
+from common import INK, GREY, table  # noqa: E402
 
-SUP, SUPF, EXH, EXHF, PVC = b.MECHC, "#eadcf3", "#c2570c", "#fbe3cf", "#0b7a75"   # supply/return purple, exhaust orange, pipes teal
-FS = 3.5
-FLATS = [("Lower flat", (3,), 790, 1.5, 40), ("Middle flat", (4,), 870, 2.0, 40), ("Upper flat (main floor + attic)", (5, 6), 1450, 3.0, 60)]
+SUP, SUPF, RET, EXH, PVC, LS = "#6a2c91", "#eadcf3", "#2f6fa8", "#c2570c", "#0b7a75", "#b3261e"
+HALO = [withStroke(linewidth=1.4, foreground="white")]
+FLAT_LEV = {3: "A", 4: "B", 5: "C", 6: "C"}
+SYS = {k: mq.system(k) for k in mq.SYSTEMS}
+LINESETS_FINAL = False
+TBD = "LINE SETS NOT FINALIZED: condensers go under the rear deck (size of the walled area under it pending). Route and lengths to be set then."
 
-
-# ------------------------------------------------------------------------------------------ sizing (rule of thumb, 0.08 in. w.c. / 100 ft)
-def rnd(c): return next(d for cap, d in ((35, 4), (60, 5), (110, 6), (160, 7), (220, 8), (290, 9), (390, 10), (620, 12)) if c <= cap)
-def rct(c): return next(w for cap, w in ((210, 8), (310, 10), (410, 12), (510, 14), (620, 16), (710, 18), (810, 20), (910, 22), (1300, 24)) if c <= cap)
-def grl(c): return "8x4" if c <= 60 else "10x4" if c <= 110 else "12x6" if c <= 150 else "14x6"
-
-
-# ------------------------------------------------------------------------------------------ plan model look-ups
-def rr(fl, no, i=0): return next(r for r in b.LV[fl]["rooms"] if r["no"] == no)["rects"][i]
-def rname(fl, no): return next(r for r in b.LV[fl]["rooms"] if r["no"] == no)["name"]
-def area(fl, no): return sum((r[2] - r[0]) * (r[3] - r[1]) for r in next(r for r in b.LV[fl]["rooms"] if r["no"] == no)["rects"])
-def fx(fl, k): return next(f for f in b.LV[fl]["fx"] if f[0] == k)[1:5]
-def hb(fl, no):
-    """Corridor box of a hall: its rectangles that share the far wall of the first one, taken together."""
-    rs = next(r for r in b.LV[fl]["rooms"] if r["no"] == no)["rects"]; k = [r for r in rs if abs(r[3] - rs[0][3]) < 0.05]
-    return (min(r[0] for r in k), max(r[1] for r in k), max(r[2] for r in k), rs[0][3])
+TBD_SHORT = "Line sets NOT FINALIZED"
 
 
-def mid(r): return ((r[0] + r[2]) / 2, (r[1] + r[3]) / 2)
-def nd(fl, tag): d = next(d for d in b.LV[fl]["doors"] if d[0] == tag); return d[2], d[3], d[4]      # new door: wall line, start, end
-def stack(fl): return b.STACK if fl != 3 else (17.68, 8.9)
+def room_rec(fl, no):
+    for k in SYS:
+        for x in SYS[k]["rooms"]:
+            if x["fl"] == fl and x["r"]["no"] == no: return x, k
+    return None, None
 
 
-def fxin(fl, k, r):
-    """Tub or vanity of kind k that sits in room rectangle r."""
-    return next(f[1:5] for f in b.LV[fl]["fx"] if f[0] == k and r[0] - .3 < (f[1] + f[3]) / 2 < r[2] + .3 and r[1] - .3 < (f[2] + f[4]) / 2 < r[3] + .3)
+# ---------------------------------------------------------------------------------------------- drawing
+def poly(ax, pts, **kw):
+    ax.plot([p[0] for p in pts], [p[1] for p in pts], **kw)
 
 
-def bbx(o): p = np.array(o["pts"]); return (p[:, 0].min(), p[:, 1].min(), p[:, 0].max(), p[:, 1].max())
-def near(fl, key, r): return min((bbx(o) for o in b.geom(fl)[key] if len(o["pts"]) >= 4), key=lambda q: box(*q).distance(box(*r)))
+def patch(ax, shp, **kw):
+    for P in (shp.geoms if hasattr(shp, "geoms") else [shp]):
+        if P.is_empty: continue
+        ax.add_patch(MPoly(np.array(P.exterior.coords), closed=True, **kw))
 
 
-def wn(fl, r, side):
-    """Windows on one side of room rectangle r. Compass: x runs north, y runs west (N = +x, S = -x, W = +y, E = -y)."""
-    out = []
-    for o in b.geom(fl)["windows"]:
-        q = bbx(o); cx, cy = mid(q)
-        if box(*q).distance(box(*r)) < 0.8 and {"W": cy > r[3] - .2, "E": cy < r[1] + .2, "N": cx > r[2] - .2, "S": cx < r[0] + .2}[side]:
-            out.append(q)
-    return sorted(out)
+class Placer:
+    """Puts labels and keynote diamonds where they touch nothing: walls, fixtures, door swings, windows, stairs, any duct or
+    symbol, other text. Measures the real text with the renderer."""
+    def __init__(self, fig, ax, fl, block):
+        self.fig, self.ax, self.fl = fig, ax, fl
+        fig.canvas.draw(); self.r = fig.canvas.get_renderer(); self.inv = ax.transData.inverted()
+        obs = [o[0] for o in b.obstacles(fl) if o[2] != "tub" or True]
+        self.hard = unary_union(obs + block)
+        self.soft = []                                            # labels and diamonds placed so far
+        for t in ax.texts:
+            if t.get_text().strip(): self.soft.append(self.bbox(t))
+        self.leaders = []
+
+    def bbox(self, t, pad=1.2):
+        bb = t.get_window_extent(self.r); (u0, v0), (u1, v1) = self.inv.transform((bb.x0 - pad, bb.y0 - pad)), self.inv.transform((bb.x1 + pad, bb.y1 + pad))
+        return box(min(u0, u1), min(v0, v1), max(u0, u1), max(v0, v1))
+
+    def ok(self, shp):
+        return not shp.intersects(self.hard) and not any(shp.intersects(o) for o in self.soft) and not any(shp.intersects(l_) for l_ in self.leaders)
+
+    def label(self, p, txt, col, r0=.6, fs=3.5, rmax=4.0, z=14):
+        x, y = p; t = self.ax.text(x, y, txt, fontsize=fs, color=col, ha="center", va="center", fontweight="bold", zorder=z, path_effects=HALO)
+        for r_ in np.arange(r0, rmax, .2):
+            for ang in range(0, 360, 15):
+                cx, cy = x + r_ * math.cos(math.radians(ang)), y + r_ * math.sin(math.radians(ang))
+                t.set_position((cx, cy)); bb = self.bbox(t)
+                if self.ok(bb):
+                    self.soft.append(bb); return (cx, cy)
+        t.set_position((x, y + r0)); self.soft.append(self.bbox(t)); return None
+
+    def room_label(self, r, txt):
+        x0, y0, x1, y1 = max(r["rects"], key=lambda qq: (qq[2] - qq[0]) * (qq[3] - qq[1])); R = mr.room_shape(r)
+        t = self.ax.text(0, 0, txt, fontsize=3.6, color="#7a818a", ha="center", va="center", zorder=11, fontweight="bold")
+        lab = r.get("lab") or ((x0 + x1) / 2, (y0 + y1) / 2); best = None
+        for qq in r["rects"]:
+            for cx in np.arange(qq[0] + .3, qq[2] - .3, .25):
+                for cy in np.arange(qq[1] + .3, qq[3] - .3, .25):
+                    d = math.dist((cx, cy), lab)
+                    if best is not None and d >= best[0]: continue
+                    t.set_position((cx, cy)); bb = self.bbox(t)
+                    if R.contains(bb) and self.ok(bb): best = (d, (cx, cy), bb)
+        if best is None:
+            t.remove(); return False
+        t.set_position(best[1]); self.soft.append(best[2]); return True
+
+    def keynote(self, n, anchor, pref=None, col=None, reach=7.0, need_leader=True):
+        """Diamond at the clear spot nearest pref (or the anchor); leader to the anchor."""
+        shape = anchor if hasattr(anchor, "geom_type") else None
+        if shape is not None: anchor = (shape.centroid.x, shape.centroid.y)
+        px, py = pref or anchor; best = None
+        for r_ in np.arange(0.0 if pref else 0.9, reach, .2):
+            for ang in range(0, 360, 12 if r_ else 360):
+                cx, cy = px + r_ * math.cos(math.radians(ang)), py + r_ * math.sin(math.radians(ang))
+                D = Polygon([(cx - .62, cy), (cx, cy + .62), (cx + .62, cy), (cx, cy - .62)])
+                if not self.ok(D): continue
+                if shape is not None:                            # leader to the edge of the thing, clear of its own lettering
+                    bp = nearest_points(shape.exterior, Point(cx, cy))[0]; anchor = (bp.x, bp.y)
+                if anchor is not None and math.dist((cx, cy), anchor) > .8:
+                    dd = math.dist((cx, cy), anchor); f_ = max(0.0, (dd - .5) / dd)
+                    ld = LineString([(cx, cy), (cx + (anchor[0] - cx) * f_, cy + (anchor[1] - cy) * f_)]); ldb = ld.buffer(.05)
+                    if any(ldb.intersects(o) for o in self.soft): continue
+                best = (cx, cy, D); break
+            if best: break
+        if best is None: return None
+        cx, cy, D = best
+        to = anchor if anchor is not None and math.dist((cx, cy), anchor) > .8 else None
+        b.keynote(self.ax, n, cx, cy, col=col or SUP, to=to)
+        self.soft.append(D.buffer(.05))
+        if to: self.leaders.append(LineString([(cx, cy), to]).buffer(.04)); self.ax._leaders = getattr(self.ax, "_leaders", []) + [(n, (cx, cy), to)]
+        return (cx, cy)
 
 
-_FOOT = {}
-
-
-def foot(fl):
-    """Floor area of the level (scan room outlines, grown to the wall centres)."""
-    if fl not in _FOOT:
-        _FOOT[fl] = unary_union([Polygon(r["pts"]).buffer(0.2) for r in b.geom(fl)["rooms"] if len(r["pts"]) >= 3])
-    return _FOOT[fl]
-
-
-def out(fl, p, d, more=0.35):
-    """Point just outside the building, going from p in direction d (unit vector along x or y)."""
-    s = LineString([p, (p[0] + 60 * d[0], p[1] + 60 * d[1])]).intersection(foot(fl))
-    x0, y0, x1, y1 = min(getattr(s, "geoms", [s]), key=lambda q: q.distance(Point(p))).bounds
-    return ((x1 + more) if d[0] > 0 else (x0 - more) if d[0] < 0 else p[0], (y1 + more) if d[1] > 0 else (y0 - more) if d[1] < 0 else p[1])
-
-
-def hood(fl, lo):
-    """Range hood: ducted if the range backs on an outside wall, otherwise recirculating."""
-    R = fx(fl, "range"); cx, cy = mid(R); fuel = b.RANGE_FUEL[fl]
-    for p, d, nm in (((R[0], cy), (-1, 0), "S"), ((R[2], cy), (1, 0), "N"), ((cx, R[1]), (0, -1), "E"), ((cx, R[3]), (0, 1), "W")):
-        q = (p[0] + 0.95 * d[0], p[1] + 0.95 * d[1])
-        if not foot(fl).contains(Point(q)):
-            return (R, [p, q], f"New range hood ({fuel} range):\n6 in. duct out {nm} wall", lo)
-    return (R, None, f"New range hood ({fuel}\nrange): recirculating,\nrange on inside wall", lo)
-
-
-def risers():
-    """Supply and return risers: the part of the old chimney shaft that is clear on level 5 (closet 309) and level 6 (west of bath B)."""
-    g = box(*b.CHIMNEY).intersection(box(*rr(5, "309"))).difference(unary_union([box(*r) for r in b.LV[6]["new"]] + [box(*rr(6, "404")).buffer(0.2)]))
-    x0, y0, x1, y1 = max(getattr(g, "geoms", [g]), key=lambda p: p.area).bounds
-    return (x0 + .04, y0 + .05, x1 - .04, y0 + 1.0), (x0 + .04, y1 - 1.0, x1 - .04, y1 - .05), (x0, y0, x1, y1)
-
-
-def feeds():
-    """Attic floor registers fed through the floor from the level 5 ducts: bath A, bath B, bedroom 2 (same x, y on both levels)."""
-    ta, vb, H = fxin(6, "tub", rr(6, "403")), fxin(6, "van", rr(6, "404")), hb(5, "306")
-    return (ta[0] - 0.8, rr(6, "403")[1] + 0.55), (vb[0] + 0.7, vb[1] - 0.32), (rr(5, "304")[2] - 2.0, H[3] - 0.55)
-
-
-# ------------------------------------------------------------------------------------------ symbols
-def band(ax, pts, w, ec, fc, z=10, **kw):
-    b._fill(ax, LineString(pts).buffer(w / 2, cap_style=2, join_style=2), fc=fc, ec=ec, lw=0.5, zorder=z, **kw)
-
-
-def lab(ax, x, y, s, col=SUP, rot=0, ha="center", va="center", fs=FS, bold=False):
-    ax.text(x, y, s, fontsize=fs, color=col, ha=ha, va=va, rotation=rot, zorder=17, linespacing=1.1, fontweight="bold" if bold else "normal",
-            bbox=dict(fc="white", ec="none", pad=0.12, alpha=0.88))
-
-
-def seglab(ax, pts, s, col=SUP):
-    i = max(range(len(pts) - 1), key=lambda k: abs(pts[k + 1][0] - pts[k][0]) + abs(pts[k + 1][1] - pts[k][1]))
-    (x0, y0), (x1, y1) = pts[i], pts[i + 1]
-    lab(ax, (x0 + x1) / 2, (y0 + y1) / 2, s, col, 90 if abs(y1 - y0) > abs(x1 - x0) else 0, bold=True)
-
-
-def reg(ax, x, y, cfm, lo, vert=False, note=""):
-    w, h = (0.5, 1.0) if vert else (1.0, 0.5)
-    ax.add_patch(Rectangle((x - w / 2, y - h / 2), w, h, fc="white", ec=SUP, lw=0.8, zorder=13))
-    ax.plot([x - w / 2, x + w / 2], [y - h / 2, y + h / 2], color=SUP, lw=0.5, zorder=13.1); ax.plot([x - w / 2, x + w / 2], [y + h / 2, y - h / 2], color=SUP, lw=0.5, zorder=13.1)
-    lab(ax, x + lo[0], y + lo[1], f"{cfm} cfm{note}\n{rnd(cfm)} in. dia. · {grl(cfm)}")
-
-
-def grille(ax, r, s=None, lo=(0, 0), rot=0):
-    ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc="white", ec=SUP, lw=0.8, hatch="//////", zorder=13))
-    if s: lab(ax, (r[0] + r[2]) / 2 + lo[0], (r[1] + r[3]) / 2 + lo[1], s, SUP, rot)
-
-
-def arrow(ax, p, q, col):
-    ax.annotate("", xy=q, xytext=p, arrowprops=dict(arrowstyle="-|>", color=col, lw=0.7, mutation_scale=5), zorder=15)
-
-
-def out_end(pts, d=0.7):
-    (x0, y0), (x1, y1) = pts[-2], pts[-1]; n = max(abs(x1 - x0) + abs(y1 - y0), 1e-6)
-    return (x1 + d * (x1 - x0) / n, y1 + d * (y1 - y0) / n)
-
-
-def exhaust(ax, pts, s, lo, w=0.33, roof=False):
-    band(ax, pts, w, EXH, EXHF, 11)
-    if roof: bubble(ax, pts[-1][0], pts[-1][1], "R", EXH, 0.3, 3.0)      # roof jack
-    else: arrow(ax, pts[-1], out_end(pts), EXH)
-    if s: lab(ax, lo[0], lo[1], s, EXH, lo[2] if len(lo) > 2 else 0)
-
-
-def fan(ax, x, y):
-    ax.add_patch(Rectangle((x - 0.4, y - 0.4), 0.8, 0.8, fc="white", ec=EXH, lw=0.8, zorder=13)); ax.add_patch(plt.Circle((x, y), 0.26, fc=EXHF, ec=EXH, lw=0.6, zorder=13.1))
-    ax.text(x, y, "EF", fontsize=2.6, color=EXH, ha="center", va="center", zorder=13.2, fontweight="bold")
-
-
-def bubble(ax, x, y, s, col=INK, r=0.34, fs=3.4):
-    ax.add_patch(plt.Circle((x, y), r, fc="white", ec=col, lw=0.8, zorder=18)); ax.text(x, y, s, fontsize=fs, color=col, ha="center", va="center", zorder=18.1, fontweight="bold")
-
-
-# ------------------------------------------------------------------------------------------ layouts (data only)
-def lay3():
-    fl = 3; F = fx(fl, "furnace"); px, py = mid(F); H = hb(fl, "107"); hy = mid(H)[1]
-    LIV, KIT, B1, B2, BA1, BA2, LAU, MEC = (rr(fl, n) for n in ("101", "102", "103", "104", "105", "106", "108", "109"))
-    xw, xe, yn, yr = H[0] + 1.3, H[2] - 0.5, KIT[1] + 4.5, LIV[1] + 2.9
-    wl = wn(fl, LIV, "W"); w2 = wn(fl, B2, "W")[0]; t1, t2, Dr, Rg = fxin(fl, "tub", BA1), fxin(fl, "tub", BA2), fx(fl, "dryer"), fx(fl, "range")
-    d1 = near(fl, "doors", rr(fl, "103", 1)); w0, a0, a1 = nd(fl, "102"); yv = mid(rr(fl, "111"))[1]; st = stack(fl); xb, xc, yd = B1[2] - 2.6, t1[0] - 0.85, Dr[3] + 0.75
-    e2, e1 = (BA2[0] + 1.05, t2[3] + 0.85), (t1[0] - 1.0, BA1[1] + 1.2)
-    return dict(
-        trunk=[([(px, F[1]), (px, hy)], 600), ([(px, hy), (xw, hy)], 400), ([(px, hy), (xe, hy)], 200), ([(xw, hy), (xw, yn)], 250)], main=[],
-        br=[("103", [(xw, hy), (xb, hy), (xb, B1[1] + 1.4)], 100, (1.9, 0)), ("106", [(xw, hy), (xw, BA2[3] - 2.6)], 50, (0.1, -0.75)),
-            ("105", [(xc, hy), (xc, BA1[3] - 2.3)], 50, (-0.3, -0.75)), ("108", [(xe, hy), (LAU[0] + 2.6, hy)], 50, (-0.5, 0.75)),
-            ("104", [(xe, hy), (xe, B2[3] - 1.5), (mid(w2)[0], B2[3] - 1.5)], 100, (0, -0.8)), ("102", [(xw, yn), (xw, KIT[3] - 1.6)], 80, (2.0, 0)),
-            ("101", [(xw, yn), (mid(wl[1])[0], yn), (mid(wl[1])[0], LIV[3] - 1.5)], 85, (-2.0, 0)), ("101", [(xw, yr), (LIV[0] + 1.6, yr)], 85, (0.4, 0.8))],
-        ret=[((MEC[0] - 0.56, py - 0.83, MEC[0] - 0.3, py + 0.83), "RA 20x20 filter grille\nlow in closet wall", (-0.72, 0), 90)], rduct=[([(MEC[0] - 0.3, py), (F[0], py)], 1.4)],
-        tg=[(mid(d1)[0], d1[1] + 0.5, True), (a1 - 0.6, w0, False)],
-        ef=[(e2, [e2, out(fl, e2, (0, -1))], "EF 80 cfm, 4 in. out\nE wall (over tub)", (e2[0] + 2.3, mid(t2)[1])),
-            (e1, [e1, out(fl, e1, (0, -1))], "EF 80 cfm\n4 in. out E wall", (e1[0] + 1.6, e1[1] - 0.6))],
-        dv=([(mid(Dr)[0], Dr[3]), (mid(Dr)[0], yd), out(fl, (mid(Dr)[0], yd), (1, 0))], "Dryer vent 4 in. rigid, about\n11 ft + 2 elbows, out N wall", (LAU[2] - 1.75, yd - 0.8)),
-        hood=hood(fl, (Rg[0] - 1.45, mid(Rg)[1])),
-        util=[([(F[2], yv), out(fl, (F[2], yv), (1, 0))], "PVC: 2 in. intake + 2 in. flue (furnace), 2 in. flue (WH); line-set LS.\nOut N wall, 12 in. above grade, 4 ft from doors. Slope to furnace.", (25.3, yv + 0.75))],
-        cd=([(st[0], F[1]), (st[0], st[1] + 0.35)], (st[0] + 0.55, st[1] + 1.1)), ts=((MEC[2] + a0) / 2 + 0.2, H[3] - 0.42),
-        txt=[(mid(LIV)[0], LIV[1] + 6.6, "All ducts new, in the joist space, installed while the ceilings\nare open. Finished ceiling stays at the A-101 heights.", SUP)])
-
-
-def lay4():
-    fl = 4; F = fx(fl, "furnace"); px, py = mid(F); P = hb(fl, "210"); ys = P[1] + 0.95
-    LIV, KIT, B1, B2, BA1, BA2, LAU, H = (rr(fl, n) for n in ("201", "202", "203", "204", "205", "206", "209", "207"))
-    t1, t2, Dr, Rg, Wa = fxin(fl, "tub", BA1), fxin(fl, "tub", BA2), fx(fl, "dryer"), fx(fl, "range"), fx(fl, "washer")
-    xl, xs, yl, yb, xb, xk = LAU[2] + 1.0, P[0] + 1.3, LIV[3] - 2.4, F[1] + 1.9, B1[2] - 4.1, KIT[2] - 4.5
-    w1, a1, b1 = nd(fl, "201"); yh = (a1 + b1) / 2; xt = nd(fl, "202")[1] + 1.0; wb = wn(fl, B1, "W")[0]; gx = px + 1.07; yv, xv = F[3] + 0.55, B1[2] - 2.1
-    e1, e2, xd, xc = (t1[2] + 0.5, mid(BA1)[1]), (t2[0] - 0.5, BA2[3] - 1.5), mid(Dr)[0], F[2] + 0.19
-    S13 = rr(fl, "213")
-    return dict(
-        trunk=[([(px, F[1]), (px, ys)], 640), ([(px, ys), (xl, ys)], 390), ([(xl, ys), (xl, yl)], 240), ([(px, ys), (xs, ys)], 250)],
-        main=[([(xs, ys), (xs, yh), (xt, yh)], 200), ([(F[0], yb), (xb, yb)], 160)],
-        br=[("202", [(xl, ys), (xk, ys), (xk, ys + 2.2)], 150, (0, 0.8)), ("201", [(xl, yl), (xl, LIV[1] + 1.6)], 120, (2.0, 0)), ("201", [(xl, yl), (LIV[2] - 3.4, yl)], 120, (0, 0.8)),
-            ("205", [(xs, ys), (BA1[2] - 0.55, ys)], 50, (-0.5, 1.15), True), ("204", [(xt, yh), (B2[0] + 2.2, yh)], 150, (0.3, 0.8)), ("206", [(xt, yh), (xt, BA2[3] - 1.5)], 50, (1.75, 0)),
-            ("203", [(xb, yb), (xb, B1[3] - 1.7)], 80, (0.2, 0.8)), ("203", [(xb, yb), (mid(wb)[0], yb), (mid(wb)[0], B1[3] - 1.7)], 80, (0.3, 0.8))],
-        ret=[((gx, P[3] - 1.77, gx + 2.08, P[3] - 0.1), "RA 20x25 filter\ngrille in ceiling", (0, 0), 0)], rduct=[([(gx + 1.0, P[3] - 0.1), (gx + 1.0, F[1] + 0.05), (F[2], F[1] + 0.05)], 0.67)],
-        tg=[(w1, a1 + 0.42, True)],
-        ef=[(e1, [e1, out(fl, e1, (0, 1))], "EF 80 cfm, 4 in. to W wall,\nabout 10 ft", (e1[0] - 2.1, B1[1] + 2.6)),
-            (e2, [e2, out(fl, e2, (0, -1))], "EF 80 cfm, 4 in.\nto E wall", (e2[0] - 1.8, BA2[1] - 1.6))],
-        dv=([(xd, Dr[1]), out(fl, (xd, Dr[1]), (0, -1))], "Dryer vent 4 in. rigid to E wall: about 19 ft + 2 elbows\n= 29 ft equivalent (max 35). Long: verify the route.", (xd - 0.75, mid(LIV)[1], 90)),
-        hood=hood(fl, (Rg[0] - 1.7, Rg[3] + 0.6)),
-        util=[([(F[0], yv), (xv, yv), (xv, max(r[3] for r in b.LV[fl]["fix"]) + 0.35)], "PVC: 2 in. intake + flue (furnace), 2 in. flue (WH);\nline-set LS. Out W wall, 4 ft from the window.", (xv + 0.65, B1[3] - 2.2, 90))],
-        cd=([(F[2], F[1] + 0.2), (xc, F[1] + 0.2), (xc, Wa[3])], (xc + 0.3, Wa[3] + 0.3)), ts=(H[0] + 0.85, H[3] - 0.42),
-        txt=[(mid(S13)[0], S13[1] + 1.0, "Stair hall 213 is the upper flat's: no middle-flat ducts or grilles here.", GREY)])
-
-
-def lay5():
-    fl = 5; F = fx(fl, "furnace"); px, py = mid(F); H = hb(fl, "306"); yt = H[3] - 1.05
-    LIV, KIT, B3, B4, BA1, C9 = (rr(fl, n) for n in ("301", "302", "303", "304", "305", "309"))
-    dl, d3, db = near(fl, "doors", (LIV[2] - 3, LIV[3], LIV[2], LIV[3] + 0.4)), near(fl, "doors", rr(fl, "303", 1)), near(fl, "doors", (BA1[0] + 1, BA1[1] - 0.4, BA1[2], BA1[1]))
-    w4, _a4, b4 = nd(fl, "301"); xw, xe, x3 = dl[0] + 0.6, H[2] - 0.9, d3[0] + 0.6
-    ws, ww, w3, we = wn(fl, LIV, "E")[0], wn(fl, LIV, "S")[0], wn(fl, B3, "N")[0], wn(fl, B4, "N")[0]; yl, x1 = mid(ww)[1], mid(ws)[0]
-    SR, RT, PK = risers(); fa, fb, f2 = feeds(); xs, x4, gx = SR[2] + 0.28, f2[0], px + 1.05
-    t1, Dr, Rg, XE, st = fxin(fl, "tub", BA1), fx(fl, "dryer"), fx(fl, "range"), fx(fl, "xequip"), stack(fl)
-    e1, xd, xp = (near(fl, "windows", BA1)[0] - 3.4, t1[1] - 0.8), mid(Dr)[0], C9[2] - 0.17
-    return dict(
-        trunk=[([(px, F[3]), (px, yt)], 840), ([(px, yt), (xw, yt)], 460), ([(px, yt), (xe, yt)], 380)],
-        main=[([(xw, yt), (xw, yl), (x1, yl)], 240), ([(xe, yt), (x4, yt)], 220)], pipe=[([(F[2], fb[1]), fb], 50)],
-        br=[("301", [(x1, yl), (x1, LIV[1] + 1.9)], 120, (-2.0, 0)), ("301", [(x1, yl), (LIV[0] + 2.0, yl)], 120, (0.4, 0.8)), ("302", [(xw, yt), (KIT[2] - 3.0, yt)], 120, (0.3, -0.8)),
-            ("305", [(mid(db)[0], yt), (mid(db)[0], BA1[1] + 1.7)], 50, (0, 0.75)), ("303", [(x3, yt), (x3, mid(w3)[1]), (B3[2] - 3.0, mid(w3)[1])], 160, (0, 0.8)),
-            ("304", [(x4, yt), (x4, mid(we)[1])], 120, (-1.9, 0))],
-        up=[(fa[0], yt, "UP 5 in. to attic bath A\nfloor register, 50 cfm", (0.2, -1.05)), (fb[0], fb[1], "UP 5 in. to attic bath B\nfloor register, 50 cfm", (-0.3, -1.4)),
-            (x4, yt, "UP 6 in. to attic bedroom 2\nfloor register, 100 cfm", (-0.2, -0.95))],
-        ris=[(SR, "S", [(xs, F[1]), (xs, mid(SR)[1]), (SR[2], mid(SR)[1])], "SR 12x8 supply riser\nup to attic, 310 cfm", (PK[0] - 1.75, mid(SR)[1] - 0.3)),
-             (RT, "R", [(mid(RT)[0], RT[3]), (mid(RT)[0], F[1])], "RR 12x8 return riser\ndown from the attic", (PK[0] - 1.75, mid(RT)[1] + 0.5))],
-        ret=[((gx, H[1] + 0.12, gx + 2.5, H[1] + 1.79), "RA 30x20 filter\ngrille in ceiling", (0, 0), 0)], rduct=[([(gx + 0.14, H[1] + 0.12), (gx + 0.14, py + 0.3)], 0.67)],
-        tg=[(d3[2] - 0.7, mid(d3)[1], False), (w4, b4 - 0.6, True)],
-        ef=[(e1, [e1, out(fl, e1, (0, 1))], "EF 80 cfm, 4 in. out W wall\n(over tub), 3 ft from window", (e1[0] - 0.75, e1[1] - 0.85))],
-        dv=([(xd, Dr[3]), out(fl, (xd, Dr[3]), (0, 1))], "Dryer vent 4 in. rigid,\nabout 9 ft + 2 elbows,\nout W wall of the recess", (KIT[2] - 2.0, Dr[3] + 0.5)),
-        hood=hood(fl, (Rg[2] + 2.2, mid(Rg)[1])),
-        util=[([(xp, F[1] + 0.55), out(fl, (xp, F[1] + 0.55), (0, -1))],
-               "PVC: 2 in. intake + flue (furnace), 2 in. flue (WH); line-set LS.\nThrough closets 309 and 311, out E wall, 4 ft from windows.", (xp + 1.5, (C9[1] + C9[3]) / 2 - 2.2, 90))],
-        cd=([(st[0], F[1]), (st[0], st[1] + 0.35)], (st[0] + 0.02, st[1] + 1.0)), ts=(H[0] + 1.1, H[3] - 0.42),
-        txt=[(mid(XE)[0] + 0.9, XE[1] - 0.8, "Old furnace and water heater here: remove, with the old\ntrunk and flue; patch. New equipment is in closet 307.", SUP)])
-
-
-def lay6():
-    fl = 6; SR, RT, PK = risers(); fa, fb, f2 = feeds(); BY1, BY2, BAa, BAb, C6 = rr(fl, "401", 2), rr(fl, "402", 2), rr(fl, "403"), rr(fl, "404"), rr(fl, "406")
-    xs, xr, ye = mid(SR)[0], mid(RT)[0], PK[1] - 1.6; x1 = (BY1[2] + PK[0]) / 2
-    cut = b.LV[fl]["cut"][0]; yd = mid(cut)[1]; w3, _a3, b3 = nd(fl, "403"); va, tb = fxin(fl, "van", BAa), fxin(fl, "tub", BAb)
-    ea, eb = (va[2] + 0.45, BAa[1] + 1.4), (BAb[0] + 2.9, tb[3] + 0.6)
-    return dict(
-        trunk=[], main=[([(xs, ye), (x1, ye)], 210)],
-        br=[("401", [(x1, ye), (x1, PK[1] + 0.2)], 105, (0, 0.85), False, " knee wall"), ("401", [(x1, ye), (BY1[2] + 0.17, ye)], 105, (-1.6, 0), True, " bay side"),
-            ("402", [(xs, ye), (BY2[0] - 0.17, ye)], 100, (1.65, 0), True, " bay side")],
-        fr=[("403", [fa], 50, (0, 0.8), False, " floor"), ("404", [fb], 50, (-1.75, 0.95), False, " floor"), ("402", [f2], 100, (-0.2, 0.8), False, " floor")],
-        ris=[(SR, "S", [(xs, SR[1]), (xs, ye)], "SR 12x8 supply riser from level 5:\n310 cfm to the ducts in the eave space", (xs - 0.6, ye - 0.9)),
-             (RT, "R", [(xr, RT[3]), (xr, yd), (cut[2], yd)], "RR 12x8 return riser\nboxed in closet 406", (C6[0] + 0.75, mid(C6)[1], 90))],
-        ret=[((cut[2] + 0.02, cut[1] + 0.1, cut[2] + 0.3, cut[3] - 0.1), "RA 24x10 grille, high,\nover the doorway", (1.5, 0), 0),
-             ((xr - 0.45, C6[3] + 0.5, xr + 0.45, C6[3] + 1.0), "RA inlet 14x8\nbedroom 1", (-1.5, 0), 0)],
-        tg=[(w3, b3 - 0.6, True)],
-        ef=[(ea, [ea, (ea[0], BAa[3] + 1.5)], "EF 80 cfm, 4 in. insulated duct\nto roof jack R, west slope", (ea[0] - 2.2, BAa[3] + 1.5), True),
-            (eb, [eb, (eb[0] + 0.95, eb[1])], "EF 80 cfm, 4 in. up\nto roof jack R", (eb[0] - 1.2, mid(tb)[1]), True)],
-        txt=[((BY1[2] + BY2[0]) / 2, ye - 1.9, "East eave space behind the knee wall: insulated (R-8), sealed ducts.\nThe dormer bays block the run to the north and south ends: verify on site.", SUP),
-             (rr(fl, "405")[0] + 1.45, rr(fl, "405")[3] - 0.8, "Stair hall: no register;\nreturn air path", GREY)])
-
-
-LAY = {3: lay3, 4: lay4, 5: lay5, 6: lay6}
-
-
-# ------------------------------------------------------------------------------------------ plan sheets
-LEG = [("fill", SUPF, "Supply trunk or duct, size in inches"), ("X", SUP, "Supply register: cfm, round neck, grille"),
-       ("RA", SUP, "Return grille / duct (hatched)"), ("TG", SUP, "Transfer grille over the bedroom door"), ("fill", EXHF, "Exhaust: bath fan EF, dryer, range hood"),
-       ("dash", PVC, "PVC flue + intake pipes, line-set LS"), ("CD", PVC, "Condensate drain, 3/4 in., trapped"), ("T", INK, "Thermostat, 5 ft above floor")]
-
-
-def draw(ax, fl, D):
-    for pts, c in D["trunk"]:
-        band(ax, pts, rct(c) / 12, SUP, SUPF, 10)
-    for pts, c in D.get("main", []):
-        band(ax, pts, rnd(c) / 12, SUP, SUPF, 10.2)
-    for pts, c in [(q[1], q[2]) for q in D["br"]] + D.get("pipe", []):
-        band(ax, pts, rnd(c) / 12, SUP, "white", 10.4)
-    for pts, w in D.get("rduct", []):
-        band(ax, pts, w, SUP, "white", 10.6, hatch="//////")
-    for r, kind, pts, s, lo in D.get("ris", []):                      # risers in the old chimney shaft
-        if pts: band(ax, pts, 0.5, SUP, SUPF if kind == "S" else "white", 10.7, **({} if kind == "S" else dict(hatch="//////")))
-        ax.add_patch(Rectangle((r[0], r[1]), r[2] - r[0], r[3] - r[1], fc=SUPF if kind == "S" else "white", ec=SUP, lw=1.1, zorder=14, hatch=None if kind == "S" else "//////"))
-        if kind == "S": ax.plot([r[0], r[2]], [r[1], r[3]], color=SUP, lw=0.7, zorder=14.1)
-        lab(ax, lo[0], lo[1], s, SUP, lo[2] if len(lo) > 2 else 0)
-    for pts, c in D["trunk"]:
-        seglab(ax, pts, f"{rct(c)}x8")
-    for pts, c in D.get("main", []):
-        seglab(ax, pts, f"{rnd(c)} in.")
-    for _no, pts, c, lo, *k in D["br"] + D.get("fr", []):
-        reg(ax, pts[-1][0], pts[-1][1], c, lo, *k)
-    for r, s, lo, rot in D.get("ret", []):
-        grille(ax, r, s, lo, rot)
-    for x, y, vert in D.get("tg", []):
-        grille(ax, (x - 0.2, y - 0.45, x + 0.2, y + 0.45) if vert else (x - 0.45, y - 0.2, x + 0.45, y + 0.2))
-        lab(ax, x + (0.6 if vert else 0), y + (0 if vert else 0.5), "TG", SUP, bold=True)
-    for p, pts, s, lo, *roof in D.get("ef", []):
-        exhaust(ax, pts, s, lo, roof=bool(roof)); fan(ax, *p)
-    if D.get("dv"):
-        exhaust(ax, *D["dv"])
-    if D.get("hood"):
-        Rg, pts, s, lo = D["hood"]
-        ax.add_patch(Rectangle((Rg[0], Rg[1]), Rg[2] - Rg[0], Rg[3] - Rg[1], fill=False, ec=EXH, lw=0.9, ls=(0, (3, 1.5)), zorder=12))
-        if pts: exhaust(ax, pts, None, None, 0.5)
-        lab(ax, lo[0], lo[1], s, EXH)
-    for pts, s, lo in D.get("util", []):
-        ax.plot([p[0] for p in pts], [p[1] for p in pts], color=PVC, lw=1.0, ls=(0, (5, 1.5, 1, 1.5)), zorder=12); arrow(ax, pts[-1], out_end(pts), PVC)
-        lab(ax, lo[0], lo[1], s, PVC, lo[2] if len(lo) > 2 else 0)
-    if D.get("cd"):
-        pts, lo = D["cd"]; ax.plot([p[0] for p in pts], [p[1] for p in pts], color=PVC, lw=0.9, ls=(0, (1, 1.2)), zorder=12); lab(ax, lo[0], lo[1], "CD", PVC, bold=True)
-    for x, y, s, lo in D.get("up", []):
-        bubble(ax, x, y, "UP", SUP, 0.3, 2.6); lab(ax, x + lo[0], y + lo[1], s)
-    for x, y, s, col, *rot in D.get("txt", []):
-        lab(ax, x, y, s, col, rot[0] if rot else 0)
-    if D.get("ts"):
-        bubble(ax, D["ts"][0], D["ts"][1], "T")
-
-
-ST = ("Status", ["Design intent, to be confirmed by the", "licensed HVAC trade. Manual J/S/D governs.", "See M-001 for basis, schedule, air balance."])
-NOTES = {3: [("This level", ["Lower flat, about 790 sf. All new: furnace", "40,000 Btu/h + 1.5 ton coil in closet 109,", "condenser outside. 600 cfm, 8 registers."]),
-             ("MAIN RISK: LOW CEILINGS", ["Finished ceilings are 6'-10\" to 7'-6\" (see", "A-101) and must NOT end up lower.", "A soffit is not possible below 7'-0\": every", "duct on this level goes in the joist space,",
-                                          "installed while the ceilings are open.", "Check joist direction and depth first: a", "duct fits only along the joists (about", "14 x 8 in. per 2x10 bay); no notching.",
-                                          "If joists cross the route: use another", "bay, or the crawl space under part of the", "house (access door stuck: open and", "check), or a small-duct system here."]),
-             ("Verify", ["Grade at each wall cap (flat is partly", "below grade): caps 12 in. above grade.", "Bedroom 2 has only a small high window;", "bedroom 1 shows none in the scan."])],
-         4: [("This level", ["Middle flat, about 870 sf. All new: furnace", "40,000 Btu/h + 2 ton coil in closet 208,", "condenser outside. 800 cfm, 8 registers."]),
-             ("Ceilings", ["Passage 210 is 7'-4\" and hall 207 is 7'-0\":", "an 8 in. soffit there leaves under 6'-8\".", "Run the trunk in the joist space there", "while the ceiling is open (check joist",
-                           "direction first). Finished ceilings stay", "at or above the A-102 heights."]),
-             ("Verify", ["Closet 208 has no wall beside its door for", "a return grille: the filter grille goes in", "the passage ceiling, ducted over the door.", "Dryer is 11 ft from the nearest outside",
-                         "wall: vent is near its length limit.", "Hood cap is about 1.5 ft from the kitchen", "window: offset it to keep 3 ft clear.", "Bedroom 1 has no door in the model: add",
-                         "a transfer grille over it when placed."])],
-         5: [("This level", ["Upper flat (main floor + attic), about", "1,450 sf. All new: ONE furnace, 60,000", "Btu/h + 3 ton coil in closet 307,", "condenser outside. 1,200 cfm: 690 here,", "510 to the attic."]),
-             ("Room 304", ["The old furnace and water heater in the", "west end of room 304 (dashed box) come", "out with their trunk and flue; patch.", "New equipment is in closet 307."]),
-             ("To the attic", ["Risers SR + RR go up the old chimney", "shaft, through closet 309. The clear", "pocket at the attic floor is only about", "8 x 24 in.: verify. If both do not fit,",
-                               "keep SR and bring attic return air down", "the open stair to the hall grille.", "UP = branch through the floor to an", "attic floor register (same joist space)."]),
-             ("Verify", ["Hall ceiling is 7'-5\": an 8 in. soffit", "leaves 6'-8\" clear, no more. Use the joist", "space where the joists allow.", "Gas range: hood is ducted outside."])],
-         6: [("This level", ["Attic of the upper flat: 2 bedrooms,", "2 baths. All new ducts, 510 cfm from the", "furnace on level 5. No equipment here."]),
-             ("Attic ducts", ["SR feeds insulated ducts in the east", "eave space behind the knee wall, to a", "knee-wall register and bay side-wall", "registers. The two dormer bays block",
-                              "the eave run, so the far ends rely on", "throw from the bay sides.", "Both baths and the north end of bedroom", "2 get a floor register fed through the",
-                              "floor from level 5 (see M-103).", "If there is space above the 7'-8\" flat", "ceiling, the ducts may run there with", "ceiling registers instead: verify.",
-                              "Ducts in the eave: R-8, sealed, inside", "the insulation where possible."]),
-             ("Verify", ["Rafters are cut or separated in places", "(inspection report): repair first; no", "roof jack through a damaged rafter.", "One thermostat (level 5) runs both",
-                         "floors: set balance dampers; consider", "a 2-zone damper kit."])]}
-
-
-def plan(pdf, number, fl):
-    D = LAY[fl](); L = b.LV[fl]
-    fig, bg, ax = b.bsheet(number, f"{L['name']}: HVAC plan", fl, NOTES[fl] + [ST], LEG)
-    b.draw_base(ax, fl, "trade"); draw(ax, fl, D)
-    y = b.text_block(bg, 10.6, fig._legend_end - 0.15, "All new work", [
-        "The house is gutted to the studs: remove every old", "furnace, duct, register, flue and window unit.", "Ceilings and walls are open: run all ducts in the",
-        "joist spaces and dropped ceilings before the board", "goes back.", "Supply: sheet-metal trunk, round branches with a", "damper at each take-off. Tags: cfm, neck, grille.",
-        "Baths: door undercut 3/4 in. Bedrooms: transfer", "grille TG over the door.", "Wall caps: 3 ft from windows and doors (flues:", "4 ft beside, 12 in. above grade or snow)."])
-    cf = sum(c for _n, _p, c, *_ in D["br"] + D.get("fr", []))
-    b.text_block(bg, 10.6, y - 0.05, "Supply on this sheet", [f"{len(D['br']) + len(D.get('fr', []))} registers, {cf} cfm."])
+def plan_sheet(pdf, number, fl):
+    L = b.LV[fl]; D = mr.level(fl); k = FLAT_LEV[fl]; s = SYS[k]; g = mr.grid(mr.SPACE[fl])
+    title = {3: "Lower flat: HVAC plan", 4: "Middle flat: HVAC plan", 5: "Upper flat main floor: HVAC plan", 6: "Attic: HVAC plan"}[fl]
+    where = {3: ["Ducts in the lower flat's ceiling framing", "(the middle flat's floor)."], 4: ["Ducts in the middle flat's ceiling framing", "(the upper flat's floor)."],
+             5: ["Ducts in the attic floor framing, above", "this ceiling. The same framing feeds the", "attic floor registers (M-104)."],
+             6: ["Floor registers fed by branches in the", "attic floor framing off the main-floor", "trunk (dashed; drawn on M-103)."]}[fl]
+    notes = [("This sheet", [f"System {k}: {q.FLATS[k]['name'].split(' (')[0].lower()}, furnace F-{k},", f"{s['tons']:g} ton cooling, {s['cfm']} CFM blower.", *where,
+                             "At each register: CFM and round duct", "size. Schedules M-003, loads M-002,", "equipment and caps M-001."]),
+             ("Rules", ["Joist direction is not known: ducts are", "drawn square; run each in its joist bay", "or shift it a bay, keeping the sizes.",
+                        "No duct crosses another flat, the chase,", "a stair opening or a panel's space.", "Outside caps: see M-001 note 6."])]
+    fig, bg, ax = b.bsheet(number, title, fl, notes, sub=f"Rear building · {L['name'].lower()}", view=e.VIEW[fl])
+    b.draw_base(ax, fl, "trade", labels=False)
+    dims, L["dims"] = L["dims"], []                               # not drawn on trade sheets: nothing to keep clear of
+    ch = mr.CHASE[fl]; ax.add_patch(Rectangle((ch[0], ch[1]), ch[2] - ch[0], ch[3] - ch[1], fill=False, ec=PVC, lw=.6, ls=(0, (1.5, 1.5)), zorder=9))
+    block = [box(*ch).exterior.buffer(.05)]
+    # trunk, to scale (14 x 8 in.)
+    if fl != 6:
+        patch(ax, g.trunk_shape, fc=SUPF, ec=SUP, lw=.5, zorder=8.5, alpha=.6); block.append(g.trunk_shape)
+    else:
+        patch(ax, g.trunk_shape, fc="none", ec=SUP, lw=.5, ls=(0, (3, 2)), zorder=8.5, alpha=.7); block.append(g.trunk_shape.exterior.buffer(.05))
+    for rg in D["regs"]:
+        if len(rg.get("path", [])) > 1:
+            poly(ax, rg["path"], color=SUP, lw=.9, zorder=8.7); block.append(LineString(rg["path"]).buffer(.07))
+    for rg in D["regs"]:
+        x0, y0, x1, y1 = rg["shape"].bounds
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec=SUP, lw=.8, zorder=9.5))
+        ax.plot([x0, x1], [y0, y1], color=SUP, lw=.5, zorder=9.6); ax.plot([x0, x1], [y1, y0], color=SUP, lw=.5, zorder=9.6); block.append(rg["shape"])
+    for rt in D["rets"]:
+        if len(rt["path"]) > 1 and LineString(rt["path"]).length > .1:
+            poly(ax, rt["path"], color=RET, lw=1.4, ls=(0, (4, 1.5)), zorder=8.8); block.append(LineString(rt["path"]).buffer(.1))
+            ax.add_patch(Circle(rt["path"][-1], .14, fc=RET, ec=RET, zorder=9.0))
+        x0, y0, x1, y1 = rt["shape"].bounds
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white", ec=RET, lw=.9, zorder=9.5))
+        n_ = 5
+        for i in range(n_):
+            u = x0 + (x1 - x0) * (i + .5) / n_
+            ax.plot([u - .1, u + .1], [y0 + .1, y1 - .1], color=RET, lw=.4, zorder=9.6)
+        block.append(rt["shape"])
+    if fl == 6:                                                   # the R-C1 box below, for reference
+        r1 = next(rt for rt in mr.layout(5)["rets"] if rt["name"] == "R-C1"); x0, y0, x1, y1 = r1["shape"].bounds
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec=RET, lw=.5, ls=(0, (2, 1.5)), zorder=9.4)); block.append(r1["shape"].buffer(.05))
+    for j in D["jumps"]:
+        if j["kind"] == "ceiling":
+            for p in (j["a"], j["b"]):
+                ax.add_patch(Rectangle((p[0] - .35, p[1] - .35), .7, .7, fc="white", ec=RET, lw=.7, zorder=9.5)); block.append(Point(p).buffer(.4, cap_style="square"))
+            poly(ax, [j["a"], j["b"]], color=RET, lw=.8, ls=(0, (2, 1.2)), zorder=9.4); block.append(LineString([j["a"], j["b"]]).buffer(.06))
+        else:
+            for p in (j["a"], j["b"]):
+                w_, h_ = (.12, .9) if j["axis"] == "v" else (.9, .12)
+                ax.add_patch(Rectangle((p[0] - w_ / 2, p[1] - h_ / 2), w_, h_, fc="white", ec=RET, lw=.7, zorder=9.5)); block.append(box(p[0] - w_ / 2, p[1] - h_ / 2, p[0] + w_ / 2, p[1] + h_ / 2).buffer(.05))
+    for x_ in D["exh"]:
+        if x_["to"] == "wall":
+            poly(ax, x_["path"], color=EXH, lw=.9, ls=(0, (3, 1.5)), zorder=9.2); block.append(LineString(x_["path"]).buffer(.08))
+            ax.add_patch(Circle(x_["cap"], .16, fc=EXH, ec=EXH, lw=.8, zorder=9.3)); block.append(Point(x_["cap"]).buffer(.2))
+        else:                                                     # straight up to a roof cap: fan symbol only
+            x_["cap"] = x_["a"]; ax.add_patch(Circle(x_["a"], .2, fc="white", ec=EXH, lw=.9, zorder=9.3))
+            ax.plot([x_["a"][0] - .14, x_["a"][0] + .14], [x_["a"][1] - .14, x_["a"][1] + .14], color=EXH, lw=.6, zorder=9.31)
+            ax.plot([x_["a"][0] - .14, x_["a"][0] + .14], [x_["a"][1] + .14, x_["a"][1] - .14], color=EXH, lw=.6, zorder=9.31); block.append(Point(x_["a"]).buffer(.25))
+    for x_ in D["dry"]:
+        if x_.get("ventless"):
+            continue
+        poly(ax, x_["path"], color=EXH, lw=1.2, zorder=9.2); ax.add_patch(Circle(x_["cap"], .16, fc=EXH, ec=EXH, zorder=9.3))
+        block += [LineString(x_["path"]).buffer(.08), Point(x_["cap"]).buffer(.2)]
+    for x_ in D["hood"]:
+        if x_["ducted"]:
+            poly(ax, x_["path"], color=EXH, lw=1.2, zorder=9.2); ax.add_patch(Circle(x_["cap"], .16, fc=EXH, ec=EXH, zorder=9.3)); block.append(Point(x_["cap"]).buffer(.2))
+    for x_ in D["vent"]:
+        poly(ax, x_["path"], color=PVC, lw=1.1, ls=(0, (5, 1.2, 1, 1.2)), zorder=9.1); block.append(LineString(x_["path"]).buffer(.08))
+    for x_ in D["ls"]:                                            # drawn beside the vents it runs with
+        ln = LineString(x_["path"]); off = ln.offset_curve(.22) if ln.length > 0 else ln
+        x_["drawn"] = list(off.coords) if off.geom_type == "LineString" and not off.is_empty else x_["path"]
+        poly(ax, x_["drawn"], color=LS, lw=1.0, ls=(0, (1, 1.5)), zorder=9.0); block.append(LineString(x_["drawn"]).buffer(.08))
+    if fl in mr.TSTAT:
+        x, y, n = mr.TSTAT[fl]; cx, cy = x + n[0] * .35, y + n[1] * .35
+        ax.add_patch(Circle((cx, cy), .28, fc="white", ec=INK, lw=.7, zorder=9.6)); ax.text(cx, cy, "T", fontsize=3.6, ha="center", va="center", color=INK, fontweight="bold", zorder=9.7, gid="own")
+        block.append(Point(cx, cy).buffer(.3))
+    for h in D["heater"]:
+        (x, y), n = h["p"], h["n"]; r_ = box(x - .6 + n[0] * .1, y - .15 + n[1] * .15, x + .6 + n[0] * .1, y + .15 + n[1] * .15) if n[0] == 0 else box(x - .15 + n[0] * .15, y - .6, x + .15 + n[0] * .15, y + .6)
+        patch(ax, r_, fc="#fde3c4", ec=EXH, lw=.7, zorder=9.5); block.append(r_)
+    # labels
+    P = Placer(fig, ax, fl, block)
+    for rg in D["regs"]: P.label(rg["p"], f"{rg['cfm']:.0f} · {rg['d']}\"", SUP, r0=.55)
+    for rt in D["rets"]: P.label(rt["p"], f"{rt['name']} {rt['size']}", RET, r0=.9)
+    for j in D["jumps"]: P.label(j["b"], f"J {j['d']}\"" if j["kind"] == "ceiling" else f"TG {j['size']}", RET, r0=.6)
+    for x_ in D["exh"]:
+        P.label(x_["cap"], {"wall": "EF 4\" wall cap", "eave": "EF 4\" up to roof cap", "roof": "EF 4\" roof cap"}[x_["to"]], EXH, r0=.45)
+    for x_ in D["dry"]:
+        if not x_.get("ventless"): P.label(x_["cap"], f"DV 4\" rigid, {x_['eq']:.0f} ft eq.", EXH, r0=.45)
+    for x_ in D["hood"]: P.label(x_["cap"] if x_["ducted"] else x_["a"], "RH 6\" wall cap" if x_["ducted"] else "RH recirculating", EXH, r0=.45)
+    for f in L["fx"]:
+        if f[0] == "furnace": P.label(((f[1] + f[3]) / 2, (f[2] + f[4]) / 2), f"F-{k} + coil", SUP, r0=.3)
+    for x_ in D["ls"]: P.label(x_.get("drawn", x_["path"])[-1], f"LS-{k}: TBD", LS, r0=.5)
+    for h in D["heater"]: P.label(h["p"], "EWH 1,000 W", EXH, r0=.5)
+    if fl != 6:
+        t0 = mr.TRUNK[mr.SPACE[fl]][0]; seg = max(zip(t0[:-1], t0[1:]), key=lambda sg: math.dist(*sg))
+        P.label(((seg[0][0] + seg[1][0]) / 2, (seg[0][1] + seg[1][1]) / 2), f"Trunk {mr.TRUNK_SIZE}", SUP, r0=.9)
+    else:
+        P.label((7.0, 17.0), "Main-floor trunk below (M-103)", SUP, r0=.9)
+    for r in L["rooms"]:
+        if r["kind"] == "closet" or q.skip(r): continue
+        if not P.room_label(r, f"{r['name'].split(' (')[0]}  {r['no']}"): print(f"   {number}: no room for the label of {r['no']}")
+    # keynotes
+    KN = keynotes(fl, D); placed = []
+    for i, (txt, anchor, pref) in enumerate(KN):
+        c = P.keynote(i + 1, anchor, pref) or P.keynote(i + 1, anchor, pref, reach=14.0)
+        if c is None: print(f"   {number}: keynote {i + 1} found no clear spot")
+    y = legend(bg, 10.6, 9.95) - .1
+    bg.text(10.6, y, "KEYNOTES", fontsize=6.6, fontweight="bold", color=INK, va="center"); y -= .2
+    for i, kn in enumerate(KN):
+        bg.text(10.68, y, str(i + 1), fontsize=5.4, color=SUP, fontweight="bold", va="center", ha="center")
+        for j_, ln in enumerate(b.wrap(kn[0], 56)): bg.text(10.85, y - j_ * .12, ln, fontsize=5.2, color=INK, va="center")
+        y -= .12 * len(b.wrap(kn[0], 56)) + .07
+    bad = b.clarity(fig, ax, fl, bg); print(number, "text clashes:", len(bad)); [print("   ", m) for m in bad[:12]]
+    L["dims"] = dims
+    for pr in mr.layout(mr.SPACE[fl])["problems"]:
+        if fl != 6: print("   layout:", pr)
     b.save(fig, number, pdf)
 
 
-# ------------------------------------------------------------------------------------------ M-001 notes, legend, schedule, air balance
-TXT = [[("Scope: all new", [
-    "The house is gutted to the studs. All HVAC is new: three gas furnaces with cooling coils, three outdoor condensers, all ductwork, registers and returns, bath fans, range hoods, dryer vents "
-    "and PVC venting. Cooling is part of the work.",
-    "Ceilings and walls are open, so the ducts are run in the joist spaces and dropped ceilings before the board goes back. Finished ceilings must stay at or above the heights on the A sheets.",
-    "Every room gets a supply register, including the new baths 106, 206, 403 and 404."]),
-    ("What is there now (to be removed)", [
-        "Inspection report, 9 Oct 2026: three gas forced-air furnaces (made 1996, 1997, 2019), one per flat, with ducts and ceiling registers in dropped ceilings and metal flues; no central cooling, "
-        "window units. The upper flat's furnace and water heater stand in room 304. All of it comes out: remove, cap the gas, patch the flue openings."])],
-    [("Basis of design: sizes to confirm", [
-        "One system per flat: 96 % sealed-combustion (two-pipe PVC) upflow gas furnace with a cased cooling coil in the flat's mechanical closet (109, 208, 307), and an outdoor condenser. "
-        "Condensers are outside and not drawn: the line-set LS is shown to the nearest outside wall.",
-        "Rule-of-thumb sizes: lower flat about 790 sf: 40,000 Btu/h, 1.5 ton. Middle flat about 870 sf: 40,000 Btu/h, 2 ton. Upper flat (main floor + attic, about 1,450 sf): 60,000 Btu/h, 3 ton; "
-        "its one furnace on the main floor also serves the attic through risers in the old chimney shaft.",
-        "Air: about 1 cfm per sf and 400 cfm per ton; 50 cfm minimum in a bath, 80 to 100 in a bedroom.",
-        "A Manual J load calculation, Manual S equipment selection and Manual D duct design by the HVAC contractor govern over every size on these sheets.",
-        "Design intent, to be confirmed by the licensed trade. Not a code approval: work to the mechanical and fuel gas codes adopted in West Virginia and to the makers' instructions."])],
-    [("Ducts, registers and return", [
-        "Supply: sheet-metal trunk from the furnace plenum along the hall, round branches with a balancing damper each, one register per room near the outside wall or window, two in rooms over about 180 sf.",
-        "Return: one central filter grille per flat at the mechanical closet (about 2 cfm per sq in.), ducted to the furnace. Bedrooms: transfer grille over the door. Baths: 3/4 in. door undercut. "
-        "The closet is not a return path: seal it.",
-        "Seal all joints with mastic. Insulate ducts outside the heated space (attic eaves, crawl space) to R-8."]),
-     ("Main risk: low ceilings and joists", [
-         "Lower flat finished ceilings are 6'-10\" to 7'-6\". No soffit is possible below 7'-0\": every duct there goes in the joist space. Middle flat passage and hall are 7'-4\" and 7'-0\"; "
-         "the upper flat hall is 7'-5\": keep 6'-8\" clear under any soffit.",
-         "Joist direction is not known. Check it as soon as the ceilings are open and settle the trunk routes before ordering: a duct fits only along the joists; do not notch or bore joists for ducts.",
-         "The foundation is stone with a crawl space under part of the house (access door stuck): open it and check it as a duct route for the lower flat."])],
-    [("Exhaust and equipment venting", [
-        "Bath fan, 80 cfm, in every bath, 4 in. duct to a wall cap; attic baths through the roof.",
-        "Range hoods (none today): one in each kitchen. Ducted where the range backs on an outside wall, otherwise recirculating (see schedule).",
-        "Dryers: 4 in. rigid metal vent to the nearest outside wall; 35 ft maximum less 5 ft per 90-degree elbow.",
-        "Furnace intake + flue and the power-vent water heater flue: PVC to an outside wall, sloped back; caps 12 in. above grade or snow and 4 ft from doors and windows beside them.",
-        "Condensate: 3/4 in. PVC with a trap to a trapped standpipe at the stack or laundry; pump where it cannot fall."]),
-     ("Not known: verify on site", [
-         "Joist direction and depth on every level; what is below the lower flat.",
-         "Gas meter and pipe sizes; electrical capacity for three condensers (100 A panels today: see E sheets).",
-         "Grade at the lower flat wall caps; attic rafters (cut in places: repair before any roof jack); condenser positions outside."])]]
-
-KEYS = [("sup", "Supply trunk or duct, size in inches"), ("reg", "Supply register: cfm, round neck, grille"), ("ret", "RA return grille or duct; TG transfer grille"), ("exh", "Exhaust duct: bath, dryer, hood"),
-        ("EF", "Bath fan 80 cfm; R = roof jack"), ("pvc", "PVC intake + flue pipes, line-set LS"), ("cd", "CD condensate drain, 3/4 in., trapped"), ("UP", "Branch up to an attic floor register"),
-        ("T", "Thermostat, 5 ft above the floor"), ("SR", "SR / RR supply and return riser to attic")]
+def keynotes(fl, D):
+    """[(text, anchor point or None, preferred diamond spot or None)] for one level."""
+    L = b.LV[fl]; k = FLAT_LEV[fl]
+    fur = next((box(*f[1:5]) for f in L["fx"] if f[0] == "furnace"), None)
+    ch = mr.CHASE[fl]; chc = ((ch[0] + ch[2]) / 2, (ch[1] + ch[3]) / 2)
+    lsend = D["ls"][0].get("drawn", D["ls"][0]["path"])[-1] if D["ls"] else chc
+    caps = [x_ for x_ in D["exh"] + D["dry"] if x_.get("to") == "wall"]
+    if fl == 3:
+        return [("Furnace F-A with its cooling coil on top, in laundry / mechanical 105. The 14 x 8 trunk rises into the ceiling and runs along the hall.", fur, None),
+                ("Furnace and water heater: 2 in. PVC exhaust and intake each, in the ceiling to the pipe wall between bath 1 and the laundry (2x6, the chase on this level), then up the chase to the roof.", chc, None),
+                (TBD, lsend, None),
+                ("Ceilings here are low (6'-10\" to 7'-6\"): every duct goes in the joist space while the ceilings are open; no soffits. Check the joist direction first.", None, (7.0, 20.5)),
+                ("Wall caps on the east wall (north end is below grade, south has the deck, west the neighbour): verify each is 12 in. above grade, 3 ft from windows, doors and the property line, and not blowing onto the stair.", caps[0]["cap"] if caps else None, None)]
+    if fl == 4:
+        dry = next((box(*f[1:5]) for f in L["fx"] if f[0] in ("dryer", "wdstack")), None); rng = next((box(*f[1:5]) for f in L["fx"] if f[0] == "range"), None)
+        return [("Furnace F-B with its coil, in the mechanical closet. Two trunks: west up the hall, east along the bath 2 wall into the living room.", fur, None),
+                ("Stair hall 213 is the upper flat's: no duct can reach it without crossing this flat, so it gets a 1,000 W electric wall heater EWH on panel C.", D["heater"][0]["p"] if D["heater"] else None, None),
+                (TBD, lsend, None),
+                ("Dryer: heat-pump type, no vent. No outside wall it may vent through is within the 35 ft limit (north windows, west neighbour, east stair, the trunk).", dry, None),
+                ("Range hood recirculating: the only outside wall beside the range has the kitchen window within 3 ft.", rng, None),
+                ("Pipes and vents from below rise at the back of this closet, where the chimney was, behind the water heater.", chc, None)]
+    if fl == 5:
+        r1 = next(rt for rt in D["rets"] if rt["name"] == "R-C1")
+        fan = next((x_ for x_ in D["exh"] if x_["to"] == "eave"), None)
+        return [("Furnace F-C with its coil. The 14 x 8 trunk rises into the attic floor framing; the same trunk feeds the attic floor registers (M-104).", fur, None),
+                ("Return box in the floor framing: R-C1 grille in this ceiling, R-C2 grille in the attic stair-hall floor above, one duct down to F-C.", r1["p"], None),
+                (TBD, lsend, None),
+                ("Bath fan: 4 in. insulated duct up into the eave space to a roof cap. No caps on the west wall: the neighbour is too close.", fan["a"] if fan else None, None),
+                ("Supply ducts stay under the attic rooms (inside the insulation); none in the eave floors, which get R-49.", None, (8.0, 10.0))]
+    tg = next((j for j in D["jumps"] if j["kind"] == "wall"), None); r2 = next((rt for rt in D["rets"] if rt["name"] == "R-C2"), None)
+    fan = next((x_ for x_ in D["exh"]), None)
+    return [("Floor registers: branches in the attic floor framing off the main-floor trunk (dashed; see M-103). Stay inside the insulation.", (12.0, 17.0), None),
+            ("R-C2 floor return grille at the top of the stair, on the return box over R-C1 (dashed, M-103).", r2["p"] if r2 else None, None),
+            ("Bath fans (circle): 4 in. insulated duct straight up through the roof slope to a roof cap with a damper.", fan["a"] if fan else None, None),
+            ("TG: transfer grilles beside each bedroom door, high on the bedroom side, low on the hall side, in a lined stud bay (return path).", tg["a"] if tg else None, None)]
 
 
-def key(bg, x, y, kind, s):
-    if kind in ("sup", "exh", "ret"):
-        bg.add_patch(Rectangle((x, y - 0.055), 0.34, 0.11, fc={"sup": SUPF, "exh": EXHF, "ret": "white"}[kind], ec=EXH if kind == "exh" else SUP, lw=0.7, hatch="//////" if kind == "ret" else None))
-    elif kind == "reg":
-        bg.add_patch(Rectangle((x + 0.04, y - 0.06), 0.26, 0.12, fc="white", ec=SUP, lw=0.8)); bg.plot([x + .04, x + .3, x + .3, x + .04], [y - .06, y + .06, y - .06, y + .06], color=SUP, lw=0.5)
-    elif kind in ("pvc", "cd"):
-        bg.plot([x, x + 0.34], [y, y], color=PVC, lw=1.0, ls=(0, (5, 1.5, 1, 1.5)) if kind == "pvc" else (0, (1, 1.2)))
-    else:
-        col = EXH if kind == "EF" else INK if kind == "T" else SUP
-        bg.add_patch(plt.Circle((x + 0.17, y), 0.09, fc="white", ec=col, lw=0.8)); bg.text(x + 0.17, y, kind, fontsize=3.8, ha="center", va="center", fontweight="bold", color=col)
-    bg.text(x + 0.45, y, s, fontsize=5.4, color=INK, va="center")
+LEG = [("trunk", SUPF, "Supply trunk, 8 in. deep, in the ceiling framing"), ("br", SUP, "Supply branch, round; number = CFM · size"),
+       ("reg", SUP, "Supply register (ceiling; floor in the attic)"), ("ret", RET, "Return grille with filter; return duct dashed"),
+       ("jump", RET, "Jump duct: bedroom to hall, return path"), ("exh", EXH, "Exhaust: bath fan EF, dryer DV, range hood RH"),
+       ("vent", PVC, "PVC vent and intake, furnace and water heater"), ("ls", LS, "Refrigerant line set: NOT FINALIZED"), ("T", INK, "Thermostat, 5 ft, inside wall")]
 
 
-def m001(pdf):
-    import textwrap
-    fig, bg, _ = b.bsheet("M-001", "HVAC notes, legend, equipment schedule, air balance", 0, [
-        ("Sheets", ["M-001  Notes, legend, schedule, air balance", "M-101  Lower flat", "M-102  Middle flat", "M-103  Upper flat, main floor", "M-104  Attic (upper flat)"]),
-        ("Read with", ["A sheets: walls, doors, closets, chase.", "P sheets: water heaters, condensate, gas.", "E sheets: furnace and condenser circuits."]),
-        ("Scope", ["Gut to the studs: all HVAC is new.", "Sizes are rule of thumb, to be confirmed."]), ST], sub="Rear building · all levels")
-    bg.text(0.5, 10.25, "HVAC: NOTES, LEGEND, EQUIPMENT SCHEDULE, AIR BALANCE", fontsize=10, fontweight="bold", color=INK, va="center")
-    for i, col in enumerate(TXT):
-        y = 9.93
-        for head, items in col:
-            y = b.text_block(bg, 0.5 + i * 3.16, y, head, [ln for t in items for ln in textwrap.wrap("- " + t, 66, subsequent_indent="  ")], fs=5.3, lh=0.127) - 0.04
-    bg.text(0.5, 6.42, "AIR BALANCE (from the registers drawn on M-101 to M-104)", fontsize=7, fontweight="bold", color=INK, va="center")
-    ret = {3: "20x20 filter grille, low, closet 109 wall", 4: "20x25 filter grille, passage ceiling", 5: "30x20 hall ceiling + attic 24x10, 14x8"}
-    dvl = {3: "11 ft", 4: "19 ft", 5: "9 ft"}
-    for i, (name, fls, sf, ton, mbh) in enumerate(FLATS):
-        rows, tot, nb = [[name, "sf", "cfm", "Registers"]], 0, 0
-        for fl in fls:
-            D = LAY[fl](); regs = D["br"] + D.get("fr", []); nb += len(D.get("ef", []))
-            for no in sorted({q[0] for q in regs}):
-                cs = [q[2] for q in regs if q[0] == no]; tot += sum(cs)
-                rows.append([f"{no} {rname(fl, no)}", f"{area(fl, no):.0f}", sum(cs), f"{len(cs)} x {cs[0]} cfm, {rnd(cs[0])} in., {grl(cs[0])}"])
-        fl = fls[0]; hd = "ducted, 6 in." if hood(fl, (0, 0))[1] else "recirculating"
-        rows += [["Supply total", f"{sf:,}", tot, f"target {ton:g} ton x 400 = {ton * 400:.0f} cfm"], ["Return", "", tot, ret[fl]], ["Bath fans", "", f"{nb} x 80", "4 in. duct each, to outside"],
-                 ["Range hood", "", "", f"{hd} ({b.RANGE_FUEL[fl]} range)"], ["Dryer vent", "", "", f"4 in. rigid, about {dvl[fl]} + 2 elbows"]]
-        table(bg, 0.5 + i * 4.22, 6.25, [1.42, 0.4, 0.48, 1.8], rows, fs=5.2, rh=0.155)
-    bg.text(0.5, 3.68, "EQUIPMENT SCHEDULE (all new; sizes to be confirmed by Manual J and S)", fontsize=7, fontweight="bold", color=INK, va="center")
-    eq = [["Tag", "Serves", "Equipment", "Size", "Venting / notes"]]
-    for k, (name, fls, sf, ton, mbh) in enumerate(FLATS):
-        eq.append([f"F-{k + 1}, CC-{k + 1}, CU-{k + 1}", f"{name.split(' (')[0]}, closet {('109', '208', '307')[k]}", "Gas furnace 96 %, sealed combustion, upflow; cased coil; outdoor condenser",
-                   f"{mbh},000 Btu/h; {ton:g} ton; {ton * 400:.0f} cfm", ("2 in. PVC intake + flue out N wall", "2 in. PVC intake + flue out W wall", "2 in. PVC intake + flue out E wall")[k]])
-    eq += [["EF (7)", "Baths 105, 106, 205, 206, 305, 403, 404", "Ceiling bath fan with damper, quiet, timer or humidity control", "80 cfm each", "4 in. duct, wall cap; attic: roof jack"],
-           ["RH (3)", "Kitchens 102, 202, 302", "Range hood: 102 recirculating (electric); 202 (electric), 302 (gas) ducted", "30 in., under 400 cfm", "6 in. duct, wall cap with damper"],
-           ["DV (3)", "Dryers in 108, 209, 308", "4 in. rigid metal dryer vent, cap with damper, no screen", "11 / 19 / 9 ft + 2 elbows", "35 ft max. less 5 ft per elbow"],
-           ["T (3)", "Halls 107, 207, 306", "Programmable heat / cool thermostat", "one per flat", "5 ft up, away from registers"]]
-    table(bg, 0.5, 3.52, [1.3, 2.3, 4.15, 2.15, 2.7], eq, fs=5.2, rh=0.17)
-    bg.text(0.5, 1.88, "LEGEND", fontsize=7, fontweight="bold", color=INK, va="center")
-    for i, (k, t) in enumerate(KEYS):
-        key(bg, 0.5 + (i % 5) * 2.52, 1.62 - (i // 5) * 0.22, k, t)
-    bg.text(0.5, 1.02, "Duct sizes used, at about 0.08 in. w.c. per 100 ft. Round: 5 in. 60 cfm, 6 in. 110, 7 in. 160, 8 in. 220, 9 in. 290.  Trunk 8 in. deep: 8x8 210 cfm, 10x8 310, 12x8 410, 14x8 510, 16x8 620, 18x8 710, 22x8 910.",
-            fontsize=5.3, color=INK, va="center")
+def legend(bg, x, y, fs=5.4, rh=.21):
+    bg.text(x, y, "LEGEND", fontsize=6.6, fontweight="bold", color=INK, va="center"); y -= .22
+    for k, col, t in LEG:
+        if k == "trunk": bg.plot([x, x + .34], [y, y], color=SUPF, lw=4.5, solid_capstyle="butt"); bg.plot([x, x + .34], [y, y], color=SUP, lw=.4)
+        elif k == "br": bg.plot([x, x + .34], [y, y], color=SUP, lw=.9)
+        elif k == "reg":
+            bg.add_patch(Rectangle((x + .07, y - .05), .2, .1, fc="white", ec=SUP, lw=.6)); bg.plot([x + .07, x + .27], [y - .05, y + .05], color=SUP, lw=.4)
+        elif k == "ret": bg.add_patch(Rectangle((x + .06, y - .07), .22, .14, fc="white", ec=RET, lw=.7)); bg.plot([x + .3, x + .5], [y, y], color=RET, lw=1, ls=(0, (3, 1)))
+        elif k == "jump": bg.add_patch(Rectangle((x, y - .04), .08, .08, fc="white", ec=RET, lw=.6)); bg.add_patch(Rectangle((x + .26, y - .04), .08, .08, fc="white", ec=RET, lw=.6)); bg.plot([x + .08, x + .26], [y, y], color=RET, lw=.6, ls=(0, (2, 1)))
+        elif k == "exh": bg.plot([x, x + .34], [y, y], color=EXH, lw=.9, ls=(0, (3, 1.5))); bg.add_patch(Circle((x + .34, y), .03, fc=EXH, ec=EXH))
+        elif k == "vent": bg.plot([x, x + .34], [y, y], color=PVC, lw=1.1, ls=(0, (5, 1.2, 1, 1.2)))
+        elif k == "ls": bg.plot([x, x + .34], [y, y], color=LS, lw=1.0, ls=(0, (1, 1.5)))
+        elif k == "T": bg.add_patch(Circle((x + .17, y), .06, fc="white", ec=INK, lw=.6)); bg.text(x + .17, y, "T", fontsize=3.2, ha="center", va="center")
+        bg.text(x + .55, y, t, fontsize=fs, color=INK, va="center"); y -= rh
+    return y
+
+
+# ---------------------------------------------------------------------------------------------- M-001: notes and schedules
+GEN = ["Scope: full gut; all heating, cooling, ductwork, exhaust and venting are new. Design intent to the IRC 2018 / IMC as adopted in West Virginia "
+       "(confirm the edition Morgantown enforces), ACCA Manual J / S / D methods (simplified, written out on M-002 and M-003) and the equipment instructions.",
+       "One system per flat: direct-vent (sealed combustion) condensing gas furnace, cased cooling coil on top, outdoor condenser. Two-stage or modulating "
+       "furnaces and variable-speed condensers: the loads are small, so the equipment must turn down to run long, quiet cycles and dry the air.",
+       "Ducts: galvanised steel trunk 14 x 8 in. (one joist bay at 16 in. o.c.), rigid round branches (flex only for the last 5 ft, stretched tight), "
+       "every joint sealed with mastic, balancing damper at every take-off. All ducts inside the heated space of the flat they serve; none cross another "
+       "flat, the chase, a stair opening or a panel's dedicated space. The upper flat's attic registers are fed from its main-floor trunk in the attic floor.",
+       "Returns: one filter return per flat (MERV 8). Upper flat: R-C1 in the main-floor hall ceiling and R-C2 in the attic stair-hall floor share one return "
+       "box in the floor framing. Every bedroom has a jump duct to the hall (attic: transfer grilles beside the door) so it is not pressurised with the door "
+       "shut. No returns from baths, kitchens, laundry or the mechanical closets.",
+       "Ventilation (IRC M1505.4 / ASHRAE 62.2): the bath fans run continuously at low speed to meet the whole-house rate on M-003, boosting to 80 CFM "
+       "on the humidity sensor or timer. Each fan ducted in 4 in. smooth duct to its own cap with a back-draft damper; insulated where it passes cold space.",
+       "Outside caps (IRC M1504.3, M1502.3): 3 ft or more from property lines and from windows and doors; 10 ft from the furnace and water heater intakes "
+       "unless 3 ft above them; 12 in. above grade; not blowing onto the east stair or a walkway. None on the west wall (the neighbour is too close); the lower "
+       "flat's north end is below grade. Caps are drawn where these rules allow: verify on site before cutting, and move along the same wall if needed.",
+       "Dryers A and C: 4 in. rigid smooth metal duct, no screws through it, to a wall cap with a damper, 35 ft equivalent length maximum (5 ft per 90 "
+       "degree elbow); lengths in the schedule below. Dryer B: heat-pump (ventless) type, because no wall it may vent through is within 35 ft. Range hoods: "
+       "ducted in 6 in. metal in the upper flat; recirculating in the lower (inside wall) and middle (window within 3 ft) flats; 300 CFM or less, so no make-up air.",
+       "Venting: each furnace and water heater has 2 in. or 3 in. PVC exhaust and intake (sizes per the instructions) up the old chimney chase to a roof "
+       "termination (lower level: the 2x6 pipe wall between bath 1 and the laundry); condensate to an indirect drain with a neutraliser, or a pump (plumbing).",
+       "Refrigerant line sets: insulated copper, sizes on M-003, down the chase. " + TBD,
+       "Thermostats: one per flat, programmable, 5 ft up on an inside wall as drawn, away from supplies, sun, the kitchen and every door swing.",
+       "Start-up: set airflow to the CFM on M-003 at each register (balancing report), check the refrigerant charge, gas pressure and temperature rise."]
+
+
+def exhaust_rows():
+    """One row per fan, dryer and hood, from the plan layout."""
+    rows = []; vent = {k: SYS[k]["vent"] / q.FLATS[k]["baths"] for k in SYS}
+    side = lambda fl, p: mr.side(np.array(p) - np.array(nearest_points(q.outline(fl).buffer(-1.0).exterior, Point(p))[0].coords[0]))
+    for sp in (3, 4, 5):
+        D = mr.layout(sp)
+        for i, x_ in enumerate(sorted(D["exh"], key=lambda x_: (x_["fl"], x_["room"]))):
+            k = FLAT_LEV[x_["fl"]]; Ld = sum(math.dist(a, c) for a, c in zip(x_["path"][:-1], x_["path"][1:]))
+            cap = {"wall": f"{ {'N': 'north', 'S': 'south', 'E': 'east'}.get(side(x_['fl'], x_['cap']), '?') } wall cap", "eave": "roof cap via the eave space", "roof": "roof cap above"}[x_["to"]]
+            rows.append([f"EF-{k}{i + 1}", f"{k}: bath {x_['room']}", "Ceiling fan, 0.3 sone, DC motor", f"80 boost / {vent[k]:.0f} continuous",
+                         f"4 in. smooth, about {Ld:.0f} ft" if x_["to"] == "wall" else "4 in. insulated, straight up", cap, "humidity sensor + timer"])
+        for x_ in D["dry"]:
+            k = FLAT_LEV[x_["fl"]]
+            if x_.get("ventless"):
+                rows.append([f"DRY-{k}", f"{k}: laundry", "Heat-pump dryer, ventless (condensate to the drain)", "-", "none", "-", "-"])
+            else:
+                rows.append([f"DV-{k}", f"{k}: laundry", "Dryer exhaust (dryer per owner)", "per dryer", f"4 in. rigid, {x_['len']:.0f} ft run, {x_['eq']:.0f} ft eq.",
+                             f"{ {'N': 'north', 'S': 'south', 'E': 'east'}.get(side(x_['fl'], x_['cap']), '?') } wall cap", "-"])
+        for x_ in D["hood"]:
+            k = FLAT_LEV[x_["fl"]]
+            rows.append([f"RH-{k}", f"{k}: kitchen", "Microwave-hood, 300 CFM max (E: circuit MW)", "300 max", "6 in. metal, short" if x_["ducted"] else "recirculating, charcoal filter",
+                         (f"{ {'N': 'north', 'S': 'south', 'E': 'east'}.get(side(x_['fl'], x_['cap']), '?') } wall cap") if x_["ducted"] else "-", "on the unit"])
+    return rows
+
+
+def notes_sheet(pdf):
+    notes = [("Read with", ["M-002 heating and cooling loads, M-003 air", "distribution and outdoor units, M-101 to", "M-104 plans. Electrical: E sheets;", "gas and condensate: P sheets."]),
+             ("Pending", ["Condenser place under the rear deck and", "the line sets (M-003). The equipment", "sizes here are final unless the windows or", "insulation assumptions change (M-002)."])]
+    fig, bg, _ = b.bsheet("M-001", "Mechanical notes and schedules", 0, notes, sub="Rear building · all flats")
+    bg.text(.5, 10.25, "MECHANICAL GENERAL NOTES, EQUIPMENT AND FAN SCHEDULES", fontsize=9.5, fontweight="bold", color=INK, va="center")
+    y = 9.95
+    for i, t in enumerate(GEN):
+        bg.text(.55, y, f"{i + 1}.", fontsize=5.8, color=INK, va="center", fontweight="bold")
+        for j, ln in enumerate(b.wrap(t, 190)): bg.text(.8, y - j * .14, ln, fontsize=5.8, color=INK, va="center")
+        y -= .14 * len(b.wrap(t, 190)) + .07
+    y -= .1
+    bg.text(.5, y, "EQUIPMENT SCHEDULE", fontsize=7, fontweight="bold", color=INK, va="center"); y -= .2
+    rows = [["Tag", "Serves", "Equipment", "Capacity", "Airflow", "Electrical (verify nameplate)", "Location"]]
+    for k, s in SYS.items():
+        mca, mocp = mq.AC_ELEC[s["tons"]]; liq, suc = mq.LINESET[s["tons"]]; loc = {"A": "laundry / mech. 105", "B": "mech. closet 208", "C": "mech. closet 307"}[k]
+        rows += [[f"F-{k}", q.FLATS[k]["name"].split(" (")[0], "Gas furnace, condensing 96 % AFUE, direct vent, 2-stage or modulating, upflow",
+                  f"{s['furn'] / 1000:.0f}k Btu/h in, {s['furn'] * .96 / 1000:.1f}k out", f"{s['cfm']} CFM cool", "120 V, 15 A circuit, about 7 A", loc],
+                 [f"CC-{k}", "", "Cased cooling coil on top of F-" + k + ", R-454B or R-32 per the condenser", f"{s['tons']:g} ton", "", "", "on F-" + k],
+                 [f"AC-{k}", "", "Air conditioner, variable speed (inverter), 15.2 SEER2 or better", f"{s['tons']:g} ton", "", f"240 V, MCA {mca:g} A, MOCP {mocp} A", "under rear deck: TBD"]]
+    rows += [["EWH-1", "Upper flat stair hall 213", "Electric wall heater with built-in thermostat", "1,000 W", "", "240 V, 4.2 A, panel C", "stair hall 213 wall"]]
+    y = table(bg, .5, y, [.45, 1.25, 3.6, 1.35, .85, 1.75, 1.25], rows, fs=5.0, rh=.16) - .2
+    bg.text(.5, y, "FAN, DRYER AND HOOD SCHEDULE (from the plans)", fontsize=7, fontweight="bold", color=INK, va="center"); y -= .2
+    rows = [["Tag", "Flat: room", "Type", "Airflow CFM", "Duct", "Outside", "Control"]] + exhaust_rows()
+    table(bg, .5, y, [.6, 1.25, 2.85, 1.25, 2.1, 1.65, 1.3], rows, fs=4.9, rh=.148)
+    bad = b.clarity(fig, None, None, bg); print("M-001 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
     b.save(fig, "M-001", pdf)
 
 
-SHEETS = [("M-001", "HVAC notes, legend, equipment schedule, air balance", m001),
-          ("M-101", "Lower flat: HVAC plan", lambda pdf: plan(pdf, "M-101", 3)), ("M-102", "Middle flat: HVAC plan", lambda pdf: plan(pdf, "M-102", 4)),
-          ("M-103", "Upper flat main floor: HVAC plan", lambda pdf: plan(pdf, "M-103", 5)), ("M-104", "Attic: HVAC plan", lambda pdf: plan(pdf, "M-104", 6))]
+# ---------------------------------------------------------------------------------------------- M-002: loads
+def loads_sheet(pdf):
+    notes = [("Method", ["ACCA Manual J method, simplified and", "written out room by room:", "Heat loss = U x A x (70 - 9 F) per surface", "  + infiltration + ventilation.",
+                         "Heat gain = U x A x CLTD per surface", "  + glass A x SHGC x solar factor", "  + people, lights, appliances", "  + infiltration + ventilation.",
+                         "Infiltration and ventilation shared by", "the rooms' outside wall area."]),
+             ("Confirm", ["Design temperatures from NOAA data for", "Morgantown: check Manual J Table 1A.", "Window count from the scan; heights", "assumed. Insulation: as assumed below.",
+                          "If the windows are replaced or the", "insulation differs, rebuild: the sheets", "follow automatically."])]
+    fig, bg, _ = b.bsheet("M-002", "Heating and cooling loads", 0, notes, sub="Rear building · all flats")
+    bg.text(.5, 10.25, "HEATING AND COOLING LOADS · room by room · Manual J method", fontsize=9.5, fontweight="bold", color=INK, va="center")
+    y = 9.98
+    cond = [["Design conditions", "Value"], ["Location, climate zone", f"{mq.DES['place']}, zone {mq.DES['zone']}"], ["Winter: outdoor / indoor", f"{mq.DES['t_out_h']} F / {mq.DES['t_in_h']} F (dT {mq.DTH} F)"],
+            ["Summer: outdoor / indoor", f"{mq.DES['t_out_c']} F / {mq.DES['t_in_c']} F at 50 % RH (dT {mq.DTC} F)"], ["Moisture difference", f"{mq.DES['gr']} grains per lb"],
+            ["Infiltration (after air sealing)", f"{mq.ACH_H} ACH winter, {mq.ACH_C} ACH summer"], ["People", "1 per bedroom + 1; 230 Btu/h sensible, 200 latent"]]
+    table(bg, .5, y, [1.6, 2.4], cond, fs=5.0, rh=.15)
+    env = [["Assumed after the gut", "U", "CLTD"], ["2x4 walls, R-15 insulation", f"{mq.U['wall']}", f"{mq.CLTD['wall']}"], ["Lower flat stone walls + 2x4 R-15", f"{mq.U['stone']}", f"{mq.CLTD['stone']}"],
+           [f"Windows kept, double pane (SHGC {mq.SHGC})", f"{mq.U['window']}", "dT + sun"], ["Attic sloped ceilings, R-30 foam", f"{mq.U['roof']}", f"{mq.CLTD['roof']}"],
+           ["Attic knee walls, R-20", f"{mq.U['knee']}", f"{mq.CLTD['knee']}"], ["Ceilings under eaves, R-49", f"{mq.U['ceil']}", f"{mq.CLTD['ceil']}"], ["Lower flat floor on earth, per ft", f"F {mq.F_SLAB}", "-"]]
+    table(bg, 4.7, y, [1.9, .45, .55], env, fs=5.0, rh=.15)
+    sol = [["Sun", "N", "NE", "E", "SE", "S", "SW", "W", "NW"], ["Btu/h sf"] + [f"{mq.SOLAR[k_]}" for k_ in ("N", "NE", "E", "SE", "S", "SW", "W", "NW")]]
+    table(bg, 7.85, y, [.55] + [.32] * 8, sol, fs=5.0, rh=.15)
+    y = 8.7
+    hdr = ["Room", "Area", "Walls sf", "Glass sf", "Roof/ceil sf", "Heat: surfaces", "+ air", "= Heat Btu/h", "Cool: surfaces", "+ inside", "+ air", "= Cool Btu/h", "CFM"]
+    wid = [1.75, .38, .5, .5, .58, .72, .5, .72, .72, .55, .45, .72, .4]
+    for k, s in SYS.items():
+        rows = [hdr]
+        for x in s["rooms"]:
+            r = x["r"]; wa = sum(float(rw[1].split()[0]) for rw in x["rows"] if rw[0].startswith(("Wall", "Knee"))); ga = sum(float(rw[1].split()[0]) for rw in x["rows"] if rw[0].startswith("Window"))
+            ca = sum(float(rw[1].split()[0]) for rw in x["rows"] if rw[0].startswith(("Ceiling",)))
+            hs = sum(rw[3] for rw in x["rows"]); cs = sum(rw[4] for rw in x["rows"])
+            if x["H"] < 1 and x["C"] < 60: continue
+            rows.append([f"{r['no']} {r['name'].split(' (')[0]}", f"{x['A']:.0f}", f"{wa:.0f}", f"{ga:.0f}", f"{ca:.0f}", f"{hs:,.0f}", f"{x['inf_h'] + x['vent_h']:,.0f}", f"{x['H']:,.0f}",
+                         f"{cs:,.0f}", f"{x['int']:,.0f}", f"{x['inf_c'] + x['vent_c']:,.0f}", f"{x['C']:,.0f}",
+                         "heater" if (x['fl'], r['no']) == mq.STAIR_HEATER else (f"via {x['via']}" if "via" in x else f"{x.get('cfm', '-')}")])
+        rows.append(["Latent (moisture)", "", "", "", "", "", "", "", "", f"{mq.PEOPLE_L * s['npeople']:,}", f"{s['lat'] - mq.PEOPLE_L * s['npeople']:,.0f}", f"{s['lat']:,.0f}", ""])
+        rows.append([f"TOTAL SYSTEM {k}", "", "", "", "", "", "", f"{s['H']:,.0f}", "", "", "", f"{s['Ct']:,.0f}", f"{s['cfm']}"])
+        bg.text(.5, y, f"SYSTEM {k} · {q.FLATS[k]['name'].upper()} · infiltration {s['inf_h']:.0f} / {s['inf_c']:.0f} CFM, ventilation {s['vent']:.0f} CFM", fontsize=6.0, fontweight="bold", color=INK, va="center")
+        y = table(bg, .5, y - .1, wid, rows, fs=4.7, rh=.132) - .22
+    # sizing results, right column
+    x0 = 9.1; yy = 8.7
+    bg.text(x0, yy, "EQUIPMENT SIZING (Manual S)", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .2
+    for k, s in SYS.items():
+        lines = [f"System {k}: heat loss {s['H']:,.0f} Btu/h; furnace {s['furn'] / 1000:.0f}k in x 96 % = {s['furn'] * .96 / 1000:.1f}k out.",
+                 f"  {s['furn'] * .96 / s['H']:.1f} x the load: smallest furnace made; 2-stage or modulating.",
+                 f"Cooling {s['Cs']:,.0f} sensible + {s['lat']:,.0f} latent = {s['Ct']:,.0f} Btu/h ({s['Ct'] / 12000:.2f} ton).",
+                 f"  {s['tons']:g} ton {'(smallest ducted size; variable speed turns down)' if s['tons'] > s['tons_calc'] else ''}".rstrip(),
+                 f"Blower {s['cfm']} CFM = 400 CFM per ton; rooms get it in proportion", "  to the larger of their heat and cool shares (Manual D)."]
+        for ln in lines: bg.text(x0, yy, ln, fontsize=5.0, color=INK, va="center"); yy -= .13
+        yy -= .1
+    yy -= .05
+    bg.text(x0, yy, "WORKED EXAMPLE", fontsize=6.4, fontweight="bold", color=INK, va="center"); yy -= .2
+    x, _k = room_rec(5, "303")
+    bg.text(x0, yy, f"303 Bedroom 3 (upper flat), {x['A']:.0f} sf, ceiling {x['hgt']:.1f} ft", fontsize=5.0, color=INK, va="center"); yy -= .14
+    for rw in x["rows"]:
+        bg.text(x0, yy, f"{rw[0]}: {rw[1]} x U {rw[2]} -> heat {rw[3]:,.0f}, cool {rw[4]:,.0f}", fontsize=4.9, color=INK, va="center"); yy -= .125
+    bg.text(x0, yy, f"Air (infiltration + ventilation share): heat {x['inf_h'] + x['vent_h']:,.0f}, cool {x['inf_c'] + x['vent_c']:,.0f}", fontsize=4.9, color=INK, va="center"); yy -= .125
+    bg.text(x0, yy, f"Inside: person 230 + lights + computer = {x['int']:,.0f}", fontsize=4.9, color=INK, va="center"); yy -= .125
+    bg.text(x0, yy, f"Totals: heat {x['H']:,.0f} Btu/h, cool {x['C']:,.0f} Btu/h -> {x['cfm']} CFM", fontsize=5.0, color=INK, va="center", fontweight="bold")
+    bad = b.clarity(fig, None, None, bg); print("M-002 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
+    b.save(fig, "M-002", pdf)
+
+
+# ---------------------------------------------------------------------------------------------- M-003: air distribution, outdoor units, venting
+def dist_sheet(pdf):
+    notes = [("Air distribution", ["Room CFM from M-002. Registers sized", "for about 500 fpm; branches at about", "0.08 in. per 100 ft. Jump ducts at", "400 fpm or less. Filter returns at",
+                                   "300 fpm or less through the filter."]),
+             ("Outdoor units", ["Five condensers in the walled area under", "the rear deck (3 for 390, 2 for 441).", "The airflow check below shows the deck", "must have an open grate over them.",
+                                "Line sets and final layout pending the", "area's size: NOT FINALIZED."])]
+    fig, bg, _ = b.bsheet("M-003", "Air distribution, outdoor units and venting", 0, notes, sub="Rear building · all flats")
+    bg.text(.5, 10.25, "AIR DISTRIBUTION SCHEDULE, OUTDOOR UNITS AND VENTING", fontsize=9.5, fontweight="bold", color=INK, va="center")
+    y = 9.98; wid = [.35, 1.55, .5, .45, .9, .55, .9]
+    xx = .5
+    for k, s in SYS.items():
+        rows = [["Sys", "Room", "CFM", "Regs", "Register", "Branch", "Return path"]]
+        for x in s["served"]:
+            r = x["r"]; n = mq.n_registers(r, x["cfm"]); c = x["cfm"] / n
+            ret = (("transfer grille " if x["fl"] == 6 else "jump duct ") + (f"{mq.jump(x['cfm'])} in." if x["fl"] != 6 else ("14x6" if x["cfm"] > 80 else "12x6"))) if r["kind"] == "bed" else ("none (exhaust)" if r["kind"] == "bath" else "open to return")
+            nm = f"{r['no']} {r['name'].split(' (')[0]}" + (f" + stair {x['plus']['r']['no']}" if "plus" in x else "")
+            rows.append([k, nm, f"{x['cfm']}", f"{n}", f"{mq.register(c)}{' floor' if x['fl'] == 6 else ' ceiling'}", f"{mq.round_duct(c)} in.", ret])
+        for rt in mr.layout(mr.SPACE[{"A": 3, "B": 4, "C": 5}[k]])["rets"]:
+            rows.append([k, f"Return {rt['name']}" + (" hall ceiling" if rt["kind"] == "ceiling" else " attic stair-hall floor"), f"{rt['cfm']}", "1", f"{rt['size']} filter",
+                         "", "duct to the furnace" if rt["kind"] == "ceiling" else "on the R-C1 box"])
+        vel = s["cfm"] / (14 * 8 / 144)
+        bg.text(xx, y, f"SYSTEM {k} · {s['cfm']} CFM · trunk {mr.TRUNK_SIZE} in. ({vel:.0f} fpm)", fontsize=6.0, fontweight="bold", color=INK, va="center")
+        y = table(bg, xx, y - .1, wid, rows, fs=4.8, rh=.138) - .22
+    # ventilation
+    bg.text(.5, y, "WHOLE-HOUSE VENTILATION (IRC M1505.4.3: 0.03 x floor area + 7.5 x (bedrooms + 1))", fontsize=6.0, fontweight="bold", color=INK, va="center"); y -= .12
+    rows = [["Flat", "Floor sf", "Bedrooms", "Required CFM", "Provided by"]] + [[k, f"{q.AREA[k]:,}", f"{q.FLATS[k]['beds']}", f"{0.03 * q.AREA[k]:.0f} + {7.5 * (q.FLATS[k]['beds'] + 1):.1f} = {SYS[k]['vent']:.0f}",
+                                                                              f"{q.FLATS[k]['baths']} bath fans on continuous low, {SYS[k]['vent'] / q.FLATS[k]['baths']:.0f} CFM each"] for k in SYS]
+    table(bg, .5, y, [.35, .55, .55, 1.3, 2.4], rows, fs=4.8, rh=.14)
+    # outdoor units: airflow check
+    x0 = 6.0; yy = 9.98
+    bg.text(x0, yy, "OUTDOOR UNITS UNDER THE REAR DECK: AIRFLOW CHECK", fontsize=6.2, fontweight="bold", color=INK, va="center"); yy -= .14
+    units = [(f"390 AC-{k}", SYS[k]["tons"]) for k in SYS] + [("441 A (not designed yet)", 2.0), ("441 B (not designed yet)", 2.0)]
+    rows = [["Unit", "Ton", "Fan CFM (900/ton)", "Heat out Btu/h (15k/ton)", "Air leaves at"]]
+    for n, t in units: rows.append([n, f"{t:g}", f"{900 * t:,.0f}", f"{15000 * t:,.0f}", f"+{15000 / (1.08 * 900):.0f} F"])
+    tc = sum(900 * t for _n, t in units); th = sum(15000 * t for _n, t in units)
+    rows.append(["Total", f"{sum(t for _n, t in units):g}", f"{tc:,.0f}", f"{th:,.0f}", ""])
+    yy = table(bg, x0, yy, [1.35, .35, .9, 1.2, .65], rows, fs=4.8, rh=.14) - .12
+    chk = [f"Fresh-air opening needed: {tc:,.0f} / 300 fpm = {tc / 300:.0f} sf free (lattice is about half open).",
+           f"Closed U with a solid deck: staying within 3 F of outdoor air needs {th:,.0f} / (1.08 x 3) = {th / 3.24:,.0f} CFM",
+           f"of exchange through one opening: about 5 x the fans. Not possible: the units would overheat.",
+           f"With an open grate over the units: hot air leaves straight up. Grate free area >= {tc:,.0f} / 500 fpm = {tc / 500:.0f} sf",
+           f"(about {tc / 500 / .7:.0f} sf of 70 % open grating, about 4 x 4 ft over each unit). Open end stays open.",
+           "Units: 12 in. from walls, 12-24 in. apart, 3 ft service aisle, 3 ft from dryer and furnace vents."]
+    for t in chk: bg.text(x0, yy, t, fontsize=5.0, color=INK, va="center"); yy -= .13
+    yy -= .08
+    bg.text(x0, yy, TBD, fontsize=5.0, color=LS, va="center", fontweight="bold"); yy -= .22
+    rows = [["Line set", "Liquid", "Suction (insulated)", "Route", "Length"]] + [[f"LS-{k}", mq.LINESET[SYS[k]['tons']][0], mq.LINESET[SYS[k]['tons']][1], "coil, chase, lower flat ceiling, out to the deck", "TBD"] for k in SYS]
+    yy = table(bg, x0, yy, [.6, .45, .9, 2.4, .5], rows, fs=4.8, rh=.14) - .25
+    # venting riser in the chase
+    bg.text(x0, yy, "OLD CHIMNEY CHASE: WHAT RUNS IN IT (schematic)", fontsize=6.2, fontweight="bold", color=INK, va="center"); yy -= .2
+    items = [("Drain and vent stack S, 3 in. (plumbing)", PVC), ("F-A, F-B, F-C: 2 in. PVC exhaust + 2 in. intake each, to the roof", PVC),
+             ("Water heaters A, B, C: PVC vents to the roof (size per the units)", PVC),
+             ("Feeders B and C (electrical, E-004)", INK), ("Line sets LS-A, B, C: pending", LS)]
+    for t, col in items:
+        bg.add_patch(Rectangle((x0, yy - .05), .14, .1, fc=col, ec=col)); bg.text(x0 + .22, yy, t, fontsize=5.0, color=INK, va="center"); yy -= .14
+    bg.text(x0, yy - .05, "Chase inside about 2'-0\" x 2'-4\": check the fit when the brick is out; firestop at every floor. Lower level: the", fontsize=5.0, color=GREY, va="center")
+    bg.text(x0, yy - .19, "2x6 pipe wall between bath 1 and the laundry. The attic is fed in its floor framing: no ducts in the chase.", fontsize=5.0, color=GREY, va="center")
+    bad = b.clarity(fig, None, None, bg); print("M-003 text clashes:", len(bad)); [print("   ", m) for m in bad[:8]]
+    b.save(fig, "M-003", pdf)
+
+
+SHEETS = [("M-001", "Mechanical notes and schedules", notes_sheet), ("M-002", "Heating and cooling loads", loads_sheet),
+          ("M-003", "Air distribution, outdoor units and venting", dist_sheet)] + [
+          (n, t, (lambda fl_, n_: (lambda pdf: plan_sheet(pdf, n_, fl_)))(fl, n)) for n, t, fl in
+          (("M-101", "Lower flat: HVAC plan", 3), ("M-102", "Middle flat: HVAC plan", 4), ("M-103", "Upper flat main floor: HVAC plan", 5), ("M-104", "Attic: HVAC plan", 6))]
 
 if __name__ == "__main__":
     from matplotlib.backends.backend_pdf import PdfPages
-    with PdfPages(os.path.join(b.HERE, "drawings", "_test_m.pdf")) as pdf:
-        for n, t, fn in SHEETS:
-            fn(pdf)
-    print("ok", [s[0] for s in SHEETS])
+    only = sys.argv[1:]
+    out = os.path.join(b.HERE, "drawings", "390-Forest_Mechanical_Rev1.pdf" if not only else "_test_m.pdf")
+    with PdfPages(out) as pdf:
+        for n, _t, fn in SHEETS:
+            if not only or n in only: fn(pdf)
+    print("wrote", out)

@@ -13,7 +13,8 @@ INDEX = [("G-001", "Cover: scope, basis of design, sheet index"),
          ("E-004", "Service, meters, feeders and grounding"), ("E-005", "Panel schedules"),
          ("E-101", "Lower flat: power and lighting"), ("E-102", "Middle flat: power and lighting"),
          ("E-103", "Upper flat main floor: power and lighting"), ("E-104", "Attic: power and lighting"),
-         ("M-001", "HVAC notes, equipment schedule, air balance"), ("M-101", "Lower flat: HVAC"), ("M-102", "Middle flat: HVAC"), ("M-103", "Upper flat main floor: HVAC"), ("M-104", "Attic: HVAC"),
+         ("M-001", "Mechanical notes, equipment and exhaust schedules"), ("M-002", "Heating and cooling loads"),
+         ("M-003", "Air distribution, outdoor units, venting"), ("M-101", "Lower flat: HVAC"), ("M-102", "Middle flat: HVAC"), ("M-103", "Upper flat main floor: HVAC"), ("M-104", "Attic: HVAC"),
          ("P-001", "Plumbing and gas notes, fixture schedule, risers"), ("P-101", "Lower flat: plumbing and gas"), ("P-102", "Middle flat: plumbing and gas"),
          ("P-103", "Upper flat main floor: plumbing and gas"), ("P-104", "Attic: plumbing and gas")]
 
@@ -58,16 +59,16 @@ def cover(pdf):
         "Closets: one shelf and rod. Doors 6'-8\" high as scheduled. Have the cut and separating attic rafters (inspection report) repaired while the attic is open.",
         "Furniture (queen beds 5'-0\" x 6'-8\", desks, couches) is drawn to show that it fits; it is not part of the work."], fs=6.4, lh=0.165)
     bg.text(8.9, 9.45, "SHEET INDEX", fontsize=6.6, fontweight="bold", color=INK, va="center")
-    table(bg, 8.9, 9.3, [0.7, 3.5], [["Sheet", "Title"]] + [[a, t] for a, t in INDEX], fs=5.9, rh=0.185)
-    b.text_block(bg, 8.9, 5.05, "Open items the trade checks raised", [
+    ye = table(bg, 8.9, 9.3, [0.7, 3.5], [["Sheet", "Title"]] + [[a, t] for a, t in INDEX], fs=5.4, rh=0.14)
+    b.text_block(bg, 8.9, ye - 0.3, "Open items the trade checks raised", [
         "1  Lower flat bedrooms need an escape window or outside door (A-101).",
         "2  Panels: 125 A is recommended in all three flats (E-001).",
         "3  Panel A: the lower hall is about 2'-10\" deep; 36 in. clear is needed.",
         "   Measure it or use the deeper west end of the hall (E-101).",
         "4  Lower flat ceilings are too low for a soffit: ducts in joist space (M-101).",
-        "5  Attic: only the two duct risers fit in the old chimney shaft beside",
-        "   bath B's tub; furnace and heater vents go out the east wall (M-103).",
-        "6  Middle flat dryer vent is about 29 ft of a 35 ft limit (M-102).",
+        "5  Exhaust caps: none on the west wall; east wall ones: verify grade and",
+        "   the stair. Line sets wait for the deck area's size (M-001, M-003).",
+        "6  Middle flat dryer: heat-pump, no vent; hood recirculating (M-102).",
         "7  Middle bath 2 toilet drain crosses joists on its way to stack S1: fur",
         "   the lower flat ceiling there or shift the toilet (P-102).",
         "8  Upper kitchen drain runs 14 ft to stack S2: 3 1/2 in. of fall (P-103).",

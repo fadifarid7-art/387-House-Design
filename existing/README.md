@@ -50,7 +50,16 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   Design basis: electric ranges and dryers, gas furnaces and water heaters, central air (1.5 / 2 / 3 ton). Result: a 125 A panel and feeder
   per flat; building service 200 A calculated, so the old cable (typically 4/0 Al, 180 A) is replaced; 3-position meter stack with 125 A
   meter-mains at the existing place (east wall, north end). Receptacles are placed by the NEC spacing rules from the plan model; kitchen
-  counter receptacles alternate over 3 or 4 circuits. The HVAC and plumbing sheets in the builder set predate the floor-plan review.
+  counter receptacles alternate over 3 or 4 circuits. The plumbing sheets in the builder set predate the floor-plan review.
+- `drawings/390-Forest_Mechanical_Rev1.pdf`: the HVAC set for the agreed floor plans. `src/b390_mq.py` loads (Manual J method written out room
+  by room: U x A x dT per surface, glass solar gain, people, lights, infiltration and the ASHRAE 62.2 ventilation rate), equipment (Manual S) and
+  room airflows; `src/b390_mr.py` places every register, return grille, jump duct and cap by a clearance search and routes every branch, return,
+  exhaust duct and vent on a 3 in. grid through its joist space (square to the walls; not across another flat, the trunk, the chase, a stair
+  opening or a panel's dedicated space; caps 3 ft from windows, doors and property lines, none on the west wall); `src/b390_m.py` draws M-001
+  notes, equipment and per-fan exhaust schedules, M-002 loads, M-003 air distribution, the condenser airflow check under the rear deck and the
+  chase, M-101 to M-104 duct plans. Result: three 1.5 ton systems with 40,000 Btu/h two-stage furnaces, 600 CFM, 14 x 8 in. trunks; the attic
+  is fed from the upper flat's main-floor trunk in the attic floor; middle flat dryer is a ventless heat-pump type. Line sets are NOT final:
+  they wait for the size of the walled area under the rear deck.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the
