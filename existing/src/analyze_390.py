@@ -127,15 +127,33 @@ for fl in (3, 4, 5, 6):
                               share_7ft=float((hts >= 7 * FT).mean()) if len(hts) else None,
                               cells=[[float(k[0] * 0.25 + 0.125), float(k[1] * 0.25 + 0.125), float(v - (zf or z0))] for k, v in top.items()]))
         else:
-            # ceiling = the highest strong flat surface below the next floor level
-            zn = NEXT[fl] - 0.12
-            base = zf if zf is not None else z0
-            h, e_ = np.histogram(zs, bins=np.arange(base + 1.8, zn + 0.02, 0.02))
-            zc = None
-            if h.sum() > 200:
-                strong = np.where(h >= 0.4 * h.max())[0]
-                zc = float(e_[strong.max()] + 0.01)
-            rooms.append(dict(name=r["name"], floor_z=zf, ceil_ft=(zc - base) / FT if zc else None, pts=int(len(ii))))
+            # ceiling height cell by cell (10 in. grid): floor = median of the floor returns in the room,
+            # ceiling = top of the returns below the next floor level; the room height is the most common value
+            zn = NEXT[fl] - 0.10
+            fz = zs[np.abs(zs - z0) < 0.10]
+            base = float(np.median(fz)) if len(fz) > 50 else z0
+            xs, ys = X[ii], Y[ii]
+            band = (zs > base + 1.8) & (zs < zn)
+            gx = np.floor(xs[band] / 0.25).astype(int); gy = np.floor(ys[band] / 0.25).astype(int)
+            cells = {}
+            for a_, b_, c_ in zip(gx, gy, zs[band]):
+                cells.setdefault((a_, b_), []).append(c_)
+            hts = np.array([np.percentile(v, 97) - base for v in cells.values() if len(v) >= 8])
+            main = second = None; share2 = 0.0
+            if len(hts) >= 6:
+                hh, ee = np.histogram(hts, bins=np.arange(1.8, 3.2, 0.0254))
+                sm_ = np.convolve(hh, [1, 2, 1], mode="same")
+                i0 = int(np.argmax(sm_)); main = float(ee[i0] + 0.0127)
+                near = np.abs(hts - main) <= 0.05
+                rest = hts[np.abs(hts - main) > 0.10]
+                if len(rest) >= 0.2 * len(hts):
+                    hh2, _ = np.histogram(rest, bins=ee); j = int(np.argmax(np.convolve(hh2, [1, 2, 1], mode="same")))
+                    second = float(ee[j] + 0.0127); share2 = float((np.abs(hts - second) <= 0.05).mean())
+                rooms.append(dict(name=r["name"], floor_z=base, ceil_ft=main / FT, share_main=float(near.mean()), second_ft=(second / FT if second else None),
+                                  share_second=share2, spread_in=float((np.percentile(hts[near], 90) - np.percentile(hts[near], 10)) / IN) if near.sum() > 3 else None,
+                                  cells=int(len(hts))))
+            else:
+                rooms.append(dict(name=r["name"], floor_z=base, ceil_ft=None, cells=int(len(hts))))
     # windows: sill and head from the gap in wall returns
     wins = []
     W = plan[str(fl)]["windows"]
@@ -193,7 +211,14 @@ for fl in (3, 4, 5, 6):
             if 0.06 < t < 0.3:
                 th.append(float(t / IN))
     out["floors"][str(fl)] = dict(rooms=rooms, windows=wins, partition_in=th)
-    print("floor", fl, "| ceilings:", ", ".join("%s %s" % (r["name"], ("%.1f" % r["ceil_ft"]) if r.get("ceil_ft") else (("%.1f-%.1f (%.0f%% >=7ft)" % (r["ceil_min_ft"], r["ceil_max_ft"], 100 * r["share_7ft"])) if r.get("ceil_max_ft") else "?")) for r in rooms))
+    for r in rooms:
+        if r.get("ceil_ft"):
+            print("   floor %d %-16s %5.1f in. over %3.0f%% of the room (spread %.1f in.)%s  [%d cells]" % (fl, r["name"], r["ceil_ft"] * 12, 100 * r["share_main"], r.get("spread_in") or 0,
+                  ("; second height %.1f in. over %.0f%%" % (r["second_ft"] * 12, 100 * r["share_second"])) if r.get("second_ft") else "", r["cells"]))
+        elif r.get("ceil_max_ft"):
+            print("   floor %d %-16s attic %.1f-%.1f ft" % (fl, r["name"], r["ceil_min_ft"], r["ceil_max_ft"]))
+        else:
+            print("   floor %d %-16s not enough scan points" % (fl, r["name"]))
     print("     windows (width, sill, head in.):", [(round(w["width_in"]), round(w["sill_in"]) if w["sill_in"] else None, round(w["head_in"]) if w["head_in"] else None) for w in wins])
     print("     partition thickness in.: n=%d median %.1f" % (len(th), np.median(th) if th else 0), [round(t, 1) for t in th][:14])
 json.dump(out, open(OUT, "w"))

@@ -124,6 +124,8 @@ def draw_floor(ax, F, T, names=None, heights=None, furniture=True, label_size=5.
         ts = np.linspace(a_["start"], a_["end"], 24)
         pts = [T((cx + rr * math.cos(a0 + t), cy + rr * a_["ratio"] * math.sin(a0 + t))) for t in ts]
         ax.plot([p[0] for p in pts], [p[1] for p in pts], color="#5b6470", lw=0.45, zorder=7)
+    for pts_ in F.get("arc_pts", []):
+        ax.plot([p[0] for p in pts_], [p[1] for p in pts_], color="#5b6470", lw=0.45, zorder=7)
     for o in F["windows"]:
         if len(o["pts"]) >= 4:
             poly(ax, [T(q) for q in o["pts"]], fc="#cfe3f7", ec=BLUE, lw=0.6, z=8)
@@ -192,6 +194,105 @@ def uncaptured_exterior(F, T):
         if len(run) >= 8:
             out.append(run)
     return out
+
+
+def _cluster(vals, wts, tol):
+    """1-D clustering of line positions: returns sorted cluster centres (length-weighted)."""
+    order = np.argsort(vals)
+    cl, cur, cw = [], [], []
+    for i in order:
+        if cur and vals[i] - (np.dot(cur, cw) / sum(cw)) > tol:
+            cl.append(float(np.dot(cur, cw) / sum(cw))); cur, cw = [], []
+        cur.append(vals[i]); cw.append(max(wts[i], 0.1))
+    if cur:
+        cl.append(float(np.dot(cur, cw) / sum(cw)))
+    return cl
+
+
+def _snap(v, lines, tol):
+    if not lines:
+        return v
+    j = min(lines, key=lambda q: abs(q - v))
+    return j if abs(j - v) <= tol else v
+
+
+def regularize(F, T, tol_line=0.25, tol_end=0.5, max_skew=10.0, thick=4 / 12):
+    """Straighten a scanned floor: walls within `max_skew` degrees of square are made exactly square, walls within
+    3 in. of one line are put on that line, ends are closed onto the crossing walls, and room corners follow.
+    Walls that really run at an angle are kept. Returns the floor in drawing feet plus statistics."""
+    H, V, Dg = [], [], []
+    for w in F["walls"]:
+        P = [T(q) for q in w["pts"]]
+        if len(P) < 4:
+            continue
+        a, b = P[0], P[3]
+        L = math.dist(a, b)
+        if L < 0.05:
+            continue
+        ang = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0])) % 180
+        if min(ang, 180 - ang) <= max_skew:
+            H.append([a, b, L])
+        elif abs(ang - 90) <= max_skew:
+            V.append([a, b, L])
+        else:
+            Dg.append([a, b, L])
+    hy = _cluster(np.array([(a[1] + b[1]) / 2 for a, b, L in H]), [L for *_, L in H], tol_line) if H else []
+    vx = _cluster(np.array([(a[0] + b[0]) / 2 for a, b, L in V]), [L for *_, L in V], tol_line) if V else []
+    moved, skew = [], []
+    walls, t2 = [], thick / 2
+    for a, b, L in H:
+        y = _snap((a[1] + b[1]) / 2, hy, tol_line * 1.01)
+        x0, x1 = sorted((_snap(a[0], vx, tol_end), _snap(b[0], vx, tol_end)))
+        moved.append(max(abs(a[1] - y), abs(b[1] - y))); skew.append(abs(math.degrees(math.atan2(b[1] - a[1], abs(b[0] - a[0]) + 1e-9))))
+        walls.append(dict(pts=[(x0 - t2, y - t2), (x1 + t2, y - t2), (x1 + t2, y + t2), (x0 - t2, y + t2)]))
+    for a, b, L in V:
+        x = _snap((a[0] + b[0]) / 2, vx, tol_line * 1.01)
+        y0, y1 = sorted((_snap(a[1], hy, tol_end), _snap(b[1], hy, tol_end)))
+        moved.append(max(abs(a[0] - x), abs(b[0] - x))); skew.append(abs(math.degrees(math.atan2(b[0] - a[0], abs(b[1] - a[1]) + 1e-9))))
+        walls.append(dict(pts=[(x - t2, y0 - t2), (x + t2, y0 - t2), (x + t2, y1 + t2), (x - t2, y1 + t2)]))
+    diag = []
+    for a, b, L in Dg:
+        a2 = (_snap(a[0], vx, tol_end), _snap(a[1], hy, tol_end)); b2 = (_snap(b[0], vx, tol_end), _snap(b[1], hy, tol_end))
+        ux, uy = (b2[0] - a2[0]), (b2[1] - a2[1]); n = math.hypot(ux, uy) or 1; nx, ny = -uy / n * t2, ux / n * t2
+        walls.append(dict(pts=[(a2[0] + nx, a2[1] + ny), (b2[0] + nx, b2[1] + ny), (b2[0] - nx, b2[1] - ny), (a2[0] - nx, a2[1] - ny)]))
+        diag.append(((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, L))
+
+    def snap_pt(p):
+        return (_snap(p[0], vx, tol_end), _snap(p[1], hy, tol_end))
+
+    def snap_rect(o):
+        P = [T(q) for q in o["pts"]]
+        if len(P) < 4:
+            return dict(pts=P, closed=False)
+        xs = [p[0] for p in P]; ys = [p[1] for p in P]
+        if (max(xs) - min(xs)) >= (max(ys) - min(ys)):
+            cy = (max(ys) + min(ys)) / 2; d = _snap(cy, hy, tol_end) - cy
+            return dict(pts=[(p[0], p[1] + d) for p in P]) if (max(ys) - min(ys)) < 1.0 else dict(pts=P)
+        cx = (max(xs) + min(xs)) / 2; d = _snap(cx, vx, tol_end) - cx
+        return dict(pts=[(p[0] + d, p[1]) for p in P]) if (max(xs) - min(xs)) < 1.0 else dict(pts=P)
+
+    rooms = []
+    for r in F["rooms"]:
+        P = [snap_pt(T(q)) for q in r["pts"]]
+        Q = [P[0]]
+        for p in P[1:]:
+            if math.dist(p, Q[-1]) > 0.02:
+                Q.append(p)
+        rooms.append(dict(pts=Q, name=r["name"]))
+    arcs = []
+    for a_ in F.get("door_arcs", []):
+        cx, cy = a_["center"]; mx, my = a_["major"]; rr = math.hypot(mx, my); a0 = math.atan2(my, mx)
+        arcs.append([T((cx + rr * math.cos(a0 + t), cy + rr * a_["ratio"] * math.sin(a0 + t))) for t in np.linspace(a_["start"], a_["end"], 24)])
+    G = dict(rooms=rooms, walls=walls, doors=[snap_rect(o) for o in F["doors"]], windows=[snap_rect(o) for o in F["windows"]],
+             openings=[snap_rect(o) for o in F["openings"]], door_arcs=[], arc_pts=arcs,
+             fixtures=[dict(pts=[T(q) for q in o["pts"]]) for o in F["fixtures"]], appliances=[dict(pts=[T(q) for q in o["pts"]]) for o in F["appliances"]],
+             furniture=[dict(pts=[T(q) for q in o["pts"]]) for o in F["furniture"]])
+    stats = dict(n_square=len(H) + len(V), n_diag=len(Dg), max_move_in=12 * max(moved) if moved else 0.0, max_skew=max(skew) if skew else 0.0,
+                 med_skew=float(np.median(skew)) if skew else 0.0, lines=len(hy) + len(vx), diag=diag)
+    return G, stats
+
+
+IDENT = staticmethod(lambda p: p) if False else (lambda p: (p[0], p[1]))
 
 
 def north(ax, x, y, vec, r=1.6):
