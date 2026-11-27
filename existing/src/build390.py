@@ -34,6 +34,17 @@ def V(x, y0, y1, t=T4): return (x - t / 2, min(y0, y1), x + t / 2, max(y0, y1))
 def Hh(y, x0, x1, t=T4): return (min(x0, x1), y - t / 2, max(x0, x1), y + t / 2)
 
 
+def Dg(x0, y0, x1, y1, t=T4):
+    """A wall running at an angle from (x0, y0) to (x1, y1), t thick: its four corners."""
+    dx, dy = x1 - x0, y1 - y0; n = math.hypot(dx, dy); ox, oy = -dy / n * t / 2, dx / n * t / 2
+    return [(x0 + ox, y0 + oy), (x1 + ox, y1 + oy), (x1 - ox, y1 - oy), (x0 - ox, y0 - oy)]
+
+
+def wshape(r):
+    """Shapely shape of one wall entry: (x0, y0, x1, y1) rectangle, or a list of corner points for an angled wall."""
+    return Polygon(r) if isinstance(r[0], (tuple, list)) else box(*r)
+
+
 def room(no, name, kind, rects, size, ceil, lab=None, new=False, disp=None, compact=False):
     """disp: shorter name to print on the plan; compact: two-line label for a tight room."""
     r0 = rects[0]
@@ -100,36 +111,48 @@ LV = {
     4: dict(name="Middle flat", view=((-2.5, 37.1), (-3, 30)),
             # As found (scan + owner's video): furnace and water heater stand in the louvered closet at the south end of the hall, the panel is on the
             # hall wall, the 4 x 3'-7" room beside bedroom 1's door is bedroom 1's closet, and bedroom 2's closet is on the outside wall.
-            cut=[(31.0, 22.6, 31.45, 25.6), (12.28, 13.81, 12.61, 16.42), (10.42, 7.82, 10.75, 12.75),     # upper flat entry; old bath door; old bedroom 2 opening
-                 (31.5, 0.56, 33.6, 3.8), (6.16, 25.3, 9.7, 25.8),                                          # scan artefacts beside walls the scan missed
-                 (12.63, 13.28, 15.29, 13.66)],                                                             # cased opening between the hall and the passage, drawn as a clear gap
+            # Checked against the 3D scan (27 Nov): the front is an angled bay, both corners, each with a window; the two diagonal walls the Polycam plan
+            # drew at the hall and at the living room's north-west corner are not there (straight walls); bedroom 1's north wall steps (a 3 ft wide
+            # projection, then the room runs 1'-6" deeper); the stair to the upper flat is 7 risers, a landing, then 9 risers over bedroom 1's closet.
+            cut=[(12.28, 13.81, 12.61, 16.42), (10.42, 7.82, 10.75, 12.75),                               # old bath door; old bedroom 2 opening (walled up: drawn as new wall)
+                 (12.63, 13.28, 15.29, 13.66),                                                               # cased opening between the hall and the passage
+                 (16.86, 10.4, 18.3, 11.4), (18.72, 9.71, 19.9, 11.4), (29.0, 13.42, 31.05, 14.84),          # diagonals drawn by the Polycam plan that the 3D scan does not show
+                 (31.41, 0.1, 33.7, 3.9)],                                                                   # its attempt at the south-east corner (replaced by the bay wall below)
             ap=[(16.9, 6.09, 18.1, 6.09, 1), (5.96, 18.9, 7.16, 18.9, 1)],
-            stairs=[(20.6, 24.75, 24.6, 27.3, "x-", "UP"), (17.2, 21.5, 19.6, 24.5, "y-", "UP")],
+            # stair to the upper flat, from the 3D scan: 7 risers west along the north wall, landing, 9 risers south; the top of it passes over the closet
+            stairs=[(19.9, 24.7, 24.5, 27.39, "x-", "UP", 0.767), (16.85, 24.7, 19.9, 27.39, "x-", "", 0), (16.85, 21.63, 19.52, 24.7, "y-", "UP", 0.64)],
+            above=[(16.85, 19.6, 19.52, 21.3, "stair\nabove")],
+            win=[Dg(32.2, 3.13, 33.8, 4.67, 0.3)],
+            mask=[[(31.4, -0.2), (35.6, -0.2), (35.6, 5.7), (34.9, 5.7), (31.35, 2.2)]],          # outside the bay: not floor
             demo=[(10.76, 3.26, 16.33, 3.63), (15.96, 0.55, 16.33, 3.63), (10.76, 6.28, 15.47, 6.65), (15.09, 6.28, 15.47, 9.36), (15.09, 9.36, 17.19, 9.72),
                   (5.78, 13.66, 6.16, 18.49)],
-            new=[Hh(5.79, 10.75, 18.74, T6), V(13.17, 6.04, 9.37), Hh(9.535, 10.75, 13.4), Hh(9.535, 16.4, 18.9),
+            new=[Hh(5.79, 10.75, 18.74, T6), V(13.17, 6.04, 9.37), Hh(9.535, 10.75, 13.45), Hh(9.535, 16.78, 18.74),
                  V(10.585, 9.3, 10.2), V(10.585, 12.7, 12.75), (12.28, 13.81, 12.61, 16.42), V(5.115, 13.64, 18.85), Hh(18.68, 4.95, 5.82)],
-            fix=[V(34.76, 0.2, 5.6), Hh(0.37, 32.2, 34.93), Hh(26.0, 6.2, 15.45), V(15.28, 21.3, 26.17), V(31.23, 16.1, 17.9), Hh(0.37, 16.2, 18.95)],
+            fix=[V(31.23, 0.2, 2.35), Dg(31.2, 2.17, 34.79, 5.63), Hh(0.37, 16.2, 18.95), V(31.23, 16.1, 17.9), Hh(15.0, 29.4, 31.23),     # bay, south wall gap, kitchen
+                 V(18.91, 9.7, 11.41), V(17.005, 9.7, 11.41),                                                                                # straight walls where the diagonals were drawn
+                 V(9.77, 25.42, 27.71), Hh(27.55, 9.6, 15.45), V(15.28, 21.3, 27.71), V(16.68, 21.63, 27.39)],                               # bedroom 1 north-east, stair's west wall
             doors=[("200", "v", 34.76, 6.49, 9.17, "lo", -1, "2'-8\" x 6'-8\"", "Flat entrance (existing: verify)"),
                    ("201", "v", 10.585, 10.2, 12.7, "hi", -1, "2'-6\" x 6'-8\"", "Bedroom 2, from the hall"),
                    ("202", "v", 10.585, 0.6, 3.1, "lo", 1, "2'-6\" x 6'-8\"", "Bath 2, from bedroom 2"),
-                   ("203", "h", 9.535, 13.4, 15.4, "lo", 1, "3'-6\" pair x 6'-8\"", "Mechanical, solid core"), ("203", "h", 9.535, 15.4, 16.9, "hi", 1, "", ""),
+                   ("203", "h", 9.535, 13.45, 15.115, "lo", 1, "3'-4\" pair x 6'-8\"", "Mechanical, solid core"), ("203", "h", 9.535, 15.115, 16.78, "hi", 1, "", ""),
                    ("205", "h", 18.68, 9.7, 12.2, "hi", -1, "2'-6\" x 6'-8\"", "Bath 1, from bedroom 1"),
-                   ("206", "h", 17.525, 12.66, 15.0, "lo", 1, "2'-4\" x 6'-8\"", "Bedroom 1 (opening widened)")],
-            bifolds=[("204", "v", 10.585, 6.3, 9.3, -1, "3'-0\" bifold", "Closet, bedroom 2"), ("207", "v", 15.28, 18.3, 20.8, -1, "2'-6\" bifold", "Closet, bedroom 1")],
-            rooms=[room("201", "Living room", "living", [(19.07, 0.54, 34.59, 11.4), (22.17, 11.4, 31.06, 13.64)], "15'-6\" x 10'-10\" + dining", "8'-8\"", (28.9, 4.2)),
+                   ("206", "h", 17.525, 12.66, 15.0, "lo", 1, "2'-4\" x 6'-8\"", "Bedroom 1 (opening widened)"),
+                   ("208", "v", 31.23, 22.1, 24.77, "lo", -1, "2'-8\" x 6'-8\"", "Upper flat entrance (existing)")],
+            bifolds=[("204", "v", 10.585, 6.3, 9.3, -1, "3'-0\" bifold", "Closet, bedroom 2"), ("207", "v", 15.28, 18.0, 20.5, -1, "2'-6\" bifold", "Closet, bedroom 1")],
+            rooms=[room("201", "Living room", "living", [(19.07, 0.54, 34.59, 11.4), (22.17, 11.4, 31.06, 13.64)], "15'-6\" x 10'-10\" + bay", "8'-8\"", (26.5, 9.6)),
                    room("202", "Kitchen", "kitchen", [(19.86, 13.64, 31.06, 20.72)], "11'-2\" x 7'-1\"", "7'-4\"", (25.5, 16.6)),
-                   room("203", "Bedroom 1", "bed", [(0.05, 18.85, 15.11, 25.83), (0.05, 13.64, 4.95, 18.85), (12.62, 17.69, 15.11, 18.85)], "15'-0\" x 7'-0\" + alcove", "7'-8\"", (10.6, 21.6)),
+                   room("203", "Bedroom 1", "bed", [(0.05, 18.85, 6.2, 25.88), (6.2, 18.85, 9.93, 25.42), (9.93, 18.85, 15.11, 27.39), (0.05, 13.64, 4.95, 18.85), (12.62, 17.69, 15.11, 18.85)],
+                        "15'-0\" x 7'-0\" to 8'-6\" + alcove", "7'-8\"", (6.6, 21.6)),
                    room("204", "Bedroom 2", "bed", [(0.05, 0.54, 10.42, 13.3)], "10'-4\" x 12'-9\"", "8'-8\"", (6.8, 2.2)),
                    room("205", "Bath 1 (bedroom 1)", "bath", [(5.28, 13.64, 12.28, 18.51)], "7'-0\" x 4'-10\"", "7'-4\"", (9.1, 17.1), True, disp="BATH 1"),
                    room("206", "Bath 2 (bedroom 2)", "bath", [(10.75, 0.54, 18.74, 5.54)], "8'-0\" x 5'-0\"", "8'-0\"", (14.8, 2.0), True, disp="BATH 2"),
-                   room("207", "Hall", "hall", [(10.75, 9.7, 16.84, 13.3), (16.84, 9.7, 18.7, 11.41)], "6'-1\" x 3'-7\"", "7'-0\"", (12.25, 12.1)),
+                   room("207", "Hall", "hall", [(10.75, 9.7, 16.84, 13.3)], "6'-1\" x 3'-7\"", "7'-0\"", (12.25, 12.1)),
                    room("208", "Mechanical", "mech", [(13.33, 6.04, 18.74, 9.37)], "5'-5\" x 3'-4\"", "", (16.0, 8.6), True, disp="MECH.", compact=True),
                    room("209", "Laundry", "laundry", [(17.17, 11.74, 21.7, 13.64)], "", "", (19.45, 15.1)),
                    room("210", "Passage", "hall", [(12.62, 13.64, 19.5, 17.36)], "", "7'-4\"", (14.6, 15.7)),
                    room("211", "Closet (BR 2)", "closet", [(10.75, 6.04, 13.0, 9.37)], "", "", (11.87, 8.3), True),
-                   room("212", "Closet (BR 1)", "closet", [(15.45, 17.69, 19.52, 21.3)], "", "", (17.5, 19.9)),
-                   room("213", "Stair hall (upper flat)", "stair", [(19.86, 21.06, 31.06, 27.38)], "", "8'-9\"", (26.5, 23.2))],
+                   room("212", "Closet (BR 1)", "closet", [(15.45, 17.69, 19.52, 21.3)], "", "", (18.05, 18.3)),
+                   room("213", "Stair hall (upper flat)", "stair", [(19.86, 21.06, 31.06, 27.38)], "", "8'-9\"", (25.6, 22.9))],
             fx=[("tub", 16.24, 0.54, 18.74, 5.54, True), ("wc", 14.95, 5.54, "y-", True), ("van", 11.0, 3.79, 13.5, 5.54, True),
                 ("tub", 5.28, 13.64, 7.78, 18.51, True), ("wc", 9.03, 13.64, "y+", True), ("van", 10.28, 13.64, 12.28, 15.39, True),
                 ("fridge", 19.9, 18.22, 22.9, 20.72), ("dw", 22.9, 18.64, 24.9, 20.72), ("base", 24.9, 18.64, 25.9, 20.72), ("sinkbase", 25.9, 18.64, 28.9, 20.72), ("base", 28.9, 18.64, 31.06, 20.72),
@@ -137,28 +160,31 @@ LV = {
                 ("washer", 17.2, 11.76, 19.45, 14.3), ("dryer", 19.45, 11.76, 21.7, 14.3),
                 ("furnace", 13.5, 6.14, 14.96, 8.56), ("wh", 16.0, 7.05), ("panel", 16.84, 11.8, 16.84, 13.05, -1, -0.375)],
             furn=[("bed", 0.05, 6.9, "x+"), ("night", 0.05, 9.5, 1.55, 11.0), ("desk", 1.0, 11.3, 5.0, 13.3), ("dresser", 0.05, 0.54, 1.55, 3.54),
-                  ("bed", 0.05, 23.33, "x+"), ("night", 0.05, 19.2, 1.55, 20.7), ("desk", 0.05, 14.2, 2.05, 18.2), ("dresser", 8.0, 24.33, 11.0, 25.83),
-                  ("couch", 19.2, 2.0, 22.2, 9.0, "x-"), ("tv", 33.2, 1.0, 34.59, 5.5), ("ctable", 24.5, 3.5, 26.5, 7.5), ("table", 28.3, 9.9, 31.3, 12.9)],      # table kept out of the opening between living room and kitchen
-            tagpos={"207": (16.05, 20.65)},
-            lead={},
-            notes=[(1, (17.5, 3.0), "Bath 2, private to bedroom 2, where bedroom 2's old closet and the old furnace closet were: 60 in. tub, toilet, 30 in. vanity. Its door is the old closet doorway widened to 2'-6\"; it opens back against the outside wall."),
+                  ("bed", 12.61, 27.39, "y-"), ("night", 8.55, 23.9, 10.05, 25.4), ("desk", 1.0, 23.88, 5.0, 25.88), ("dresser", 0.05, 14.0, 1.55, 17.0),      # bedroom 1: bed in the deeper east end
+                  ("couch", 19.2, 2.0, 22.2, 9.0, "x-"), ("tv", 28.2, 13.35, 30.9, 14.75), ("ctable", 24.5, 3.5, 26.5, 7.5), ("table", 28.2, 0.9, 30.9, 3.6)],     # TV and table where the video shows them
+            tagpos={"207": (16.2, 20.65)},
+            lead={16: (33.0, 3.9), (20, 1): (16.0, 25.6)},
+            notes=[(1, (17.5, 3.0), "Bath 2, private to bedroom 2, where its old closet and the old furnace closet were: 60 in. tub, toilet, 30 in. vanity. Door is the old closet doorway widened to 2'-6\"; opens back against the outside wall."),
                    (2, (17.95, 7.35), "New 2x6 wet wall. Tub valve at this end; access panel AP in the mechanical closet."),
-                   (3, (17.5, 1.35), "Not seen by the scan (behind the old furnace closet). Bath 2 needs 8'-0\" from the bedroom wall to the living room wall: open up and measure before ordering the tub."),
-                   (4, (15.2, 11.5), "Mechanical closet. Furnace and water heater stay at this end of the hall, where they are today (owner's video), so gas and duct runs stay short. Sealed-combustion units vented through the south wall. Pair of solid doors, 3'-6\" clear; 5/8 in. type X board."),
+                   (3, (17.5, 1.35), "Not seen by the scan. Bath 2 needs 8'-0\" from the bedroom wall to the living room wall: open up and measure before ordering the tub."),
+                   (4, (15.2, 11.5), "Mechanical closet. Furnace and water heater stay at this end of the hall, where they are today (video). Sealed-combustion units vented through the south wall. Pair of solid doors, two equal 1'-8\" leaves; 5/8 in. type X board."),
                    (5, (18.1, 8.6), "Chimney removed, roof to lower flat. Its place is the pipe chase: drain stack S and risers."),
                    (6, (8.6, 7.8), "New closet for bedroom 2, 3'-0\" bifold, in the old south end of the hall."),
                    (7, (8.0, 10.0), "Bedroom 2's door moves north in the same wall: new 2'-6\" door, opens back against the wall."),
-                   (8, (14.5, 12.6), "Electrical panel stays on this wall (owner's video; verify). 30 x 36 in. kept clear."),
-                   (9, (6.5, 15.0), "Bath 1 becomes private to bedroom 1: door to the passage walled up, new 2'-6\" door from the bedroom. Tub stays at this end (60 in. between studs; the scan reads finished faces). Toilet and 24 in. vanity on the south wall."),
+                   (8, (14.5, 12.6), "Electrical panel stays on this wall (video; verify). 30 x 36 in. kept clear."),
+                   (9, (6.5, 15.0), "Bath 1 becomes private to bedroom 1: door to the passage walled up, new 2'-6\" door from the bedroom. Tub stays (60 in. between studs). Toilet and 24 in. vanity on the south wall."),
                    (10, (3.9, 17.1), "Wall moves 10 in. west so tub, toilet and vanity each get full clearance. It may carry load: check before moving."),
-                   (11, (7.9, 19.5), "Access panel AP for the tub valve: keep clear of furniture."),
-                   (12, (13.9, 20.5), "Bedroom 1 door: opening widened from 1'-11\" to 2'-4\", the most that fits between the two walls."),
-                   (13, (17.5, 18.6), "Bedroom 1's closet, as today. Doorway not in the scan (position from the video: verify). New 2'-6\" bifold."),
-                   (14, (19.45, 16.5), "Washer and dryer stay in the recess, open to the passage as today. Doors do not fit: the passage would drop under 36 in."),
+                   (11, (7.9, 19.6), "Access panel AP for the tub valve: keep clear of furniture."),
+                   (12, (11.6, 19.9), "Bedroom 1 door: opening widened from 1'-11\" to 2'-4\", the most that fits."),
+                   (13, (16.3, 18.9), "Bedroom 1's closet, as today, about 4'-1\" x 3'-7\". The upper flat's stair passes over it at 8 ft and up, so headroom is full. The scan only sees in through the doorway: verify. New 2'-6\" bifold."),
+                   (14, (19.45, 16.5), "Washer and dryer stay in the recess, open to the passage as today. Doors do not fit: passage would drop under 36 in."),
                    (15, (31.4, 7.8), "Flat entrance (existing: verify size and swing)."),
-                   (16, (32.4, 1.5), "Wall not in the scan: verify."), (16, (11.0, 26.9), ""), (16, (16.2, 24.0), ""),
-                   (17, (32.2, 19.2), "Window over the counter (photo). Scan shows a 4'-4\" opening; the amber piece is wall behind the range: verify."),
-                   (18, (32.2, 24.1), "Upper flat's entry door from the porch: position not in the scan, verify.")],
+                   (16, (31.3, 5.7), "Shape from the 3D scan, where the Polycam plan missed a wall or drew it at an angle: verify. The front is an angled bay, a window each side of the door."),
+                   (16, (30.3, 12.6), ""), (16, (20.2, 10.4), ""), (16, (8.0, 26.65), ""),
+                   (17, (32.2, 19.2), "Window over the counter (photo); the amber piece is wall behind the range: verify."),
+                   (18, (29.4, 25.5), "Upper flat's entrance from the porch: 2'-8\" door, seen in the 3D scan."),
+                   (19, (22.2, 23.2), "Stair to the upper flat (existing, for reference): 7 risers to a landing, then 9 risers passing over bedroom 1's closet; about 7 1/2 in. each."),
+                   (20, (17.95, 10.55), "Closed-in space the scan could not see into: check when the walls are open."), (20, (14.0, 28.75), "")],
             dims=[(10.75, 3.2, 16.24, 3.2, 0.26), (16.02, 0.54, 16.02, 5.54, 0.2), (11.05, 9.7, 11.05, 13.3, 0.2),
                   (5.28, 18.2, 12.28, 18.2, 0.49), (0.05, 18.45, 4.95, 18.45, 0.6), (10.75, 6.9, 13.0, 6.9, 0.5)]),
     5: dict(name="Upper flat, main floor", view=((-3.5, 36.1), (-3, 30)), cut=[],
@@ -235,21 +261,21 @@ def geom(fl):
         return _G[fl]
     G, _ = sx.regularize(de.P390[str(fl)], de.T390(fl))
     L = LV[fl]
-    demo = unary_union([box(*r) for r in L["demo"]]) if L["demo"] else None
+    demo = unary_union([wshape(r) for r in L["demo"]]) if L["demo"] else None
     walls = unary_union([Polygon(w["pts"]).buffer(0) for w in G["walls"] if len(w["pts"]) >= 4])
     removed = walls.intersection(demo) if demo is not None else None
     if demo is not None:
         walls = walls.difference(demo)
     if L["cut"]:
-        walls = walls.difference(unary_union([box(*r) for r in L["cut"]]))
-    cut = unary_union([box(*r) for r in L["demo"] + L["new"]]) if (L["demo"] or L["new"]) else None
+        walls = walls.difference(unary_union([wshape(r) for r in L["cut"]]))
+    cut = unary_union([wshape(r) for r in L["demo"] + L["new"]]) if (L["demo"] or L["new"]) else None
     def keep(o):
         if len(o["pts"]) < 2: return False
         q = np.array(o["pts"])
         if len(q) >= 4 and max(np.ptp(q[:, 0]), np.ptp(q[:, 1])) < 1.0: return False      # scan artefact, not a door
         c = np.mean(np.array(o["pts"]), 0)
         return cut is None or not cut.buffer(0.3).contains(Polygon([(c[0] - .01, c[1] - .01), (c[0] + .01, c[1] - .01), (c[0] + .01, c[1] + .01)]).centroid)
-    fixu = unary_union([box(*r) for r in L["fix"]]).buffer(0.02) if L["fix"] else None
+    fixu = unary_union([wshape(r) for r in L["fix"]]).buffer(0.02) if L["fix"] else None
     def trim(o):
         """Cut a scanned opening back where a wall is now drawn across part of it."""
         if fixu is None or len(o["pts"]) < 4: return o
@@ -386,9 +412,11 @@ def draw_base(ax, fl, mode="arch"):
     L = LV[fl]; g = geom(fl); arch = mode == "arch"
     for r in g["rooms"]:
         ax.fill([p[0] for p in r["pts"]], [p[1] for p in r["pts"]], fc="#fafafa", ec="none", zorder=1)
+    for m_ in L.get("mask", []):                             # outdoors that the scan's room outline wrongly covers
+        ax.add_patch(MPoly(np.array(m_), closed=True, fc=PAPER, ec="none", zorder=1.5))
     wc_ = EXW if arch else "#b8bdc4"
-    newu = unary_union([box(*r) for r in L["new"]]) if L["new"] else None
-    fixu = unary_union([box(*r) for r in L["fix"]]) if L["fix"] else None
+    newu = unary_union([wshape(r) for r in L["new"]]) if L["new"] else None
+    fixu = unary_union([wshape(r) for r in L["fix"]]) if L["fix"] else None
     if newu is not None:
         _fill(ax, newu.difference(g["walls"]), fc=NEWW if arch else "#8d939b", ec="#7d1a14" if arch else "#8a9099", lw=0.35, zorder=3.9)
     if fixu is not None:
@@ -408,16 +436,23 @@ def draw_base(ax, fl, mode="arch"):
         ax.plot([p[0] for p in pts], [p[1] for p in pts], color="#8d949c", lw=0.4, zorder=4.6)
     for o in g["windows"]:
         ax.add_patch(MPoly(np.array(o["pts"]), closed=True, fc="#cfe3f7", ec="#1f5fa8", lw=0.5, zorder=4.7))
-    for (x0, y0, x1, y1, way, lab_) in L["stairs"]:
-        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="none", ec="#6b7480", lw=0.5, zorder=4.4))
+    for st in L["stairs"]:                                  # (x0, y0, x1, y1, way up, label[, tread depth]); tread depth 0 = a landing
+        x0, y0, x1, y1, way, lab_ = st[:6]; step = st[6] if len(st) > 6 else 0.9
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="white" if step == 0 else "none", ec="#6b7480", lw=0.5, zorder=4.4))
         if way[0] == "x":
-            for t in np.arange(x0 + 0.9, x1 - 0.2, 0.9): ax.plot([t, t], [y0, y1], color="#6b7480", lw=0.3, zorder=4.4)
+            for t in (np.arange(x0 + step, x1 - 0.2, step) if step else []): ax.plot([t, t], [y0, y1], color="#6b7480", lw=0.3, zorder=4.4)
             a, b = ((x0 + 0.4, (y0 + y1) / 2), (x1 - 0.4, (y0 + y1) / 2)); a, b = (b, a) if way == "x-" else (a, b)
         else:
-            for t in np.arange(y0 + 0.9, y1 - 0.2, 0.9): ax.plot([x0, x1], [t, t], color="#6b7480", lw=0.3, zorder=4.4)
+            for t in (np.arange(y1 - step, y0 + 0.2, -step) if step else []): ax.plot([x0, x1], [t, t], color="#6b7480", lw=0.3, zorder=4.4)
             a, b = (((x0 + x1) / 2, y0 + 0.4), ((x0 + x1) / 2, y1 - 0.4)); a, b = (b, a) if way == "y-" else (a, b)
-        ax.annotate("", xy=b, xytext=a, arrowprops=dict(arrowstyle="->", color="#4a4f57", lw=0.6), zorder=4.5)
-        ax.text(a[0], a[1], lab_, fontsize=3.4, color="#4a4f57", ha="center", va="center", zorder=4.6, gid="own", bbox=dict(fc="white", ec="none", pad=0.2))
+        if lab_:
+            ax.annotate("", xy=b, xytext=a, arrowprops=dict(arrowstyle="->", color="#4a4f57", lw=0.6), zorder=4.5)
+            ax.text(a[0], a[1], lab_, fontsize=3.4, color="#4a4f57", ha="center", va="center", zorder=4.6, gid="own", bbox=dict(fc="white", ec="none", pad=0.2))
+    for (x0, y0, x1, y1, lab_) in L.get("above", []):        # a flight passing over this level: dashed outline
+        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fc="none", ec="#6b7480", lw=0.5, ls=(0, (3, 2)), zorder=9.2))
+        ax.text((x0 + x1) / 2, (y0 + y1) / 2, lab_, fontsize=3.2, color="#4a4f57", ha="center", va="center", zorder=9.3, gid="own", linespacing=1.1)
+    for w_ in L.get("win", []):                              # a window the Polycam plan missed (from the 3D scan)
+        ax.add_patch(MPoly(np.array(w_), closed=True, fc="#cfe3f7", ec="#1f5fa8", lw=0.5, zorder=4.7))
     dc = NEWW if arch else "#8a9099"
     for d in L["doors"]:
         s_door(ax, d[1], d[2], d[3], d[4], d[5], d[6], col=dc)
@@ -592,10 +627,12 @@ def obstacles(fl, leaders=None):
         out.append((box(*r), f"bifold {b[0]}", "swing"))
     w = g["walls"]
     for k in ("new", "fix"):
-        if L[k]: w = w.union(unary_union([box(*r) for r in L[k]]))
+        if L[k]: w = w.union(unary_union([wshape(r) for r in L[k]]))
     out.append((w.buffer(-0.03), "a wall", "wall"))
     for o in g["windows"]:
         out.append((Polygon(o["pts"]).buffer(0), "a window", "wall"))
+    for w_ in L.get("win", []):
+        out.append((Polygon(w_).buffer(0), "a window", "wall"))
     for a in g["arcs"]:
         if len(a) >= 2: out.append((LineString(a).buffer(0.04), "an existing door swing", "swing"))
     for (x0, y0, x1, y1, *_r) in L["stairs"]:
@@ -605,7 +642,7 @@ def obstacles(fl, leaders=None):
         out.append((LineString([(d[0], d[1]), (d[2], d[3])]).buffer(0.03), f"dimension line {i}", f"dim:{i}"))
     for a_ in L.get("ap", []):
         out.append((LineString([(a_[0], a_[1]), (a_[2], a_[3])]).buffer(0.08), "an access panel", "fx"))
-    for n, (p, q) in (leaders or {}).items():
+    for n, p, q in (leaders or []):
         out.append((LineString([p, q]).buffer(0.03), f"leader of keynote {n}", f"lead:{n}"))
     return out
 
@@ -704,13 +741,16 @@ def arch_sheet(pdf, number, fl):
         ax.text(x, y, b[0], fontsize=3.6, color=NEWW, ha="center", va="center", zorder=13, gid="tag", bbox=dict(boxstyle="round,pad=0.15", fc="white", ec=NEWW, lw=0.5))
     for i, d in enumerate(L["dims"]):
         dim(ax, *d[:4], at=d[4] if len(d) > 4 else 0.5, gid=f"dim:{i}", text=d[5] if len(d) > 5 else None)
-    lead = L.get("lead", {}); ax._leaders = {n: (p, lead[n]) for n, p, t in L["notes"] if n in lead and t}
+    lead = L.get("lead", {}); ax._leaders = []; cnt = {}
     for n, (x, y), t in L["notes"]:
-        keynote(ax, n, x, y, to=lead.get(n) if t else None)
+        k = cnt.get(n, 0); cnt[n] = k + 1
+        to = lead.get((n, k)) or (lead.get(n) if k == 0 else None)       # lead[n] = first placing, lead[(n, k)] = k-th placing
+        if to: ax._leaders.append((n, (x, y), to))
+        keynote(ax, n, x, y, to=to)
     y = getattr(fig, "_legend_end", 8.0) - 0.15
     bg.text(10.6, y, "KEYNOTES", fontsize=7, fontweight="bold", color=INK, va="center"); y -= 0.24
     kn = [(n, wrap(t, 56)) for n, _p, t in L["notes"] if t]          # an empty text = the same keynote shown at a second place
-    need = sum(0.13 * len(w) + 0.08 for _n, w in kn); k = max(0.86, min(1.0, (y - MG - 0.12) / need))
+    need = sum(0.13 * len(w) + 0.08 for _n, w in kn); k = max(0.82, min(1.0, (y - MG - 0.12) / need))
     for n, w in kn:
         bg.text(10.68, y, str(n), fontsize=5.6, color=NEWW, fontweight="bold", va="center", ha="center")
         for i, ln in enumerate(w):

@@ -13,13 +13,15 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   scope (G-001), floor plans (A-101 to A-104), schedules (A-601), electrical (E), HVAC (M), plumbing and gas (P). Built by
   `src/make_build390.py` from the plan model in `src/build390.py` and the trade modules `src/b390_*.py`. It supersedes the
   earlier before/after and proposed sets.
-- `drawings/390-Forest_A-101_Lower-flat_Rev5.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev3.pdf`: the lower and middle flat floor plans
+- `drawings/390-Forest_A-101_Lower-flat_Rev5.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev4.pdf`: the lower and middle flat floor plans
   as they stand in the floor-by-floor review (newer than the A-101 and A-102 inside the builder set; the upper flat and attic follow, and the
   trade sheets are redrawn once the four floor plans are agreed). Every floor-plan sheet is checked when it is built (`clarity()` in
   `src/build390.py`): no label may sit on another label, a fixture, furniture, a door swing, a wall or a dimension line, and nothing may run
   outside the border. The count is printed; A-101 and A-102 are at zero.
   Middle flat as found (owner's video): the furnace and water heater are in the louvered closet at the south end of the hall and the panel
-  is on the hall wall; the small room beside bedroom 1's door is that bedroom's closet. Rev 3 is planned around that.
+  is on the hall wall; the small room beside bedroom 1's door is that bedroom's closet. Rev 3 was planned around that. Rev 4 is checked
+  against the 3D scan as well: angled bay at the front (both corners), straight walls where the Polycam plan drew two diagonals, bedroom 1's
+  stepped north wall, and the real stair to the upper flat (7 risers, landing, 9 risers) with its outside door.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the
