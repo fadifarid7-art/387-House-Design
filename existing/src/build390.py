@@ -26,8 +26,10 @@ EXISTING = dict(  # home inspection report, Oasis Home Inspections, 9 Oct 2026, 
     upper="the upper flat's furnace and water heater stand in the west end of Room B (new bedroom 4): they move to closet 307",
     equipment="owner's videos: lower flat furnace closet with louvered doors beside the kitchen (room 109); middle flat furnace and water heater in the louvered closet at the south end of the hall, with the electrical panel on the hall wall beside it; a fireplace mantel on the chimney wall of old Room A",
     attic="rafters cut or separated in places; roof flashing lifted", lower="bedroom 2's only window is a small high basement window")
-STACK = (17.3, 8.9)            # new 3 in. drain stack in the old chimney shaft, same spot on every level
-CHIMNEY = (15.8, 6.2, 18.3, 9.3)
+# The old chimney shaft, measured in the attic scan above furniture height (enclosure faces x 15.4 to 18.05, y 5.9 to 8.7; inside about as below).
+# The frames of the middle flat, the upper flat and the attic agree to about 1 in., so the shaft is at the same coordinates on all three.
+CHIMNEY = (15.7, 6.1, 17.8, 8.5)
+STACK = (17.2, 7.9)            # new 3 in. drain stack inside the shaft, same spot on every level
 
 
 def V(x, y0, y1, t=T4): return (x - t / 2, min(y0, y1), x + t / 2, max(y0, y1))
@@ -45,11 +47,11 @@ def wshape(r):
     return Polygon(r) if isinstance(r[0], (tuple, list)) else box(*r)
 
 
-def room(no, name, kind, rects, size, ceil, lab=None, new=False, disp=None, compact=False, plansize=True):
+def room(no, name, kind, rects, size, ceil, lab=None, new=False, disp=None, compact=False, plansize=True, oneline=False):
     """disp: shorter name to print on the plan; compact: two-line label for a tight room; plansize=False: leave the size off the plan label
     (dimension strings or a keynote give it instead)."""
     r0 = rects[0]
-    return dict(no=no, name=name, kind=kind, rects=rects, size=size, ceil=ceil, lab=lab or ((r0[0] + r0[2]) / 2, (r0[1] + r0[3]) / 2), new=new, disp=disp, compact=compact, plansize=plansize)
+    return dict(no=no, name=name, kind=kind, rects=rects, size=size, ceil=ceil, lab=lab or ((r0[0] + r0[2]) / 2, (r0[1] + r0[3]) / 2), new=new, disp=disp, compact=compact, plansize=plansize, oneline=oneline)
 
 
 LV = {
@@ -220,45 +222,46 @@ LV = {
             ap=[(9.4, 24.55, 9.4, 25.45, -1)],
             stairs=[(21.0, 21.0, 23.75, 24.0, "y+", "UP", 0.75), (17.35, 24.0, 23.75, 27.1, "x-", "", 0), (17.35, 22.5, 20.6, 24.0, "y-", "UP", 0.75), (16.7, 19.7, 20.0, 22.5, "y+", "DN", 0.64)],
             above=[(17.35, 18.8, 20.6, 22.5, "attic stair\nabove")],
-            demo=[(17.83, 1.3, 18.17, 6.0), (17.83, 9.6, 18.17, 13.3), (16.3, 13.28, 19.97, 13.77), (25.15, 13.28, 30.15, 13.77),
+            demo=[(17.83, 0.75, 18.17, 5.75), (17.83, 9.6, 18.17, 13.3), (16.3, 13.28, 19.97, 13.77), (25.15, 13.28, 30.15, 13.77),
                   (2.9, 13.28, 12.4, 13.77), (15.63, 3.48, 17.87, 3.82)],          # centre wall between kitchen and living room; coat closet back wall
             beams=[(2.9, 13.525, 15.0, 13.525, "NEW BEAM OVER")], posts=[(2.7, 13.525), (15.2, 13.525)],
-            new=[Hh(9.535, 15.65, 20.57), V(20.4, 9.37, 13.3), Hh(11.135, 23.43, 31.2), V(23.6, 10.97, 13.3), Hh(7.635, 15.65, 17.85),
-                 V(18.0, 6.0, 9.6, 0.3), V(15.5, 5.3, 8.9, 0.3), (15.35, 1.35, 15.65, 3.35)],
+            new=[Hh(8.765, 15.65, 20.57), V(20.4, 8.6, 13.3), Hh(11.135, 23.43, 31.2), V(23.6, 10.97, 13.3), Hh(6.035, 15.65, 17.85),      # the chase is the chimney's own place, y 6.2 to 8.6, under the attic shaft
+                 V(18.0, 6.0, 8.6, 0.3), V(15.5, 5.3, 8.9, 0.3), (15.35, 1.35, 15.65, 3.35)],
             fix=[],
             doors=[("301", "v", 23.925, 15.05, 17.55, "lo", 1, "2'-6\" x 6'-8\"", "Bedroom 4 (existing opening)"),
                    ("302", "h", 13.525, 16.3, 18.135, "lo", 1, "3'-8\" pair x 6'-8\"", "Mechanical, solid core"), ("302", "h", 13.525, 18.135, 19.97, "hi", 1, "", ""),
                    ("305", "h", 13.525, 20.75, 23.25, "hi", -1, "2'-6\" x 6'-8\"", "Bedroom 3 (existing opening)"),
                    ("306", "h", 17.45, 13.33, 16.0, "hi", 1, "2'-8\" x 6'-8\"", "Bath 1 (existing opening)")],
-            bifolds=[("303", "v", 18.0, 1.3, 6.3, 1, "5'-0\" bifold", "Closet, bedroom 3"), ("304", "h", 13.525, 25.15, 30.15, 1, "5'-0\" bifold", "Closet, bedroom 4")],
+            bifolds=[("303", "v", 18.0, 0.75, 5.75, 1, "5'-0\" bifold", "Closet, bedroom 3"), ("304", "h", 13.525, 25.15, 30.15, 1, "5'-0\" bifold", "Closet, bedroom 4")],
             rooms=[room("301", "Living room", "living", [(0.05, 0.2, 15.35, 13.3)], "15'-4\" x 13'-1\", open to kitchen", "8'-2\"", (8.6, 1.9)),
                    room("302", "Kitchen", "kitchen", [(0.05, 13.75, 9.94, 27.1)], "9'-11\" x 13'-4\" with laundry", "7'-2\"", (4.9, 21.4)),
-                   room("303", "Bedroom 3", "bed", [(18.15, 0.2, 31.2, 10.97), (20.57, 10.97, 23.43, 13.3)], "13'-1\" x 10'-9\" + entry", "8'-1\"", (22.0, 9.0), True),
+                   room("303", "Bedroom 3", "bed", [(20.57, 0.2, 31.2, 10.97), (18.15, 0.2, 20.57, 8.6), (20.57, 10.97, 23.43, 13.3)], "13'-1\" x 10'-9\" + entry", "8'-1\"", (21.9, 6.6), True),
                    room("304", "Bedroom 4", "bed", [(24.1, 13.75, 31.2, 27.1)], "7'-1\" x 13'-4\"", "7'-2\"", (27.3, 19.0), True),
                    room("305", "Bath 1", "bath", [(10.4, 17.8, 16.0, 27.1)], "5'-7\" x 9'-4\"", "8'-3\"", (12.05, 23.45)),
                    room("306", "Hall", "hall", [(15.0, 13.75, 23.75, 17.1), (16.7, 17.1, 23.75, 19.7), (20.0, 19.7, 23.75, 21.0)], "3'-4\" wide", "7'-5\"", (18.2, 16.2)),
                    room("312", "Stair", "stair", [(16.7, 19.7, 23.75, 27.1)], "", "", (20.5, 18.4)),
-                   room("307", "Mechanical", "mech", [(15.65, 9.7, 20.23, 13.3)], "4'-7\" x 3'-7\"", "", (19.2, 12.75), True, disp="MECH.", compact=True, plansize=False),
+                   room("307", "Mechanical", "mech", [(15.65, 8.93, 20.23, 13.3)], "4'-7\" x 4'-4\"", "", (19.2, 12.75), True, disp="MECH.", compact=True, plansize=False),
                    room("308", "Laundry", "laundry", [(7.2, 18.4, 9.94, 23.0)], "", "", (6.0, 19.5)),
-                   room("309", "Closet (BR 3)", "closet", [(15.65, 0.2, 17.85, 7.47)], "", "", (16.75, 4.4), True),
+                   room("309", "Closet (BR 3)", "closet", [(15.65, 0.2, 17.85, 5.87)], "", "", (16.75, 4.6), True),
+                   room("314", "CHASE", "closet", [(15.65, 6.2, 17.85, 8.6)], "", "", (16.5, 6.6)),
                    room("310", "Closet (BR 4)", "closet", [(23.77, 11.3, 31.2, 13.3)], "", "", (25.6, 12.3), True),
                    room("313", "Pantry", "closet", [(7.95, 23.55, 9.94, 25.45)], "", "", (8.75, 24.1))],
             fx=[("tub", 10.4, 24.6, 15.4, 27.1, True), ("van", 10.4, 20.3, 12.15, 22.3, True), ("wc", 16.0, 23.25, "x-", True),
                 ("base", 0.05, 25.02, 2.13, 27.1), ("dw", 2.13, 25.02, 4.13, 27.1), ("sinkbase", 4.13, 25.02, 7.13, 27.1), ("base", 7.13, 25.02, 7.7, 27.1),
                 ("base", 0.05, 23.02, 2.13, 25.02), ("range", 0.05, 20.52, 2.22, 23.02), ("base", 0.05, 16.3, 2.13, 20.52), ("fridge", 0.05, 13.8, 2.88, 16.3),
-                ("washer", 7.2, 18.4, 9.9, 20.7), ("dryer", 7.2, 20.7, 9.9, 23.0), ("furnace", 16.4, 9.8, 17.86, 12.22), ("wh", 19.0, 10.75),
+                ("washer", 7.2, 18.4, 9.9, 20.7), ("dryer", 7.2, 20.7, 9.9, 23.0), ("furnace", 16.2, 9.3, 17.66, 11.72), ("wh", 19.0, 10.2),
                 ("panel", 15.35, 1.75, 15.35, 2.95, -1), ("xequip", 24.9, 24.9, 31.0, 26.9, "")],
             furn=[("couch", 0.25, 1.4, 3.25, 8.4, "x-"), ("tv", 13.95, 5.6, 15.35, 9.8), ("ctable", 6.0, 3.3, 8.0, 6.7), ("table", 5.5, 9.6, 10.5, 12.6),
                   ("bed", 31.2, 5.6, "x-"), ("night", 29.7, 8.3, 31.2, 9.8), ("desk", 19.9, 0.2, 23.9, 2.2), ("dresser", 25.5, 0.2, 28.5, 1.7),
                   ("bed", 28.7, 27.1, "y-"), ("desk", 29.2, 16.2, 31.2, 20.2)],
-            tagpos={"301": (25.2, 15.9)}, lead={3: (16.0, 11.5), 15: (19.5, 25.6), 16: (16.35, 21.4), (7, 1): (25.5, 25.9), 19: (5.0, 13.9)},
-            notes=[(1, (16.75, 6.3), "Chimney removed, roof to lower flat, with the mantels on both sides of it (video). Walls rebuilt flush (red). Patch floor, ceiling and roof."),
-                   (2, (16.25, 8.6), "Old chimney shaft becomes the pipe and duct chase: drain stack S, ducts and wiring to the attic, furnace and water heater vents to the roof."),
-                   (3, (14.6, 11.5), "Mechanical closet, 4'-7\" x 3'-7\": furnace and water heater move here from Room B. 5/8 in. type X board; pair of solid doors (1'-10\" leaves)."),
+            tagpos={"301": (25.2, 15.9)}, lead={2: (17.5, 7.0), 3: (16.0, 11.9), 15: (19.5, 25.6), 16: (16.35, 21.4), (7, 1): (25.5, 25.9), 19: (5.0, 13.9)},
+            notes=[(1, (16.35, 7.5), "Chimney removed, roof to lower flat, with the mantels on both sides of it (video). Walls rebuilt flush (red). Patch floor, ceiling and roof."),
+                   (2, (19.5, 7.5), "The chimney's own place becomes the pipe and duct chase, directly under the attic's: drain stack S, ducts and wiring to the attic, furnace and water heater vents to the roof."),
+                   (3, (14.6, 11.9), "Mechanical closet, 4'-7\" x 4'-4\": furnace and water heater move here from Room B. 5/8 in. type X board; pair of solid doors (1'-10\" leaves)."),
                    (4, (21.9, 14.8), "Centre wall of the house: it almost certainly carries the attic floor. The beam (19), the mechanical doors and bedroom 4's closet opening need one engineer's design before any of it is cut."),
                    (4, (29.6, 14.85), ""),
                    (5, (27.6, 12.3), "New closet for bedroom 4, 2'-0\" deep, taken from old Room A; 5'-0\" bifold through the centre wall."),
-                   (6, (20.0, 5.6), "Bedroom 3's closet: the old coat closet plus the chimney's place, 7'-3\" long, 5'-0\" bifold."),
+                   (6, (19.6, 4.3), "Bedroom 3's closet: the old coat closet, 5'-8\" long, 5'-0\" bifold."),
                    (7, (25.25, 18.2), "Bedroom 4 (old Room B) is 7'-1\" wide: a queen fits with a 2'-1\" aisle. The furnace and water heater here today (dashed) go. Existing door opening."),
                    (7, (25.5, 23.4), ""),
                    (8, (12.2, 18.55), "Bath 1 stays, all new: 60 in. tub, toilet and 21 in. vanity in today's positions. 2'-8\" door opens back against the wall."),
@@ -275,64 +278,69 @@ LV = {
                    (19, (5.0, 15.1), "Wall between kitchen and living room removed (dashed): 9'-6\" of it, a 12'-1\" clear span with the old opening. New beam overhead on a post at each end, carried down through both flats below to footings: engineer to design. 2'-10\" of wall stays beside the fridge. Ceilings today: kitchen 7'-2\", living room 8'-2\".")],
             dims=[(10.4, 20.05, 16.0, 20.05, 0.2), (24.1, 20.31, 31.2, 20.31, 0.155), (24.55, 13.75, 24.55, 27.1, 0.42), (18.15, 2.75, 31.2, 2.75, 0.35), (24.22, 0.2, 24.22, 10.97, 0.85),
                   (24.1, 11.3, 24.1, 13.3, 0.5)]),
-    6: dict(name="Attic (upper flat)", view=((-3.5, 36.1), (-3, 30)),
-            # Drawn from the 3D scan (27 Nov), checked against the owner's video. The roof is a 10 in 12 gable with its eaves on the long sides: the
-            # ceiling is flat at 7'-9" over almost all of both rooms and slopes only in the last 1'-6" along the west wall (5'-10" at the wall) and in
-            # the recesses on the east side. The two bays are dormers with flat ceilings. Beyond the long walls are unfinished eave spaces.
-            # The wall between bedroom 1 and the hall / bedroom 2 is about a foot thick (duct chase from below). Bedroom 1's door is in it at the hall;
-            # bedroom 2's door closes the south end of the hall. Both baths back onto that thick wall, over the mechanical closet and chase below.
+    6: dict(name="Attic (upper flat)", view=((-3.5, 36.1), (-0.5, 32.5)), inset="attic_section", chimney=(15.7, 5.96, 17.75, 8.4),
+            # Drawn from the 3D scan, read ABOVE furniture height (5 ft and up), and checked against the owner's video. Below that the scan smooths over
+            # whatever stood in front of a wall: an earlier revision drew one of those smoothed surfaces as an angled wall, and read furniture against
+            # the wall between the bedrooms as a foot of extra thickness. Neither exists: that wall is an ordinary 7 in. wall and every corner is square.
+            # Roof: gable, about 11 in 12, eaves on the long sides. Ceiling flat at 7'-9"; it slopes over the last 2 ft on the east side (5'-7" to
+            # 5'-10" at the old knee wall) and the last 1'-6" on the west side. The two bays are dormers with flat ceilings.
+            # The old chimney stands in the line of the wall between the bedrooms; its shaft stays and becomes the chase.
             rescan=dict(clear=[(-1.0, -1.0, 33.0, 29.0)],     # the whole floor
                         walls=[(-0.08, 4.97, 0.25, 21.28), (0.25, 7.52, 1.35, 7.85), (3.68, 7.52, 5.38, 7.85), (0.25, 4.97, 5.38, 5.3), (5.05, 2.02, 5.38, 7.85),          # bedroom 1: gable wall, east wall, closet
-                               (5.05, 2.02, 11.45, 2.35), (11.12, 2.02, 11.45, 5.96), (11.12, 5.63, 15.45, 5.96), (0.25, 20.95, 17.2, 21.28),                          # its bay, recess wall and west wall
-                               (16.35, 8.65, 17.45, 14.05), (16.35, 14.05, 17.2, 15.0), (16.6, 17.5, 17.2, 20.95), (16.87, 20.95, 17.2, 27.78),                        # thick wall; hall west wall
-                               (16.87, 27.45, 23.98, 27.78), (23.65, 23.3, 23.98, 27.78), (20.45, 14.05, 20.87, 23.3), (20.45, 23.3, 23.98, 23.63), (23.65, 20.85, 23.98, 23.63),   # hall, stair well, alcove
+                               (5.05, 2.02, 11.45, 2.35), (11.12, 2.02, 11.45, 5.96), (0.25, 20.95, 16.45, 21.28),                                                    # its dormer and west wall
+                               (15.4, 5.63, 15.7, 8.7), (15.4, 8.4, 16.45, 8.7), (17.05, 8.45, 18.05, 8.75), (17.75, 5.63, 18.05, 8.75), (15.4, 5.63, 18.05, 5.96),    # chimney shaft enclosure
+                               (16.45, 8.4, 17.05, 15.0), (16.45, 17.33, 17.05, 21.28), (16.72, 21.28, 17.05, 27.78),                                                 # wall between the bedrooms; hall west wall
+                               (16.72, 27.45, 23.98, 27.78), (23.65, 23.3, 23.98, 27.78), (20.4, 14.0, 20.85, 23.3), (20.4, 23.3, 23.98, 23.63), (23.65, 20.85, 23.98, 23.63),   # hall, stair well, shelf recess
+                               (19.6, 14.0, 20.85, 14.5),                                                                                                             # hall south wall beside the old door
                                (23.65, 20.85, 31.48, 21.18), (31.15, 4.57, 31.48, 21.18), (25.7, 7.0, 27.7, 7.33), (30.2, 7.0, 31.48, 7.33),                           # bedroom 2: west, gable and east walls
-                               (26.67, 4.57, 27.0, 7.0), (26.67, 4.57, 31.48, 4.9), (19.57, 1.57, 19.9, 5.7), (19.57, 1.57, 26.03, 1.9), (25.7, 1.57, 26.03, 7.33),     # its closet and bay
-                               Dg(19.9, 5.55, 18.3, 8.5, 0.33)]),                                                                                                      # angled wall beside the chimney
-            floor=[(0.25, 7.85, 16.35, 20.95), (5.38, 2.35, 11.12, 7.85), (11.12, 5.96, 15.45, 8.65), (0.25, 5.3, 5.05, 7.52), (17.2, 14.2, 20.45, 27.45), (20.45, 23.63, 23.65, 27.45),
-                   (17.45, 6.9, 31.15, 20.85), (19.9, 1.9, 25.7, 7.33), (20.87, 20.85, 23.65, 23.3), (27.0, 4.9, 31.15, 7.0)],
+                               (26.67, 4.57, 27.0, 7.0), (26.67, 4.57, 31.48, 4.9), (19.57, 1.57, 19.9, 5.75), (19.57, 1.57, 26.03, 1.9), (25.7, 1.57, 26.03, 7.33)]), # its closet and dormer
+            floor=[(0.25, 7.85, 16.45, 20.95), (5.38, 2.35, 11.12, 7.85), (11.45, 6.9, 15.4, 8.7), (0.25, 5.3, 5.05, 7.52), (17.05, 6.9, 31.15, 20.85), (19.9, 1.9, 25.7, 7.33),
+                   (27.0, 4.9, 31.15, 7.0), (17.05, 20.85, 20.4, 27.45), (20.4, 23.63, 23.65, 27.45), (20.85, 20.85, 23.65, 23.3), (15.7, 5.96, 17.75, 8.45)],
             win=[(-0.08, 12.68, 0.25, 15.03), (7.41, 2.02, 10.37, 2.35), (20.64, 1.57, 25.34, 1.9), (31.15, 10.5, 31.48, 15.87), (19.17, 27.45, 21.77, 27.78)],
-            cut=[(20.43, 14.6, 20.89, 17.1)], demo=[(20.43, 14.6, 20.89, 17.1)],                               # new doorway for bedroom 2 in the hall wall
-            ap=[(10.85, 12.1, 10.85, 13.3, -1), (22.95, 12.0, 22.95, 13.2, 1)],
-            stairs=[(17.2, 18.8, 20.45, 24.0, "y+", "DN", 0.743), (17.2, 24.0, 23.65, 27.45, "x-", "", 0)],
-            above=[(17.45, 24.25, 23.4, 27.2, "open to the stair below"), (21.05, 21.0, 23.65, 23.3, "shelves over\nstair bulkhead")],
-            slopes=[(0.25, 20.2, 16.6, 20.2, "ceiling 6'-8\" on this line, 5'-10\" at the wall", (5.6, 20.57)), (23.98, 19.85, 31.15, 19.85, "", (0, 0)),
-                    (11.35, 7.04, 13.2, 7.04, "", (0, 0))],
-            new=[V(11.185, 5.96, 11.45), V(11.1, 11.45, 14.28, T6), Hh(14.115, 10.85, 16.35),                                              # bath A
-                 V(15.615, 5.63, 8.65), Hh(8.485, 15.45, 19.9), Hh(5.795, 15.45, 18.3), V(18.135, 5.63, 8.65),                             # chase in the chimney's place
-                 (17.45, 13.85, 20.45, 14.2), Hh(14.025, 20.45, 22.95), V(22.615, 6.57, 11.35), V(22.7, 11.35, 14.2, T6), Hh(6.735, 19.57, 22.78), V(19.735, 6.57, 8.65)],   # bath B
+            cut=[(20.38, 14.6, 20.87, 17.1)], demo=[(20.38, 14.6, 20.87, 17.1)],                               # new doorway for bedroom 2 in the hall wall
+            ap=[(10.9, 12.2, 10.9, 13.4, -1), (22.6, 12.2, 22.6, 13.4, 1)],
+            stairs=[(17.05, 18.8, 20.4, 24.0, "y+", "DN", 0.743), (17.05, 24.0, 23.65, 27.45, "x-", "", 0)],
+            above=[(17.3, 24.25, 23.4, 27.2, "open to the stair below"), (21.05, 21.0, 23.65, 23.3, "shelves over\nstair bulkhead")],
+            slopes=[(0.25, 20.2, 16.45, 20.2, "ceiling 6'-8\" on this line, 5'-10\" at the wall", (5.6, 20.57)), (23.98, 19.85, 31.15, 19.85, "", (0, 0))],
+            new=[(11.12, 5.96, 11.45, 8.8), (10.95, 11.3, 11.45, 14.33), (11.45, 6.57, 15.4, 6.9), (10.95, 14.0, 16.45, 14.33),                    # bath A: south wall, valve wall, knee wall, west wall
+                 (18.05, 6.57, 22.38, 6.9), (19.57, 5.75, 19.9, 6.57), (22.05, 6.57, 22.38, 8.8), (22.05, 11.3, 22.55, 14.33),                    # bath B: knee wall, return, north wall, valve wall
+                 (17.05, 14.0, 19.6, 14.5), (20.85, 14.0, 22.55, 14.33)],                                                                          # old doorway walled up; west wall carried on
             fix=[],
-            doors=[("401", "v", 11.185, 8.45, 10.95, "lo", 1, "2'-6\" x 6'-8\"", "Bath A, from bedroom 1"), ("402", "v", 22.615, 8.8, 11.3, "lo", -1, "2'-6\" x 6'-8\"", "Bath B, from bedroom 2"),
-                   ("403", "v", 20.66, 14.6, 17.1, "lo", 1, "2'-6\" x 6'-8\"", "Bedroom 2 (new opening)"), ("404", "v", 16.9, 15.0, 17.5, "lo", -1, "2'-6\" x 6'-8\"", "Bedroom 1 (existing opening)"),
+            doors=[("401", "v", 11.285, 8.8, 11.3, "hi", 1, "2'-6\" x 6'-8\"", "Bath A, from bedroom 1"), ("402", "v", 22.215, 8.8, 11.3, "hi", -1, "2'-6\" x 6'-8\"", "Bath B, from bedroom 2"),
+                   ("403", "v", 20.625, 14.6, 17.1, "lo", 1, "2'-6\" x 6'-8\"", "Bedroom 2 (new opening)"), ("404", "v", 16.75, 15.0, 17.33, "lo", -1, "2'-4\" x 6'-8\"", "Bedroom 1 (existing opening)"),
                    ("405", "h", 7.685, 1.35, 3.68, "lo", 1, "2'-4\" x 6'-8\"", "Closet, bedroom 1 (existing)"), ("406", "h", 7.165, 27.7, 30.2, "lo", 1, "2'-6\" x 6'-8\"", "Closet, bedroom 2 (existing)")],
             bifolds=[],
-            rooms=[room("401", "Bedroom 1", "bed", [(0.25, 7.85, 10.85, 20.95), (10.85, 14.28, 16.35, 20.95), (5.38, 2.35, 11.12, 7.85)], "10'-7\" x 13'-1\" + 5'-6\" x 6'-8\" + bay", "7'-9\"", (6.2, 9.8), True),
-                   room("402", "Bedroom 2", "bed", [(20.87, 14.2, 31.15, 20.85), (22.95, 7.33, 31.15, 14.2), (19.9, 1.9, 25.7, 7.33)], "10'-3\" x 6'-8\" + 8'-2\" x 6'-10\" + bay", "7'-9\"", (27.0, 11.6), True),
-                   room("403", "Bath A (bedroom 1)", "bath", [(11.35, 8.65, 16.35, 13.95), (11.35, 5.96, 15.45, 8.65)], "5'-0\" x 8'-0\"", "7'-9\"", (14.35, 7.35), True, disp="BATH A"),
-                   room("404", "Bath B (bedroom 2)", "bath", [(17.45, 8.65, 22.45, 13.85), (19.9, 6.9, 22.45, 8.65)], "5'-0\" x 5'-2\" + alcove", "7'-9\"", (21.5, 9.9), True, disp="BATH B", plansize=False),
-                   room("405", "Stair hall", "stair", [(17.2, 14.2, 20.45, 18.8)], "", "7'-6\"", (18.8, 17.3)),
+            rooms=[room("401", "Bedroom 1", "bed", [(0.25, 7.85, 10.95, 20.95), (10.95, 14.33, 16.45, 20.95), (5.38, 2.35, 11.12, 7.85)], "10'-8\" x 13'-1\" + 5'-6\" x 6'-7\" + bay", "7'-9\"", (5.6, 9.8), True),
+                   room("402", "Bedroom 2", "bed", [(20.85, 14.33, 31.15, 20.85), (22.55, 7.33, 31.15, 14.33), (19.9, 1.9, 25.7, 6.57)], "10'-4\" x 6'-6\" + 8'-7\" x 7'-0\" + bay", "7'-9\"", (27.0, 11.6), True),
+                   room("403", "Bath A (bedroom 1)", "bath", [(11.45, 8.7, 16.45, 14.0), (11.45, 6.9, 15.4, 8.7)], "5'-0\" x 5'-4\" + vanity alcove", "7'-9\"", (15.05, 9.1), True, disp="BATH A", oneline=True),
+                   room("404", "Bath B (bedroom 2)", "bath", [(17.05, 8.75, 22.05, 14.0), (18.05, 6.9, 22.05, 8.75)], "5'-0\" x 5'-3\" + vanity alcove", "7'-9\"", (18.45, 9.1), True, disp="BATH B", oneline=True),
+                   room("405", "Stair hall", "stair", [(17.05, 14.5, 20.4, 18.8)], "", "7'-6\"", (18.7, 17.3)),
                    room("406", "Closet (BR 1)", "closet", [(0.25, 5.3, 5.05, 7.52)], "", "", (1.9, 6.4)),
-                   room("407", "Closet (BR 2)", "closet", [(27.0, 4.9, 31.15, 7.0)], "", "", (28.4, 5.95))],
-            fx=[("tub", 11.35, 11.45, 16.35, 13.95, True), ("wc", 16.35, 10.0, "x-", True), ("van", 11.35, 6.2, 13.1, 8.2, True),
-                ("tub", 17.45, 11.35, 22.45, 13.85, True), ("wc", 17.45, 10.0, "x+", True), ("van", 19.95, 6.9, 21.95, 8.65, True)],
-            furn=[("bed", 0.25, 13.85, "x+"), ("night", 0.25, 16.5, 1.75, 18.0), ("desk", 6.3, 2.4, 10.3, 4.4), ("dresser", 11.3, 14.28, 14.3, 15.78),
+                   room("407", "Closet (BR 2)", "closet", [(27.0, 4.9, 31.15, 7.0)], "", "", (28.4, 5.95)),
+                   room("408", "CHASE", "closet", [(15.7, 5.96, 17.75, 8.4)], "", "", (16.55, 6.45))],
+            fx=[("tub", 11.45, 11.5, 16.45, 14.0, True), ("wc", 16.45, 10.2, "x-", True), ("van", 12.2, 6.9, 14.7, 8.65, True),
+                ("tub", 17.05, 11.5, 22.05, 14.0, True), ("wc", 17.05, 10.2, "x+", True), ("van", 18.8, 6.9, 21.3, 8.65, True)],
+            furn=[("bed", 0.25, 13.85, "x+"), ("night", 0.25, 16.5, 1.75, 18.0), ("desk", 6.3, 2.4, 10.3, 4.4), ("dresser", 10.9, 14.33, 13.4, 15.83),
                   ("bed", 28.1, 20.85, "y-"), ("night", 24.0, 19.35, 25.5, 20.85), ("desk", 21.0, 1.95, 25.0, 3.95), ("dresser", 29.6, 9.1, 31.1, 12.1)],
-            tagpos={"402": (23.45, 10.05)}, lead={4: (16.9, 12.6), 11: (18.0, 22.3)},
-            notes=[(1, (16.9, 7.2), "Chimney removed through the roof; frame and sheath the hole, re-shingle. Its place is boxed in as the chase to the roof for the stack vent and the furnace and water heater vents."),
-                   (2, (14.3, 12.7), "Bath A, private to bedroom 1: 60 in. tub, toilet and 21 in. vanity. Tub, toilet and door are under the flat ceiling; the vanity end is under the slope (6'-8\" at the dash-dot line)."),
-                   (3, (21.3, 12.6), "Bath B, private to bedroom 2, 5'-0\" x 5'-2\" plus the vanity alcove: 60 in. tub, toilet, 24 in. vanity. Built where bedroom 2's entry was."),
-                   (4, (18.5, 12.6), "Both baths back onto this thick wall, which stands over the mechanical closet and chase below: both toilets are on it and stack S is inside it."),
-                   (5, (8.7, 12.7), "Tub valve at this end; access panel AP on the bedroom side: keep clear of furniture."), (5, (24.45, 12.4), ""),
-                   (6, (18.8, 15.0), "Old bedroom 2 doorway walled up (red)."),
-                   (7, (22.3, 15.5), "New 2'-6\" door for bedroom 2, cut into the hall wall; it opens back against the bath wall. Move the handrail end if it is in the way."),
-                   (8, (13.3, 16.7), "Bedroom 1 door: existing opening, new 2'-6\" door hung to open back against the bath wall."),
+            tagpos={}, lead={11: (17.6, 22.6)},
+            mask=[[(11.45, 5.4), (15.4, 5.4), (15.4, 6.57), (11.45, 6.57)], [(18.05, 5.3), (19.57, 5.3), (19.57, 6.57), (18.05, 6.57)], [(31.48, 4.4), (32.3, 4.4), (32.3, 21.4), (31.48, 21.4)],
+                  [(-0.6, 4.6), (-0.08, 4.6), (-0.08, 21.5), (-0.6, 21.5)]],
+            notes=[(1, (16.35, 7.4), "Old chimney shaft, kept: the brick comes out through the roof (frame and sheath the hole, re-shingle) and the shaft is the chase for stack S, the furnace and water heater vents and the attic ducts. If the plaster is on the brick, frame 2x4 walls on the same lines."),
+                   (2, (13.0, 12.3), "Baths A and B are mirror images, back to back on the wall between the bedrooms: 60 in. tub at the west end, toilet on that wall, 30 in. vanity in an alcove beside the chase. Each is 5'-0\" x 5'-4\" plus the alcove. Hold 60 in. between studs for each tub."),
+                   (2, (20.5, 12.3), ""),
+                   (3, (13.45, 5.7), "New 2x4 knee wall, in one line on both sides of the chase, where the ceiling is 6'-9\": the vanities, mirrors and their pipes go on it. The old knee wall and the cold eave stay behind it. Everything else in both baths is under the flat 7'-9\" ceiling: see the section. No dormer is added."),
+                   (4, (21.0, 5.7), "The north half of bath B's alcove is under bedroom 2's existing dormer. The new wall crosses the dormer's mouth; a 10 in. return closes the pocket behind it."),
+                   (5, (8.8, 12.8), "Tub valve at this end; access panel AP on the bedroom side: keep clear of furniture."), (5, (23.8, 12.8), ""),
+                   (6, (18.3, 15.3), "Old bedroom 2 doorway walled up (red)."),
+                   (7, (22.7, 17.1), "New 2'-6\" door for bedroom 2, cut into the hall wall; it opens back against the bath wall. Move the handrail end if it is in the way."),
+                   (8, (13.3, 17.2), "Bedroom 1 door: existing opening, about 2'-4\"; new door hung to open back against the bath wall."),
                    (9, (4.0, 6.4), "Existing closet under the eave, sloping ceiling; new door. Its depth is not fully seen in the scan: verify."), (9, (30.3, 5.95), ""),
                    (10, (22.6, 20.0), "Built-in shelves over the stair bulkhead (video): keep."),
-                   (11, (15.7, 23.2), "Stair down, existing: 8 risers to the landing, then 5 more. Open well beside it: check the guard is 36 in. high. Floor grille at the stair head today: keep a return-air path."),
+                   (11, (15.4, 22.7), "Stair down, existing: 8 risers to the landing, then 5 more. Open well beside it: check the guard is 36 in. high. Floor grille at the stair head today: keep a return-air path."),
                    (12, (4.0, 19.3), "Ceiling is flat at 7'-9\". Along this wall it slopes down in the last 1'-6\" (dash-dot line = 6'-8\")."), (12, (24.75, 18.4), ""),
-                   (13, (6.5, 17.6), "Sizes are from the 3D scan; good to about 2 in.: tape-check. The spaces beyond the long walls are unfinished eaves, not drawn.")],
-            dims=[(11.35, 11.2, 16.35, 11.2, 0.5), (17.45, 11.08, 22.45, 11.08, 0.3), (0.25, 11.0, 10.85, 11.0, 0.75), (9.6, 7.85, 9.6, 20.95, 0.7),
-                  (22.95, 13.45, 31.15, 13.45, 0.5), (23.32, 14.2, 23.32, 20.85, 0.72)]),
+                   (13, (6.5, 17.6), "Sizes are from the 3D scan, read above furniture height; good to about 2 in.: tape-check. The wall between the bedrooms is an ordinary 7 in. wall. Eave spaces beyond the knee walls are not drawn.")],
+            dims=[(11.45, 13.4, 16.45, 13.4, 0.5), (17.05, 13.4, 22.05, 13.4, 0.5), (0.25, 11.0, 10.95, 11.0, 0.75), (9.6, 7.85, 9.6, 20.95, 0.7),
+                  (22.55, 13.45, 31.15, 13.45, 0.5), (23.32, 14.33, 23.32, 20.85, 0.72)]),
 }
 
 # ---------------------------------------------------------------------------------------------- geometry
@@ -529,7 +537,7 @@ def draw_base(ax, fl, mode="arch"):
     if arch and g["removed"] is not None and not g["removed"].is_empty:
         rem = removed_shape(fl)
         if not rem.is_empty: _fill(ax, rem, fc="none", ec=NEWW, lw=0.45, ls=(0, (2, 1.6)), zorder=3.8)
-        c = CHIMNEY if fl != 3 else (16.4, 6.4, 18.3, 9.4)
+        c = L.get("chimney") or (CHIMNEY if fl != 3 else (16.4, 6.4, 18.3, 9.4))
         ax.add_patch(Rectangle((c[0], c[1]), c[2] - c[0], c[3] - c[1], fill=False, ec=NEWW, lw=0.6, ls=(0, (2, 1.6)), hatch="//", alpha=0.35, zorder=3.5))
     for o in g["doors"]:
         if len(o["pts"]) >= 4:
@@ -629,6 +637,9 @@ def draw_base(ax, fl, mode="arch"):
             big = r["kind"] not in ("closet",)
             col = NEWW if r["new"] else INK
             nm = r.get("disp") or (r["name"] if not big else r["name"].upper())
+            if r.get("oneline"):                              # name and number on one line, for a room with no free floor
+                ax.text(x, y, f"{nm}  {r['no']}", fontsize=4.4, fontweight="bold", color=col, ha="center", va="center", zorder=12, gid="room", bbox=dict(fc="white", ec="none", pad=0.25))
+                continue
             if r.get("compact"):
                 ax.text(x, y + 0.22, nm, fontsize=4.6, fontweight="bold", color=col, ha="center", va="center", zorder=12, gid="room", bbox=dict(fc="white", ec="none", pad=0.3))
                 ax.text(x, y - 0.24, r["no"] + ((" · " + r["size"]) if (r["size"] and r.get("plansize", True)) else "") + ((" · clg " + r["ceil"]) if r["ceil"] else ""), fontsize=3.6, color=col, ha="center", va="center", zorder=12, gid="room",
@@ -676,6 +687,36 @@ def bsheet(number, title, fl, notes, legend=None, sub=None):
             y -= 0.2 + 0.13 * txt.count("\n")
         fig._legend_end = y
     return fig, bg, ax
+
+
+def attic_section(ax, X0=2.6, Y0=23.5):
+    """Cross-section through bath A, looking north, drawn beside the attic plan at the same scale. Across = plan y (west on the left), up = height."""
+    X = lambda y: X0 + (15.3 - y); Zc = lambda z: Y0 + z
+    sl = lambda y: 7.75 - max(0.0, 8.0 - y) * 0.917                       # ceiling height: flat 7'-9", then down 11 in 12 toward the east eave
+    def poly(pts, **kw): ax.add_patch(MPoly([(X(y), Zc(z)) for y, z in pts], closed=True, **kw))
+    def line(pts, **kw): ax.plot([X(y) for y, z in pts], [Zc(z) for y, z in pts], **kw)
+    def note(y, z, t, col="#333", fs=3.5, **kw): ax.text(X(y), Zc(z), t, fontsize=fs, color=col, ha=kw.pop("ha", "center"), va="center", zorder=12, gid="sec", linespacing=1.1, **kw)
+    def height(y, z1, t, ty=None):                                           # dimension line floor to ceiling
+        line([(y, 0), (y, z1)], color="#333", lw=0.35, zorder=11)
+        for z in (0, z1): ax.plot([X(y) - 0.16, X(y) + 0.16], [Zc(z) - 0.16, Zc(z) + 0.16], color="#333", lw=0.55, zorder=11)
+        ax.text(X(y), Zc(ty if ty is not None else z1 * 0.55), t, fontsize=3.8, color="#111", ha="center", va="center", rotation=90, zorder=12, gid="sec", bbox=dict(fc="white", ec="none", pad=0.25))
+    poly([(15.3, 0), (4.4, 0), (4.4, -0.75), (15.3, -0.75)], fc="#e9eaec", ec="#6b7480", lw=0.5, zorder=3)                      # floor
+    poly([(15.3, 7.75), (8.0, 7.75), (4.4, sl(4.4)), (4.4, sl(4.4) + 0.55), (8.15, 8.3), (15.3, 8.3)], fc="#e9eaec", ec="#6b7480", lw=0.5, zorder=3)   # ceiling and roof
+    poly([(5.96, 0), (5.63, 0), (5.63, sl(5.63)), (5.96, sl(5.96))], fc=EXW, ec="#4a4f57", lw=0.4, zorder=4)                     # old knee wall
+    poly([(6.9, 0), (6.57, 0), (6.57, sl(6.57)), (6.9, sl(6.9))], fc=NEWW, ec="#7d1a14", lw=0.4, zorder=4)                       # new knee wall
+    poly([(14.33, 0), (14.0, 0), (14.0, 7.75), (14.33, 7.75)], fc=NEWW, ec="#7d1a14", lw=0.4, zorder=4)                          # bath / bedroom wall
+    poly([(14.0, 0), (11.5, 0), (11.5, 1.67), (14.0, 1.67)], fc="#eef4fb", ec=FXN, lw=0.7, zorder=5)                             # tub
+    poly([(8.65, 0), (6.9, 0), (6.9, 2.83), (8.65, 2.83)], fc="white", ec=FXN, lw=0.7, zorder=5)                                 # vanity
+    line([(6.94, 3.3), (6.94, 6.2)], color=FXN, lw=1.6, zorder=5)                                                                # mirror
+    poly([(10.8, 0), (9.6, 0), (9.6, 1.3), (10.8, 1.3)], fc="white", ec=FXE, lw=0.5, zorder=5)                                   # toilet on the far wall
+    poly([(11.0, 1.3), (9.4, 1.3), (9.4, 2.5), (11.0, 2.5)], fc="white", ec=FXE, lw=0.5, zorder=5)
+    height(9.1, 7.75, "7'-9\"", 5.2); height(7.25, sl(6.9), "6'-9\"", 4.9); height(5.25, sl(5.63), "5'-7\"", 2.6)
+    note(12.75, 0.85, "60 in. tub"); note(7.78, 1.4, "vanity"); note(10.2, 3.0, "toilet on\nthe far wall")
+    note(12.0, 6.9, "flat ceiling over the tub, toilet and door"); note(7.9, 7.05, "mirror", ha="left", col=FXN)
+    note(3.9, 6.3, "roof slopes about 11 in 12", ha="left"); note(3.9, 5.5, "new knee wall where the\nceiling is 6'-9\": vanity and\nits pipes go on it", ha="left", col=NEWW)
+    note(3.9, 4.3, "old knee wall stays; the\ncold eave behind it gets\ninsulation, no pipes", ha="left")
+    line([(4.05, 5.5), (6.5, 5.5)], color=NEWW, lw=0.4, zorder=11); line([(4.05, 4.3), (5.55, 4.3)], color="#333", lw=0.4, zorder=11)
+    note(15.3, -1.45, "SECTION THROUGH BATH A, LOOKING NORTH · bath B is its mirror image · no dormer is added", fs=4.4, ha="left", fontweight="bold", col=INK)
 
 
 def text_block(bg, x, y, title, lines, fs=5.6, col=INK, lh=0.135):
@@ -814,7 +855,7 @@ def clarity(fig, ax, fl=None, bg=None, pad=1.0):
             shp = box(min(u0, u1), min(v0, v1), max(u0, u1), max(v0, v1)) if not gid.startswith("keynote") else Polygon([inv.transform(c) for c in px.exterior.coords[:-1]])
             for og, on, ok in obs:
                 if gid.startswith("keynote") and (ok == "tub" or ok == "lead:" + gid[8:]): continue
-                if gid.startswith("dim:") and ok == gid: continue
+                if gid.startswith("dim:") and (ok == gid or ok == "tub"): continue
                 if og.intersects(shp):
                     out.append(f"{nm} is on {on}")
     return out
@@ -865,6 +906,8 @@ def arch_sheet(pdf, number, fl):
         ax.text(x, y, b[0], fontsize=3.6, color=NEWW, ha="center", va="center", zorder=13, gid="tag", bbox=dict(boxstyle="round,pad=0.15", fc="white", ec=NEWW, lw=0.5))
     for i, d in enumerate(L["dims"]):
         dim(ax, *d[:4], at=d[4] if len(d) > 4 else 0.5, gid=f"dim:{i}", text=d[5] if len(d) > 5 else None)
+    if L.get("inset"):
+        globals()[L["inset"]](ax)
     lead = L.get("lead", {}); ax._leaders = []; cnt = {}
     for n, (x, y), t in L["notes"]:
         k = cnt.get(n, 0); cnt[n] = k + 1

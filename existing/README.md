@@ -13,8 +13,8 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   scope (G-001), floor plans (A-101 to A-104), schedules (A-601), electrical (E), HVAC (M), plumbing and gas (P). Built by
   `src/make_build390.py` from the plan model in `src/build390.py` and the trade modules `src/b390_*.py`. It supersedes the
   earlier before/after and proposed sets.
-- `drawings/390-Forest_A-101_Lower-flat_Rev6.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev6.pdf`,
-  `drawings/390-Forest_A-103_Upper-flat_Rev4.pdf`, `drawings/390-Forest_A-104_Attic_Rev3.pdf`: the four floor plans as they stand in the
+- `drawings/390-Forest_A-101_Lower-flat_Rev6.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev7.pdf`,
+  `drawings/390-Forest_A-103_Upper-flat_Rev5.pdf`, `drawings/390-Forest_A-104_Attic_Rev4.pdf`: the four floor plans as they stand in the
   floor-by-floor review (newer than the A-101 to A-104 inside the builder set; the trade sheets are redrawn once the four floor plans are
   agreed). Every floor-plan sheet is checked when it is built (`clarity()` in `src/build390.py`): no label may sit on
   another label, a fixture, furniture, a door swing, a wall, the dashed outline of a removed wall or a dimension line, and nothing may run
@@ -31,10 +31,15 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   7'-1" x 13'-4", a thick wall between the bath and the stairs, a closed box in the kitchen corner that sits over the boxed-out section in
   the middle flat's bedroom 1 (most likely a drain stack or old flue), and the real stairs: the stair from the entrance arrives heading
   south, and the attic stair is 5 risers, a landing 3'-7" up, then 8 risers passing back over the stair down.
-  Attic (rev 3): drawn from the 3D scan. The roof is a 10 in 12 gable with eaves on the long sides; the ceiling is flat at 7'-9" over almost
-  all of both rooms and slopes only in the last 1'-6" along the west wall. Bedroom 2's door closes the south end of the stair hall and
-  bedroom 1's door is in the thick wall beside it. Both private baths back onto that thick wall, directly over the mechanical closet and chase
-  on the floor below; bedroom 2 gets a new door from the hall. Both bedrooms keep their existing eave closets.
+  Attic (rev 4): drawn from the 3D scan read ABOVE furniture height (5 ft and up). Below that the scan mesh smooths over whatever stood in
+  front of a wall; rev 3 had drawn one such surface as an angled wall and had read furniture as a foot of extra wall thickness. Neither
+  exists: every corner is square and the wall between the bedrooms is an ordinary 7 in. wall. The roof is a gable of about 11 in 12; the
+  ceiling is flat at 7'-9" and slopes over the last 2 ft on the east side and 1'-6" on the west. The two private baths are mirror images,
+  back to back on the wall between the bedrooms, each with its vanity on a new knee wall where the ceiling is 6'-9"; the old chimney shaft
+  between the two vanity alcoves stays as the chase. A cross-section through the bath is on the sheet. No dormer is added.
+  The chimney shaft is at the same coordinates on the middle flat, the upper flat and the attic (frames agree to about 1 in.): `CHIMNEY`
+  and `STACK` in `src/build390.py` hold that position, and the upper flat's chase (rev 5) was moved onto it.
+  Lesson for `scan_survey.py`: take wall faces from slices at 5 ft and higher; lower slices pick up furniture and mesh fill.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the
