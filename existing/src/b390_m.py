@@ -29,7 +29,7 @@ HALO = [withStroke(linewidth=1.4, foreground="white")]
 FLAT_LEV = {3: "A", 4: "B", 5: "C", 6: "C"}
 SYS = {k: mq.system(k) for k in mq.SYSTEMS}
 LINESETS_FINAL = False
-TBD = "LINE SETS NOT FINALIZED: condensers go under the rear deck (size of the walled area under it pending). Route and lengths to be set then."
+TBD = "LINE SETS NOT FINALIZED: the condenser bay under the rear deck is drawn on M-201; route and lengths are set once its place along the wall is confirmed."
 
 TBD_SHORT = "Line sets NOT FINALIZED"
 
