@@ -60,7 +60,7 @@ LV = {
                    room("111", "Clo.", "closet", [(26.39, 13.12, 30.25, 15.97)], "", "", (28.3, 14.5)),
                    room("112", "Clo.", "closet", [(1.62, 10.6, 7.6, 12.78)], "", "", (4.6, 11.9), True)],
             fx=[("tub", 12.45, 0.95, 17.45, 3.45, True), ("wc", 17.41, 5.0, "x-", True), ("van", 15.66, 6.4, 17.41, 8.4, True),
-                ("tub", 21.98, 4.5, 24.29, 9.56, False), ("wc", 17.95, 3.7, "x+", False), ("van", 17.95, 6.5, 19.7, 8.5, False),
+                ("tub", 21.98, 4.5, 24.29, 9.56, True), ("wc", 17.95, 3.7, "x+", True), ("van", 17.95, 6.5, 19.7, 8.5, True),
                 ("fridge", 18.27, 16.4, 20.77, 19.15), ("range", 18.6, 19.15, 20.77, 21.65), ("dw", 18.69, 21.65, 20.77, 23.65), ("sinkbase", 18.69, 23.65, 20.77, 26.65),
                 ("washer", 24.63, 4.9, 27.33, 7.15), ("dryer", 24.63, 7.3, 27.33, 9.55), ("lsink", 27.9, 11.5, 30.25, 12.78),
                 ("furnace", 16.6, 13.3, 18.06, 15.63), ("wh", 19.6, 14.5)],
@@ -96,7 +96,7 @@ LV = {
                    room("212", "Clo.", "closet", [(0.05, 13.64, 5.8, 15.47)], "", "", (2.9, 14.5), True),
                    room("213", "Stair hall (upper flat)", "stair", [(19.86, 21.06, 31.06, 27.38)], "", "8'-9\"", (26.5, 23.2))],
             fx=[("tub", 16.23, 3.61, 18.73, 8.5, True), ("wc", 14.6, 3.61, "y+", True), ("van", 11.2, 3.61, 13.2, 5.36, True),
-                ("tub", 6.14, 13.64, 8.47, 18.51, False), ("wc", 10.2, 13.64, "y+", False), ("van", 9.36, 16.76, 11.55, 18.51, False),
+                ("tub", 6.14, 13.64, 8.47, 18.51, True), ("wc", 10.2, 13.64, "y+", True), ("van", 9.36, 16.76, 11.55, 18.51, True),
                 ("fridge", 19.9, 18.22, 22.9, 20.72), ("dw", 22.9, 18.64, 24.9, 20.72), ("base", 24.9, 18.64, 25.9, 20.72), ("sinkbase", 25.9, 18.64, 28.9, 20.72), ("base", 28.9, 18.64, 31.06, 20.72),
                 ("base", 28.98, 17.7, 31.06, 18.64), ("range", 28.9, 15.2, 31.06, 17.7),
                 ("washer", 17.2, 11.8, 19.5, 14.2), ("dryer", 19.6, 11.8, 21.9, 14.2), ("furnace", 15.6, 18.0, 17.06, 20.33), ("wh", 18.5, 19.3)],
@@ -131,7 +131,7 @@ LV = {
                    room("309", "Clo.", "closet", [(15.62, 4.07, 17.97, 10.03)], "", "", (16.8, 5.6), True),
                    room("310", "Clo.", "closet", [(23.87, 11.11, 31.35, 13.1)], "", "", (27.6, 12.1), True),
                    room("311", "Coat clo.", "closet", [(15.62, 0.33, 17.97, 3.73)], "", "", (16.8, 2.0))],
-            fx=[("tub", 10.18, 24.67, 15.18, 27.17, False), ("van", 10.18, 20.9, 11.93, 22.9, False), ("wc", 16.57, 22.5, "x-", False),
+            fx=[("tub", 10.18, 24.67, 15.18, 27.17, True), ("van", 10.18, 20.9, 11.93, 22.9, True), ("wc", 16.57, 22.5, "x-", True),
                 ("base", 0.33, 24.78, 2.41, 26.86), ("dw", 2.41, 24.78, 4.41, 26.86), ("sinkbase", 4.41, 24.78, 7.41, 26.86), ("base", 0.33, 22.9, 2.41, 24.78),
                 ("range", 0.33, 20.4, 2.5, 22.9), ("base", 0.33, 16.1, 2.41, 20.4), ("fridge", 0.33, 13.6, 2.83, 16.1),
                 ("washer", 7.2, 18.2, 9.84, 20.7), ("dryer", 7.2, 20.8, 9.84, 23.3), ("furnace", 15.8, 10.55, 17.26, 12.88), ("wh", 19.1, 11.75),
@@ -438,7 +438,7 @@ def wrap(s, n=46):
 
 
 # ---------------------------------------------------------------------------------------------- architectural sheets
-ALEG = [("fill", EXW, "Existing wall to remain"), ("fill", NEWW, "New wall: 2x4 at 16 in. o.c.,\n1/2 in. board each side (2x6 where noted)"), ("dash", NEWW, "Remove"),
+ALEG = [("fill", EXW, "Existing wall: framing stays, stripped\nto the studs and re-boarded"), ("fill", NEWW, "New wall: 2x4 at 16 in. o.c.,\n1/2 in. board each side (2x6 where noted)"), ("dash", NEWW, "Wall or chimney removed"),
         ("fill", FIXE, "Amber edge: wall the scan missed.\nVerify before building to it"), ("dot", FXN, "S  New 3 in. drain stack"), ("3", NEWW, "Keynote (list below)")]
 
 
@@ -447,7 +447,7 @@ def arch_sheet(pdf, number, fl):
     beds = sum(1 for r in L["rooms"] if r["kind"] == "bed"); baths = sum(1 for r in L["rooms"] if r["kind"] == "bath")
     fig, bg, ax = bsheet(number, f"{L['name']}: floor plan, walls and doors", fl,
                          [("This level", [f"{beds} bedrooms, {baths} baths." if fl != 5 else "2 bedrooms, 1 bath here; 2 bedrooms and", "Red = build. Dashed = remove." if fl != 5 else "2 baths in the attic. Red = build.",
-                                          "Grey walls, doors and windows stay.", "Furniture is for scale only."]),
+                                          "Full gut: all finishes, wiring, pipes, ducts,", "fixtures, cabinets and doors are new.", "Grey walls keep their framing only.", "Furniture is for scale only."]),
                           ("General", ["Dimensions are clear, finish face to finish", "face. Hold the sizes marked; verify the", "rest on site before framing.",
                                        "New walls 2x4 at 16 in. o.c.; 2x6 where a", "tub valve, toilet or the stack is in the wall.", "Bath walls: cement board at tubs, moisture-",
                                        "resistant board elsewhere.", "Headers over every new opening; any wall", "that may be bearing is flagged: shore and", "size the header before cutting.",

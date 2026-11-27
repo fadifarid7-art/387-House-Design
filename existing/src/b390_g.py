@@ -24,20 +24,21 @@ def cover(pdf):
         sub="Rear building · all levels")
     bg.text(0.6, 10.2, "390 FOREST AVE, MORGANTOWN WV: BUILDER SET", fontsize=13, fontweight="bold", color=INK, va="center")
     bg.text(0.6, 9.9, "Interior renovation of an existing three-flat house: 8 bedrooms, 7 baths. No exterior work except roof and wall patches where the chimney and vents pass.", fontsize=7, color=GREY, va="center")
-    y = b.text_block(bg, 0.6, 9.45, "Scope of work", [
-        "1  Remove the chimney from the roof down to the lower flat (confirmed as a chimney by the owner's photo). Patch roof, floors and ceilings.",
-        "   Before removal, find what vents into it now and take those appliances out of service.",
-        "2  Lower flat: build bath 2 (room 106) in place of two closets; move bedroom 1's wall 9 in.; new closet; mechanical closet 109.",
-        "3  Middle flat: build bath 2 (room 206) in the south half of the hall and the chimney space; re-frame bedroom 2's door; new closet; mechanical closet 208.",
-        "4  Upper flat main floor: bedroom 3 (old Room A) with a new closet; bedroom 4 (old Room B) with a door and a new closet; mechanical closet 307.",
-        "5  Attic: private bath A for bedroom 1 and private bath B for bedroom 2; move bedroom 2's door; two closets.",
-        "6  New in every flat: gas furnace with cooling and ducts to every room, gas water heater, electrical panel and wiring to current rules,",
-        "   water, drain and gas piping for the new baths and equipment. Existing kitchens and the three existing baths stay where they are."], fs=6.4, lh=0.165)
+    y = b.text_block(bg, 0.6, 9.45, "Scope of work: full gut, everything new", [
+        "1  Strip all three flats to the studs and joists: plaster and board, dropped ceilings, flooring, doors, trim, cabinets, all wiring, piping, ducts,",
+        "   furnaces, water heaters and fixtures. The outside walls, floor framing, stairs, windows and the grey walls on the plans keep their framing.",
+        "2  Remove the chimney from the roof down to the lower flat (confirmed by the owner's photo). Patch roof, floors and ceilings.",
+        "3  Lower flat: build bath 2 (room 106); move bedroom 1's wall 9 in.; new closet; mechanical closet 109.",
+        "4  Middle flat: build bath 2 (room 206) in the south half of the hall and the chimney space; re-frame bedroom 2's door; new closet; mechanical closet 208.",
+        "5  Upper flat main floor: bedroom 3 with a new closet; bedroom 4 (the present furnace room) with a door and a new closet; mechanical closet 307.",
+        "6  Attic: private bath A for bedroom 1 and private bath B for bedroom 2; move bedroom 2's door; two closets.",
+        "7  All new in every flat: electrical service, panel and wiring; gas furnace with cooling and ducts to every room; gas water heater; water, drain, vent",
+        "   and gas piping; 7 baths; 3 kitchens with cabinets and appliances in their present positions; insulation, board, doors, trim and finishes."], fs=6.4, lh=0.165)
     y = b.text_block(bg, 0.6, y - 0.05, "Basis of design: assumptions the builder must confirm", [
         "A  Natural gas is on site. Each flat is taken to have its own gas and electric meter. Meter and service locations are not on the scan.",
-        "B  Existing (inspection report, 9 Oct 2026): three gas forced-air furnaces with ducts (made 1996, 1997, 2019), three 40 gal gas water heaters (2017, 2022,",
-        "   2022), 100 A panels, overhead service, no central cooling. Reuse the 2019 furnace and the water heaters if sound; replace the two old furnaces.",
-        "   The upper flat's furnace and water heater stand in Room B today and move to closet 307. Find the other two flats' equipment before pricing.",
+        "B  What is there now, all to be removed (inspection report, 9 Oct 2026): three gas forced-air furnaces with ducts (1996, 1997, 2019), three 40 gal gas",
+        "   water heaters (2017, 2022, 2022), 100 A panels on an overhead service, no central cooling. The upper flat's furnace and heater stand in Room B.",
+        "   Built 1911: assume lead paint, and test plaster, flooring and pipe wrap for asbestos before demolition.",
         "C  Foundation is stone with a crawl space under part of the house (its access door was stuck). Joist direction and bearing walls are not known. Any wall to be cut is treated as",
         "   bearing until shown otherwise: shore it and size the header.",
         "D  The lower flat's position under the other floors is good to about 12 in. Set out the drain stack on site from the floors above.",
@@ -47,10 +48,12 @@ def cover(pdf):
         "H  Bedroom windows must open at least 5.7 sf clear, 24 in. high and 20 in. wide, sill no more than 44 in. up. Sizes were not readable in the scan.",
         "I  Fire separation between the flats (walls, floors, and around the new stack and ducts) is to be kept or restored: 5/8 in. type X board, firestop every penetration."], fs=6.4, lh=0.165)
     b.text_block(bg, 0.6, y - 0.05, "General notes", [
-        "Dimensions are clear, finish face to finish face, in feet and inches. New partitions: 2x4 at 16 in. o.c. with 1/2 in. board; 2x6 where a tub valve, toilet or the stack is in the wall.",
-        "Baths: cement board behind tub surrounds, moisture-resistant board elsewhere, slip-resistant floor, 60 in. alcove tub, exhaust fan to outside.",
-        "Closets: one shelf and rod. Doors 6'-8\" high; bedroom and bath doors as scheduled. Smoke and CO alarms as shown on the electrical sheets.",
-        "Furniture (queen beds 5'-0\" x 6'-8\", desks 2'-0\" x 4'-0\", couches 7'-0\") is drawn to show that it fits; it is not part of the work."], fs=6.4, lh=0.165)
+        "Dimensions are clear, finish face to finish face, in feet and inches. New partitions: 2x4 at 16 in. o.c.; 2x6 where a tub valve, toilet or a stack is in the wall.",
+        "With the walls open: insulate outside walls and the attic slopes, air-seal, and fire-block balloon-framed stud bays at each floor.",
+        "Between flats: 5/8 in. type X board on ceilings and on walls shared with the stair, sound batts in the floor, firestop every pipe, duct and cable hole.",
+        "Board: 1/2 in. on walls, 5/8 in. type X on ceilings and mechanical closets; cement board at tubs, moisture-resistant board in the rest of each bath.",
+        "Closets: one shelf and rod. Doors 6'-8\" high as scheduled. Have the cut and separating attic rafters (inspection report) repaired while the attic is open.",
+        "Furniture (queen beds 5'-0\" x 6'-8\", desks, couches) is drawn to show that it fits; it is not part of the work."], fs=6.4, lh=0.165)
     bg.text(8.9, 9.45, "SHEET INDEX", fontsize=6.6, fontweight="bold", color=INK, va="center")
     table(bg, 8.9, 9.3, [0.7, 3.5], [["Sheet", "Title"]] + [[a, t] for a, t in INDEX], fs=5.9, rh=0.185)
     b.save(fig, "G-001", pdf)
@@ -58,14 +61,14 @@ def cover(pdf):
 
 def schedules(pdf):
     fig, bg, _ = b.bsheet("A-601", "Schedules: rooms, new doors, cabinets and appliances", 0, [
-        ("Notes", ["Room sizes are clear sizes from the scan,", "good to about 2 in.", "NEW = built or changed in this work.", "Appliance openings: confirm against the", "units bought before cabinets are ordered."])],
+        ("Notes", ["Room sizes are clear sizes from the scan,", "good to about 2 in.", "new room = built or re-shaped in this work.", "Every room is gutted and refinished.", "Appliance openings: confirm against the", "units bought before cabinets are ordered."])],
         sub="Rear building · all levels")
     bg.text(0.6, 10.2, "ROOM SCHEDULE", fontsize=9, fontweight="bold", color=INK, va="center")
     rows = [["No.", "Room", "Level", "Clear size", "Ceiling", "Work"]]
     for fl in (3, 4, 5, 6):
         for r in b.LV[fl]["rooms"]:
             if r["kind"] == "closet" and not r["new"]: continue
-            rows.append([r["no"], r["name"] if r["kind"] != "closet" else "Closet", b.LV[fl]["name"].split(",")[0].split(" (")[0], r["size"] or "-", r["ceil"] or "-", "NEW" if r["new"] else "existing"])
+            rows.append([r["no"], r["name"] if r["kind"] != "closet" else "Closet", b.LV[fl]["name"].split(",")[0].split(" (")[0], r["size"] or "-", r["ceil"] or "-", "new room" if r["new"] else "same room, gutted"])
     half = (len(rows) + 1) // 2
     table(bg, 0.6, 9.95, [0.45, 1.5, 0.95, 2.1, 0.6, 0.6], rows[:half], fs=5.6, rh=0.17)
     table(bg, 7.0, 9.95, [0.45, 1.5, 0.95, 2.1, 0.6, 0.6], [rows[0]] + rows[half:], fs=5.6, rh=0.17)
@@ -80,7 +83,7 @@ def schedules(pdf):
         for x in b.LV[fl]["bifolds"]:
             d.append([x[0], x[7], x[6], "bifold pair, full height 6'-8\""])
     yd = table(bg, 0.6, y - 0.25, [0.45, 2.1, 1.5, 2.3], d, fs=5.6, rh=0.17)
-    bg.text(7.0, y, "KITCHENS: CABINETS AND APPLIANCES (existing positions kept)", fontsize=9, fontweight="bold", color=INK, va="center")
+    bg.text(7.0, y, "KITCHENS: NEW CABINETS AND APPLIANCES (present positions kept)", fontsize=9, fontweight="bold", color=INK, va="center")
     k = [["Flat", "Item", "Size allowed on plan", "Notes"],
          ["Lower", "Refrigerator", "33 in. wide x 30 in. deep space", "ceiling here is 6'-10\": check the unit's height"],
          ["Lower", "Electric range", "30 in.", "new recirculating hood; range is on an inside wall"],
@@ -91,7 +94,7 @@ def schedules(pdf):
          ["Upper", "Refrigerator", "30 in. wide x 30 in. deep space (36 in. does not fit)", "beside the window"],
          ["Upper", "Gas range", "30 in.", "on the outside wall: hood ducted out"],
          ["Upper", "Base cabinets, sink, dishwasher", "L-shape: 36 in. sink base, 24 in. DW, 6 ft of base", "kitchen is 7'-2\" wide: 5 ft clear in front"],
-         ["All", "Washer and dryer", "27 in. wide each, side by side", "existing positions; dryers electric"],
+         ["All", "Washer and dryer", "27 in. wide each, side by side", "present positions; dryers electric"],
          ["All", "Wall cabinets", "12 in. deep, 30 in. high over the base runs", "18 in. above the counter; hood over range"]]
     table(bg, 7.0, y - 0.25, [0.6, 1.3, 2.5, 1.9], k, fs=5.4, rh=0.17)
     b.text_block(bg, 0.6, yd - 0.3, "Bedrooms: what fits", [

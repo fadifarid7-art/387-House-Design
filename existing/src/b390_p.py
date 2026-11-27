@@ -65,9 +65,11 @@ def base(fl):
             S.append(("trap", pt[0], pt[1], r) if new else ("ex", pt[0], pt[1]))
     for k in ("sinkbase", "lsink"):
         S.extend(("ex",) + mid(f) for f in fxs(fl, k))
-    for d in fxs(fl, "dw"):
-        a, c = mid(d), mid(fxs(fl, "sinkbase")[0]); n = math.hypot(c[0] - a[0], c[1] - a[1]); nx, ny = -(c[1] - a[1]) / n * 0.14, (c[0] - a[0]) / n * 0.14
-        P.append(("H", "1/2", [(c[0] + nx, c[1] + ny), (a[0] + nx, a[1] + ny)])); P.append(("D", "1/2", [(a[0] - nx, a[1] - ny), (c[0] - nx, c[1] - ny)])); S.append(("dot", a[0] + nx, a[1] + ny, "H"))
+    for d in fxs(fl, "dw"):             # both lines drawn on the room side of the counter, clear of the supply lines at the wall
+        a, c, k = mid(d), mid(fxs(fl, "sinkbase")[0]), mid((0,) + next(r for r in b.LV[fl]["rooms"] if r["kind"] == "kitchen")["rects"][0])
+        n = math.hypot(c[0] - a[0], c[1] - a[1]); nx, ny = -(c[1] - a[1]) / n, (c[0] - a[0]) / n; sg = 1 if nx * (k[0] - a[0]) + ny * (k[1] - a[1]) > 0 else -1
+        for sy, o in (("H", 0.3 * sg), ("D", 0.55 * sg)): P.append((sy, "1/2", [(c[0] + nx * o, c[1] + ny * o), (a[0] + nx * o, a[1] + ny * o)]))
+        S.append(("dot", a[0] + nx * 0.3 * sg, a[1] + ny * 0.3 * sg, "H"))
     return P, S, (lambda sy, z, *a: P.append((sy, z, R(*a)))), (lambda *a: S.append(a)), tubs
 
 
@@ -165,13 +167,13 @@ def plan4():
            (MC[0] - 0.5, MC[3] + 0.75), (IN[0] - 0.1, MC[3] + 0.75), (-0.7, -0.7, wh[0] - 0.95, wh[1] - 0.95, "right", "top"))
     T((f2[0] + xm) / 2 + 0.1, f2[1] - 0.3, "3\"", "D", "m", "center", "top"); T(xm + 0.15, (f2[1] + TD[1]) / 2, "3\"", "D", "m", "left"); T(l2[0] + 0.75, f2[1] - 0.2, "2\" wet vent", "D", "m", "left", "top")
     T(l2[0] - 0.15, l2[1] + 0.2, "1-1/2\"", "D", "m", "right"); T(xm - 0.3, f2[1] + 0.45, "CO", "D", "m", "right"); T(TD[0] + 0.2, TD[1] - 0.3, "tub trap 1-1/2\",\n2\" arm", "D", "m", "left", "top")
-    s("lead", (l2[0] + xm) / 2 - 0.8, yl - 0.06, B2[0] - 0.5, B2[1] - 1.5, "1-1/2\" vent up in the lavatory wall,\nacross in the ceiling to VR", "V", "m", "right")
+    s("lead", l2[0] + 1.2, yl - 0.06, B2[0] + 0.3, B2[1] - 1.5, "1-1/2\" vent up in the lavatory wall,\nacross in the ceiling to VR", "V", "m", "left")
     s("lead", VR0[0], VR0[1], HL[0] + 2.3, HL[1] + 2.0, "VR 2\" vent riser\nfrom below, on up", "V", "m", "center"); s("lead", S0[0], S0[1], HL[2] + 0.9, HL[1] + 1.5, "S 3\" stack", "D", "m", "left")
     T(xh - 0.45, (yht + MC[1]) / 2, "3/4\" H+C", "C", "m", "right"); T((xh2 + xh) / 2 + 0.3, yct - 0.12, "3/4\" H+C", "C", "m", "center", "top"); T(pd[0] - 0.15, HL[3] - 0.9, "3/4\"\nH+C", "C", "m", "right")
     T((xbh + xh2) / 2, yct - 0.12, "1/2\" H+C to bath 1", "C", "m", "center", "top"); T((xac + xc2) / 2 - 0.2, yhe + 0.12, "1/2\" H+C", "C", "m", "center", "bottom"); T(xac + 0.15, (B2[1] + B2[3]) / 2 + 0.9, "1/2\"\nH+C", "C", "m", "left")
     T(xtv + 0.45, HL[1] + 0.2, "AP; valve 6\" off\ncentre to clear S", "K", "m", "left", "bottom"); T((xh + dw[1]) / 2 - 0.6, ykh - 0.15, "1/2\" H+C to kitchen sink", "C", "m", "center", "top")
     T(pd[0] - 0.15, HL[1] + 1.3, "PD 1\" pan drain\ndown beside S", "P", "m", "right"); T(xc + 0.15, wa[4] + 0.6, "1/2\" H+C to\nwasher box, HA", "C", "m", "left")
-    T(sk[1] - 0.15, dw[2] - 0.2, "DW: hot off the sink stop; drain to the sink\ntailpiece with a high loop. Sink: new P-trap\nand a vent or an air admittance valve (AAV)", "D", "m", "right", "top")
+    T(min(dw[1], sk[1]) + 0.1, dw[2] - 0.2, "DW: hot off the sink stop; drain to the sink\ntailpiece with a high loop. Sink: new P-trap\nand a vent or an air admittance valve (AAV)", "D", "m", "left", "top")
     s("lead", MC[0] + 0.3, MC[3] - 0.15, MC[0] - 1.2, MC[3] + 1.6, "Mechanical closet 208: see the enlarged plan.\n3/4\" CW and 3/4\" gas arrive here: meters exist,\nbut where they are is not recorded", "K", "m", "center")
     T(mid(fu)[0] + 0.5, G0[1] - 0.2, "GV+DL", "G", "i", "center", "top"); T(G0[0] - 0.15, wh[1] + 0.7, "GV+DL", "G", "i", "right"); T(xh - 0.38, MC[1] - 0.25, "3/4\" H", "H", "i", "right"); T(xc + 0.1, MC[1] - 0.25, "3/4\" C", "C", "i", "left")
     s("lead", xh - 0.25, MC[1] - 0.45, MC[0] - 0.5, MC[1] - 0.8, "1\" pan drain: on in the floor,\ndown beside S: verify route", "P", "i", "left")
@@ -386,8 +388,8 @@ def riser(bg, x0, y0):
     bath(6, "Bath B (404)", ("LAV", "TUB", "WC"), xf, xs, ("LAV",), xv); bath(4, "Bath 2 (206)", ("LAV", "WC", "TUB"), xf, xs, ("LAV",), xv); bath(3, "Bath 2 (106)", ("TUB", "WC", "LAV"), xf, xs, ("TUB", "LAV"), xv)
     bath(6, "Bath A (403)", ("LAV", "WC", "TUB"), (x0 + 4.8, x0 + 4.35, x0 + 3.9), xe, ("LAV",), xs)
     for a in ((xs + 0.08, roof + 0.4, "3 in. vent through the roof at the old chimney opening"), (xs - 0.08, fy[5] + 0.3, "S 3 in.", DRC, "right"), (xv - 0.07, fy[4] + 0.85, "VR 2 in.", VTC, "right"),
-              (x0 + 0.75, fy[5] + 0.62, "No fixtures on S at this level (closet 309)", GREY), (xe + 0.08, fy[5] + 0.34, "Existing stack at bath 1 (305):\nplace, size, vent to roof: verify", EXC),
-              (xe + 0.08, fy[5] - 0.3, "Bath 1 existing fixtures: they\nneed their own vents", EXC), (xv - 0.07, fy[6] + 0.92, "VR joins S 6 in. min above the flood rims", VTC),
+              (x0 + 0.75, fy[5] + 0.5, "No fixtures on S at this level (closet 309)", GREY), (xe + 0.08, fy[5] + 0.34, "Existing stack at bath 1 (305):\nplace, size, vent to roof: verify", EXC),
+              (xe + 0.08, fy[5] - 0.3, "Bath 1 existing fixtures: they\nneed their own vents", EXC), (xv - 0.07, fy[6] + 0.92, "VR joins S 6 in. min above the flood rims", VTC, "right"),
               (xs + 1.05, y0 + 0.2, "3 in. to the existing building drain, probably\nin the crawl space (door stuck): verify"), (x0 + 0.62, y0 - 0.05, "Cleanout at the stack base. The lower flat branch joins the stack above the base, or the drain 30 in. min downstream of it."),
               (xf[0] + 0.12, fy[4] - 0.27, "2 in. wet vent"), (xf[1] + 0.3, fy[4] - 0.27, "3 in."), (xf[0] + 0.12, fy[6] - 0.27, "2 in. wet vent"), (xf[2] + 0.2, fy[6] - 0.27, "3 in."), (xf[0] + 0.12, fy[3] - 0.27, "2 in."),
               (xf[1] + 0.3, fy[3] - 0.27, "3 in."), (xs + 0.1, fy[4] - 0.3, "S offsets 5 in.\nin this floor", GREY), (xe + 0.5, fy[6] - 0.27, "3 in. in the floor framing")):
@@ -436,7 +438,7 @@ def notes_sheet(pdf):
     wr = [["Tag", "Where", "Serves", "Heater", "Gas input", "Add to each"]] + [
         [f"WH-{i + 1}", f"Mech. closet {MECH[lv[0]]}" + (" (moved from room 304)" if i == 2 else ""), f"{fl} flat" + (", levels 5 + 6" if len(lv) > 1 else ""), "Existing 40 gal gas, reused if sound", "40,000 Btu/h: check plate",
          "Pan + 1 in. drain, expansion tank, full-length relief pipe"] for i, (fl, lv) in enumerate(FLATS)]
-    y = table(bg, 0.5, y - 0.35, [0.5, 2.0, 1.25, 1.75, 1.15, 2.7], wr, fs=5.2, rh=0.18)
+    y = table(bg, 0.5, y - 0.35, [0.5, 1.85, 1.2, 1.7, 1.2, 2.45], wr, fs=5.2, rh=0.18)
     for i, ln in enumerate(("The house has three 40 gal gas heaters, made 2017, 2022 and 2022 (inspection report, 9 Oct 2026); which flat has which is not recorded. None has a pan, an expansion",
                             "tank or a full-length relief pipe today. The old chimney is being removed: check how each heater is vented. A draft-hood heater needs a listed flue to the roof (see the",
                             "mechanical sheets) or a new power-vent heater in its place. Pan drains fall by gravity: down to the crawl space, then to daylight 6 to 24 in. above grade or a floor drain.")):
