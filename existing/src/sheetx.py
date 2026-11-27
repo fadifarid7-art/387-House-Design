@@ -18,6 +18,9 @@ W, H, TB, MG = 17.0, 11.0, 3.3, 0.35
 FIX = "#b3261e"       # fixes made
 OPEN = "#b9770e"      # still open: check on site
 ISSUE = "SCAN CLEAN-UP · 27 NOV 2026"
+KIND = ["EXISTING HOUSE AS SCANNED", "BEFORE / AFTER THE SCAN FIXES"]
+LEGEND = ["Red tags F = fixes made · amber tags U = still open"]
+CHECK = "#1f6f78"     # checked against the 3D scan
 
 
 def sheet(number, title, house, sub, notes=None):
@@ -31,14 +34,14 @@ def sheet(number, title, house, sub, notes=None):
     bg.text(tx, top - 0.66, "MORGANTOWN, WV", fontsize=8.5, color=INK, va="center")
     bg.text(tx, top - 0.88, sub, fontsize=7.2, color=GREY, va="center")
     bg.plot([x0, W - MG], [top - 1.08, top - 1.08], color=INK, lw=0.6)
-    bg.text(tx, top - 1.30, "EXISTING HOUSE AS SCANNED", fontsize=7.6, color=INK, va="center")
-    bg.text(tx, top - 1.48, "BEFORE / AFTER THE SCAN FIXES", fontsize=7.6, color=INK, va="center")
+    bg.text(tx, top - 1.30, KIND[0], fontsize=7.6, color=INK, va="center")
+    bg.text(tx, top - 1.48, KIND[1], fontsize=7.6, color=INK, va="center")
     bg.plot([x0, W - MG], [top - 1.68, top - 1.68], color=INK, lw=0.6)
     y = top - 1.93
     for head, lines in (notes or []):
         bg.text(tx, y, head.upper(), fontsize=7.0, fontweight="bold", color=INK, va="top"); y -= 0.19
         for ln in lines:
-            col = FIX if ln.startswith("F") and ln[1:2].isdigit() else OPEN if ln.startswith("U") and ln[1:2].isdigit() else INK
+            col = FIX if ln[:1] in "FN" and ln[1:2].isdigit() else OPEN if ln.startswith("U") and ln[1:2].isdigit() else CHECK if ln.startswith("C") and ln[1:2].isdigit() else INK
             bg.text(tx, y, ln, fontsize=6.3, color=col, va="top", linespacing=1.25)
             y -= 0.142 * (ln.count("\n") + 1) + 0.035
         y -= 0.1
@@ -54,8 +57,8 @@ def sheet(number, title, house, sub, notes=None):
     tl = textwrap.wrap(title.upper(), 30)[:2]
     for i, t in enumerate(tl):
         bg.text(tx, by + (0.98 if len(tl) == 1 else 1.05 - 0.16 * i), t, fontsize=9.2 if len(tl) == 1 else 8.2, fontweight="bold", color=INK, va="center")
-    bg.text(tx, by + 0.66, "Red tags F = fixes made · amber tags U = still open", fontsize=5.8, color=INK, va="center")
-    bg.text(tx, by + 0.30, ISSUE, fontsize=6.2, color=GREY, va="center")
+    bg.text(tx, by + 0.66, LEGEND[0], fontsize=5.8, color=INK, va="center")
+    bg.text(tx, by + 0.30, ISSUE if KIND[0].startswith("EXISTING") else "PROPOSED LAYOUT · 27 NOV 2026", fontsize=6.2, color=GREY, va="center")
     bg.text(W - MG - 0.14, by + 0.42, number, fontsize=20, fontweight="bold", color=INK, ha="right", va="center")
     return fig, bg
 

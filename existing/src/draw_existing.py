@@ -24,7 +24,16 @@ REG = load_reg()
 FPI = 16 / 3.0
 DY2 = 782.45     # Polycam page offset between its 'Floor 2' and Floor 4 (their wall lines then coincide)
 LEVEL = {2: "Polycam 'Floor 2' (not a level)", 3: "Lower flat", 4: "Middle flat", 5: "Upper flat", 6: "Attic (part of the upper flat)"}
-Z = {3: -7.08, 4: -4.23, 5: -1.56, 6: 1.35, "top": 4.08}
+# true floor levels (m, scan frame). Rev 2: the upper flat and attic floors were first set at the ceiling below; corrected from the wall extents.
+Z = {3: -7.08, 4: -4.205, 5: -1.133, 6: 1.719, "top": 4.105}
+# clear ceiling height per room (ft), each measured from that room's own floor: (main, part or None)
+HEIGHTS = {
+    3: {"Living Room 2": (7.5, None), "Kitchen 2": (6.83, None), "Bedroom 4": (6.83, None), "Other 4": (7.08, None), "Bathroom 2": (7.0, None), "Laundry 1 (1)": (6.83, None)},
+    4: {"Other 2 (1)": (8.67, 7.33), "Bedroom 5": (8.67, 7.67), "Bedroom 3": (7.67, None), "Other 2 (2)": (7.33, None), "Other 7": (8.75, None)},
+    5: {"Living Room 1": (8.17, None), "Other 3": (8.08, None), "Bathroom 1": (8.25, None), "Other 5": (7.17, None), "Kitchen 1": (7.17, None), "Hallway 1": (7.42, None)},
+    6: {"Bedroom 1": (7.75, None), "Bedroom 2": (7.83, None), "Hallway 2": (7.75, None)},
+}
+ATTIC_FLOOR_FIX = 1.21   # ft: attic floor is this much above the datum the headroom cells were measured from
 
 # ---- Polycam name -> (name used here, assumed?) ----
 N390 = {
@@ -115,33 +124,19 @@ def _inch(ft_):
 
 
 def heights390(fl):
-    out = {}
-    for r in FX["floors"][str(fl)]["rooms"]:
-        if r.get("ceil_ft") and r.get("cells", 0) >= 12:
-            t = _inch(r["ceil_ft"])
-            if r.get("second_ft") and r.get("share_second", 0) >= 0.2:
-                t += f", part {_inch(r['second_ft'])}"
-            out[r["name"]] = t
-        elif r.get("ceil_max_ft"):
-            out[r["name"]] = f"{_inch(r['ceil_min_ft'])} to {_inch(r['ceil_max_ft'])}"
-    return out
+    return {k: _inch(v[0]) + (f", part {_inch(v[1])}" if v[1] else "") for k, v in HEIGHTS[fl].items()}
 
 
 def height_range(fl):
-    v = [r["ceil_ft"] for r in FX["floors"][str(fl)]["rooms"] if r.get("ceil_ft") and r.get("cells", 0) >= 40]
-    if not v:
-        r = FX["floors"][str(fl)]["rooms"]
-        return f"{_inch(min(q['ceil_min_ft'] for q in r))} to {_inch(max(q['ceil_max_ft'] for q in r))}"
+    v = [h[0] for h in HEIGHTS[fl].values()]
     return f"{_inch(min(v))} to {_inch(max(v))}, by room"
 
 
 def f5_text(fl):
-    big = [r for r in FX["floors"][str(fl)]["rooms"] if r.get("ceil_ft") and r.get("cells", 0) >= 40]
-    big.sort(key=lambda r: r["ceil_ft"])
-    parts = ", ".join(f"{N390[fl].get(r['name'], (r['name'],))[0]} {_inch(r['ceil_ft'])}" for r in big)
-    sp = max((r.get("spread_in") or 0) for r in big) if big else 0
-    return (f"Ceiling heights re-measured in the 3D scan on a 10 in. grid. Inside any one room the height holds within about {max(2, round(sp))} in. "
-            f"The rooms themselves differ: {parts}.")
+    big = sorted(HEIGHTS[fl].items(), key=lambda kv: kv[1][0])
+    parts = ", ".join(f"{N390[fl].get(k, (k,))[0]} {_inch(v[0])}" for k, v in big)
+    return ("Ceiling heights measured in the 3D scan from each room's own floor to its own ceiling (where the wall surfaces start and stop). "
+            f"Good to about 2 in.: {parts}.")
 
 
 def centre(F, name, off=34.0):
@@ -336,6 +331,7 @@ def ex390(pdf):
         ("F2", centre(F3, "Living Room 2"), "Plan was exported turned 45 degrees. Turned square to the page like the other levels."),
         ("F3", centre(F3, "Kitchen 2"), "This level is twisted 11 degrees in the 3D scan. Twist removed; outline seated on the footprint of the floors above."),
         ("F5", centre(F3, "Bedroom 4"), f5_text(3)),
+        ("F16", centre(F3, "Living Room 2"), "Two floor levels found: the living room and kitchen floor is 1'-5\" lower than the bedrooms, bath, laundry and hall (two or three steps). The export showed one flat floor."),
         ("F7", centre(F3, "Other 4"), "'Other 4' renamed Bedroom 2, because you count this flat as a two-bedroom. 'Other 10/12/13' renamed closet / chase (my guess)."),
         ("F8", None, "All sizes converted from decimal inches to feet and inches, with each room's clear size and area."),
     ], [
@@ -376,10 +372,9 @@ def ex390(pdf):
         ("F7b", centre(F5, "Hallway 1"), "'Hallway 1' holds the stair up to the attic; 'Other 9' is its landing. Renamed."),
         ("F8", None, "Sizes in feet and inches; clear size and area per room."),
     ], [
-        ("U5", centre(F5, "Hallway 4"), "'Hallway 4' is a strip 2'-4\" wide between the living room and Room A. A closet, or an old stair? Unknown."),
+        ("U5", centre(F5, "Hallway 4"), "Worked out (see PR-105): 'Hallway 4' is a closet strip 2'-8\" deep with a chimney in its middle. Its south end is an open closet off the living room; a closed closet door opens into it from Room A; the middle was never scanned. On the roof a box sits exactly above it."),
         ("U2", centre(F5, "Other 5"), "Window sills and operation not readable. Room B's window scans at 27 x 65 in."),
-        ("U6", centre(F5, "Other 9"), "How this flat is entered from outside is not in the scan."),
-        ("U11", centre(F5, "Living Room 1"), "The living room, Room A and the small spaces have too few 3D scan points for a reliable ceiling height."),
+        ("U6", centre(F5, "Other 9"), "Entrance worked out from the 3D scan: this flat is reached by its own inside stair, which starts in the stair hall on the middle level (off the porch) and arrives in this hall. The stair to the attic runs above it."),
         ("U4", None, "Drain stacks, joist direction and bearing walls cannot be seen in a scan."),
     ], ((-3, 36), (-3, 30)), gen(5, ["Main floor of the upper flat.", "Polycam area: 862 sf outside, 785 sf inside."]) + [how], "Rear building · upper flat", nv)
 
@@ -392,15 +387,15 @@ def ex390(pdf):
         for r in FX["floors"]["6"]["rooms"]:
             for (cx, cy, hgt) in r.get("cells", []):
                 q = np.array(R(-th5, (cx, cy))) - c; q = np.array(R(a, q)) + c - org
-                xs.append(q[0] / FT); ys.append(q[1] / FT); hs.append(hgt / FT)
+                xs.append(q[0] / FT); ys.append(q[1] / FT); hs.append(hgt / FT - ATTIC_FLOOR_FIX)
         hs = np.array(hs)
         low = hs < 7.0
         ax.scatter(np.array(xs)[low], np.array(ys)[low], s=9, marker="s", color=OPEN, alpha=0.55, zorder=3, linewidths=0)
         ax.scatter(np.array(xs)[~low], np.array(ys)[~low], s=9, marker="s", color="#d7ecd9", alpha=0.6, zorder=1.5, linewidths=0)
         ax.text(16, 29.3, "green = ceiling 7 ft or higher · amber = lower than 7 ft (measured cell by cell in the 3D scan)", fontsize=5.6, ha="center", color=INK)
     floor_sheet(pdf, "EX-105", "390", "390 Forest: attic, before and after", P390, 6, T390(6), N390[6], heights390(6), [
-        ("F6", centre(F6, "Bedroom 1"), "Headroom measured from the 3D scan on a 10 in. grid. The ceiling is 7 ft or higher over 99 to 100 % of both bedrooms: the scanned rooms stop at the knee walls, so the low roof space is outside them."),
-        ("F5", centre(F6, "Bedroom 2"), "Ceiling 7'-11\" to 9'-4\". The export gave one figure, 7'-6\" to 8'-0\"."),
+        ("F6", centre(F6, "Bedroom 1"), "Headroom measured from the 3D scan on a 10 in. grid, from the attic's true floor. The ceiling is flat at 7'-8\" to 8'-0\" over the middle of both rooms and drops below 7 ft only in the last 1 to 2 ft beside the knee walls (amber)."),
+        ("F5", centre(F6, "Bedroom 2"), "Flat ceiling 7'-9\" to 7'-10\". Corrected: my earlier 7'-11\" to 9'-4\" was measured from the ceiling of the flat below, not from the attic floor."),
         ("F4", None, "Placed over the upper flat on the common origin: the attic stair hall sits over the stair in the hall below."),
         ("F7", centre(F6, "Hallway 2"), "'Hallway 2' renamed Stair hall. No bathroom on this level."),
         ("F8", None, "Sizes in feet and inches; clear size and area per room."),
@@ -531,8 +526,8 @@ def sheet_log(pdf):
             ["F2", "390", "Lowest flat drawn turned 45 degrees", "Turned square", "101, 102"],
             ["F3", "390", "3D scan has the lowest flat twisted 11 degrees against the floors above", "Twist removed; seated on the common footprint by outline", "101, 102"],
             ["F4", "both", "Levels sit apart on the page, no common origin", "Stacked on one origin; 390 level heights measured in the scan", "101, 201"],
-            ["F5", "390", "Ceiling heights from 6'-8\" to 21'-7\"", "Re-measured per room on a 10 in. grid: each room steady within about 2 in.", "102 to 105"],
-            ["F6", "390", "Attic drawn as flat rooms, no headroom information", "Headroom mapped: 7 ft or more over 99 % of both bedrooms", "105"],
+            ["F5", "390", "Ceiling heights from 6'-8\" to 21'-7\"", "Re-measured per room, from each room's own floor (corrected 27 Nov: upper flat and attic were 1'-2\" to 1'-5\" too tall)", "102 to 105"],
+            ["F6", "390", "Attic drawn as flat rooms, no headroom information", "Headroom mapped from the true floor: 7'-8\" to 8'-0\", under 7 ft only by the knee walls", "105"],
             ["F7", "both", "Rooms without furniture labelled 'Other'", "Named by use; guesses marked with ?", "all"],
             ["F8", "both", "Sizes in decimal inches", "Feet and inches; clear size and area per room", "all"],
             ["F9", "390", "Middle flat bath: tub and sink, no toilet", "Unnamed object in the corner circled as the likely toilet", "103"],
@@ -540,7 +535,9 @@ def sheet_log(pdf):
             ["F11", "441", "Address reads 390 Forest Ave", "Labelled 441 Baird St (county record)", "201"],
             ["F12", "both", "Walls up to 3 degrees out of square (390 lower flat); small jogs and open corners", "Walls set exactly square, lined up on common lines, corners closed", "all"],
             ["F13", "390", "'Floor 2': six wall pieces and one 777 sf 'room', which I first read as a basement", "Shown to be the middle flat's outside walls drawn twice; not a basement", "106"],
-            ["F14", "390", "'Floor 2' listed 16'-6\" high", "Explained: lower flat floor to middle flat ceiling, two storeys saved as one room", "106"]]
+            ["F14", "390", "'Floor 2' listed 16'-6\" high", "Explained: lower flat floor to middle flat ceiling, two storeys saved as one room", "106"],
+            ["F15", "390", "Upper flat 'Hallway 4', a 2'-8\" strip nobody could explain (was U5)", "Closet strip with a chimney in the middle; box on the roof right above it", "104, PR-105"],
+            ["F16", "390", "Lower flat drawn with one floor level", "Living room and kitchen floor found 1'-5\" lower than the other rooms", "102"]]
     y = table(bg, 0.6, 9.8, [0.45, 0.55, 5.0, 4.9, 1.0], rows, fs=6.1, rh=0.235)
     head(bg, 0.6, y - 0.45, "Still open: could not be fixed from the files", "Each needs a look on site, a tape measure, or another scan", color=OPEN)
     rows2 = [["Tag", "House", "What is missing or doubtful", "What would settle it"],
@@ -548,13 +545,13 @@ def sheet_log(pdf):
              ["U2", "both", "Window sill heights and whether windows open could not be read (glass and blinds)", "Measure the bedroom windows"],
              ["U3", "both", "Walls are drawn 4 in. thick everywhere; real thickness unknown, so room sizes are good to about 2 in.", "Tape check of a few rooms"],
              ["U4", "both", "Nothing inside walls or floors: drain stacks, joists, bearing walls, wiring", "Look in the basement and attic; open a ceiling"],
-             ["U5", "both", "Openings without doors, odd strips and gaps (390 upper flat 'Hallway 4', 441 'Other 6')", "Tell me what they are"],
-             ["U6", "390", "Stairs and entrances only partly scanned", "Tell me where each flat's door and stair are"],
+             ["U5", "both", "Openings without doors, odd strips and gaps (441 'Other 6'); 390's 'Hallway 4' is answered, see F15", "Tell me what they are"],
+             ["U6", "390", "Stair worked out from the scan (see PR sheets); outside doors of each flat still to confirm", "Tell me which door each flat uses"],
              ["U7", "441", "No 3D scan: heights and stacking not checked", "Export the .laz for 441"],
              ["U8", "441", "No stairs captured on any level", "Scan or describe the stairs"],
              ["U9", "both", "Outside walls missed in places (390 middle flat south-east corner, 441 basement)", "Rescan those corners"],
              ["U10", "both", "Short angled wall pieces kept as scanned: real cut corners or the scan rounding a corner", "Look at each circled spot"],
-             ["U11", "390", "Upper flat living room and a few small spaces have too few 3D points for a height", "Tape measure"],
+             ["U11", "390", "Ceiling heights come from a phone scan: good to about 2 in.", "Tape check in one room per flat"],
              ["U12", "390", "Ground outside is 1 to 8 ft below the lower flat's floor: room for a cellar under it", "Same as U1; it decides how new drains can run"]]
     table(bg, 0.6, y - 0.85, [0.45, 0.55, 6.4, 4.5], rows2, fs=6.1, rh=0.235)
     save(fig, "EX-001", pdf)
