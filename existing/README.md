@@ -14,11 +14,11 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   `src/make_build390.py` from the plan model in `src/build390.py` and the trade modules `src/b390_*.py`. It supersedes the
   earlier before/after and proposed sets.
 - `drawings/390-Forest_A-101_Lower-flat_Rev6.pdf`, `drawings/390-Forest_A-102_Middle-flat_Rev6.pdf`,
-  `drawings/390-Forest_A-103_Upper-flat_Rev4.pdf`: the lower flat, middle flat and upper flat main floor plans as they stand in the
-  floor-by-floor review (newer than the A-101 to A-103 inside the builder set; the attic follows, and the trade sheets are redrawn once the
-  four floor plans are agreed). Every floor-plan sheet is checked when it is built (`clarity()` in `src/build390.py`): no label may sit on
+  `drawings/390-Forest_A-103_Upper-flat_Rev4.pdf`, `drawings/390-Forest_A-104_Attic_Rev3.pdf`: the four floor plans as they stand in the
+  floor-by-floor review (newer than the A-101 to A-104 inside the builder set; the trade sheets are redrawn once the four floor plans are
+  agreed). Every floor-plan sheet is checked when it is built (`clarity()` in `src/build390.py`): no label may sit on
   another label, a fixture, furniture, a door swing, a wall, the dashed outline of a removed wall or a dimension line, and nothing may run
-  outside the border. The count is printed; A-101, A-102 and A-103 are at zero.
+  outside the border. The count is printed; all four sheets are at zero.
   Middle flat as found (owner's video): the furnace and water heater are in the louvered closet at the south end of the hall and the panel
   is on the hall wall; the small room beside bedroom 1's door is that bedroom's closet. Its bedroom side is drawn from wall faces measured in
   the 3D scan (`src/scan_survey.py`), because the phone-scan floor plan had that side about 1'-6" too narrow (it assumes 4 in. walls; several
@@ -31,6 +31,10 @@ Polycam phone scans dated 5 Oct 2026. Nothing new is designed here yet.
   7'-1" x 13'-4", a thick wall between the bath and the stairs, a closed box in the kitchen corner that sits over the boxed-out section in
   the middle flat's bedroom 1 (most likely a drain stack or old flue), and the real stairs: the stair from the entrance arrives heading
   south, and the attic stair is 5 risers, a landing 3'-7" up, then 8 risers passing back over the stair down.
+  Attic (rev 3): drawn from the 3D scan. The roof is a 10 in 12 gable with eaves on the long sides; the ceiling is flat at 7'-9" over almost
+  all of both rooms and slopes only in the last 1'-6" along the west wall. Bedroom 2's door closes the south end of the stair hall and
+  bedroom 1's door is in the thick wall beside it. Both private baths back onto that thick wall, directly over the mechanical closet and chase
+  on the floor below; bedroom 2 gets a new door from the hall. Both bedrooms keep their existing eave closets.
 - `data/evidence/`: pictures used on PR-105 (aerial photo supplied by the owner, views from the scan).
 - `data/*_polycam_plan.json`: rooms, walls, doors and windows read from the Polycam floor-plan DXF.
 - `data/390_registration.json`, `data/390_fixed.json`: how each level of 390 Forest lines up with the
